@@ -18,7 +18,6 @@ This site supports multiple languages! Currently available:
 
 Want to help translate the site into another language? Check out the [Translation Guide](TRANSLATION_GUIDE.md) for detailed instructions on how to contribute translations.
 
-
 ## Contributions
 
 Contributions are welcome! Feel free to open an issue or submit a pull request if you'd like to improve the project or suggest new features.

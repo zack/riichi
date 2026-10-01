@@ -1,3 +1,11 @@
+@font-face {
+  font-display: swap;
+  font-family: "Lato";
+  font-style: normal;
+  font-weight: 700;
+  src: url("./fonts/lato-latin-700-normal.woff2") format("woff2");
+}
+
 .App {
   text-align: center;
   background-color: #3b3058;
