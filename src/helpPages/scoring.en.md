@@ -1,5 +1,3 @@
-# :mahjong: Scoring Help :mahjong:
-
 ## Ruleset
 
 All hands on this site have been extracted from Tenhou game logs, so the rules used on this site use Tenhou's ruleset.
@@ -20,7 +18,7 @@ Han is the sum of the number of yaku (and their worth) added to the number of do
 
 If there are multiple winning arrangements of your hand then the arrangement with the highest point value is taken. 
 
-Please note: This trainer does not have any yakuman examples due to them being too easy.
+Note: This trainer does not have any hands above 10 han.
 
 See below a guide of how much each Yaku is worth:
 
@@ -258,9 +256,7 @@ First we'll go through how points are actually calculated.
 
 Initially we need to work out the basic points which you get using this function:
 
-```latex
-basic\ points = fu \times 2^{2+han}
-```
+<math><mtext>basic points</mtext><mo>=</mo><mtext>fu</mtext><mo>×</mo><msup><mn>2</mn><mrow><mn>2</mn><mo>+</mo><mtext>han</mtext></mrow></msup></math>
 <br />
 
 ## Mangans
@@ -285,10 +281,10 @@ Now you have your basic point value you can move onto calculating the total poin
 
 Once the basic points are calculated, multiply them depending on the scenario. The four possible scenarios are:
 
-* For a non-dealer tsumo, the dealer pays the winner $$2 \times basic\ points$$, and the other two players pay the winner $$1 \times basic\ points$$.
-* For a dealer tsumo, all the three non-dealers pay the winner $$2 \times basic\ points$$.
-* For a non-dealer ron, the discarding player pays the winner $$4 \times basic\ points$$.
-* For a dealer ron, the discarding non-dealer pays the winner $$6 \times basic\ points$$.
+* For a non-dealer tsumo, the dealer pays the winner <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>, and the other two players pay the winner <math><mn>1</mn><mo>×</mo><mtext>basic points</mtext></math>.
+* For a dealer tsumo, all the three non-dealers pay the winner <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>.
+* For a non-dealer ron, the discarding player pays the winner <math><mn>4</mn><mo>×</mo><mtext>basic points</mtext></math>.
+* For a dealer ron, the discarding non-dealer pays the winner <math><mn>6</mn><mo>×</mo><mtext>basic points</mtext></math>.
 
 Round **up** those points to the nearest 100. 
 
@@ -308,3 +304,9 @@ If you don't feel like doing some fairly serious mental arithmetic every time yo
 ![Scoring Table](./img/riichi-scoring.webp)
 
 Simply look up your han / fu values and it will give you the correct score. 
+
+## Credits
+
+This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) by Varantha. The hands, the scoring logic, and this help page all come from the original.
+
+The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6), some of them remade from originals by Jerry Crimson Mann and Dewclouds. They're on [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The files here have been made smaller, and the face-down tile and the app's icon are made from them.

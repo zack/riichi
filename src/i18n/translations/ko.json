@@ -1,32 +1,68 @@
 {
   "common": {
-    "yes": "네",
-    "no": "아니요",
-    "apply": "적용"
+    "close": "닫기",
+    "darkMode": "다크 모드",
+    "help": "점수 관련 도움",
+    "skipToMain": "본문으로 건너뛰기"
   },
   "buttons": {
+    "andHide": "{}도 숨기기",
     "checkAnswer": "정답 확인",
+    "justTellMe": "정답 보기",
     "newHand": "새 손패"
   },
   "quiz": {
+    "correct": "정답!",
+    "incorrect": "오답",
+    "disabledOnLimit": "만관 이상에서는 비활성",
     "han": "판수",
+    "exactFu": "반올림 전 부수",
     "fu": "부수",
+    "limits": {
+      "baiman": "배만",
+      "haneman": "하네만",
+      "mangan": "만관"
+    },
+    "marks": {
+      "correct": "정답",
+      "wrong": "오답"
+    },
     "points": "점수",
     "pointsFromEach": "점수 (각자가 내는)",
     "pointsFromNonDealer": "점수 (자가 내는)",
     "pointsFromDealer": "점수 (친이 내는)",
     "yourAnswer": "예측 정답",
+    "youPicked": "선택한 답",
     "realAnswer": "실제 정답",
-    "noOptionsSelected": "선택되어 있는 연습 옵션이 없습니다. 옵션에서 선택해주세요."
+    "noOptionsSelected": "선택되어 있는 연습 옵션이 없습니다. 옵션에서 선택해주세요.",
+    "errorPrefix": "오류:",
+    "notANumber": {
+      "fu": "30처럼 숫자로 입력하세요",
+      "points": "2000처럼 숫자로 입력하세요"
+    }
+  },
+  "biggerHand": {
+    "open": "패를 누르면 크게 볼 수 있어요"
+  },
+  "handParts": {
+    "concealed": "손패",
+    "wonOnRon": "론으로 화료",
+    "wonOnTsumo": "쯔모로 화료",
+    "meld": "후로",
+    "melds": "후로",
+    "meldNumber": "후로 {}"
   },
   "info": {
-    "round": "국 (장)",
+    "round": "장풍",
     "seatWind": "자풍",
+    "doraIndicator": "도라 표시패",
     "doraIndicators": "도라 표시패",
+    "uraDoraIndicator": "뒷도라 표시패",
     "uraDoraIndicators": "뒷도라 표시패",
-    "tsumo": "쯔모",
-    "riichi": "리치",
-    "riichiSticks": "리치봉",
+    "tsumo": "쯔모!",
+    "riichi": "리치!",
+    "ron": "론!",
+    "honbaStick": "장봉",
     "honbaSticks": "장봉"
   },
   "options": {
@@ -37,12 +73,44 @@
     "kiriageMangan": "절상만관 채용",
     "testHonba": "장봉 포함",
     "ignoreFuOnLimit": "5판 이상 부수 무시",
-    "language": "언어"
+    "nextHandNote": "문제 설정 변경은 다음 패부터 적용됩니다.",
+    "unavailableWhileOff": "「{}」 옵션이 꺼져 있는 동안에는 사용할 수 없습니다.",
+    "exactFu": "부수 반올림 없음",
+    "language": "언어",
+    "handId": "패 ID:",
+    "showTileNames": "패 이름 표시",
+    "fancyTiles": "입체 패 사용",
+    "highContrast": "고대비",
+    "homeScreenIcon": "홈 화면 아이콘",
+    "installApp": "앱 설치",
+    "installFromShareSheet": "앱을 설치하려면 \"공유\"를 누른 다음 \"홈 화면에 추가\"를 누르세요.",
+    "installFromMenu": "앱을 설치하려면 메뉴를 열고 \"설치\"를 누르세요.",
+    "iconColors": {
+      "dark": "다크",
+      "deep-mat-green": "짙은 초록",
+      "mat-green": "초록",
+      "teal": "틸",
+      "mat-blue": "파랑",
+      "deep-mat-blue": "남색",
+      "jade": "비취색",
+      "cyan": "시안",
+      "indigo": "인디고",
+      "deep-indigo": "짙은 인디고",
+      "ruby": "루비",
+      "red": "빨강"
+    }
   },
   "winRate": {
     "correct": "정답",
+    "hand": "패",
+    "handShort": "패",
     "wrong": "오답",
     "rate": "정답률"
+  },
+  "handLink": {
+    "copy": "이 패의 링크 복사",
+    "copied": "링크를 복사했습니다",
+    "failed": "링크를 복사하지 못했습니다"
   },
   "footer": {
     "logIssues": "이슈 제보는"
@@ -137,5 +205,33 @@
     "tsumoDealer": "쯔모 (친)",
     "roundUp": "올림: {} (+{})",
     "honba": "본장: {} (+{})"
+  },
+  "tiles": {
+    "back": "뒤집힌 패",
+    "called": "{} (운 패)",
+    "red": "적{}",
+    "suits": {
+      "m": "{}만",
+      "p": "{}통",
+      "s": "{}삭"
+    },
+    "honors": {
+      "1": "동",
+      "2": "남",
+      "3": "서",
+      "4": "북",
+      "5": "백",
+      "6": "발",
+      "7": "중"
+    },
+    "labels": {
+      "1": "동",
+      "2": "남",
+      "3": "서",
+      "4": "북",
+      "5": "백",
+      "6": "발",
+      "7": "중"
+    }
   }
 }

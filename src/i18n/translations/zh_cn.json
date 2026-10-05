@@ -1,32 +1,68 @@
 {
   "common": {
-    "yes": "是",
-    "no": "否",
-    "apply": "应用"
+    "close": "关闭",
+    "darkMode": "深色模式",
+    "help": "点数计算帮助",
+    "skipToMain": "跳到主要内容"
   },
   "buttons": {
+    "andHide": "并隐藏{}",
     "checkAnswer": "提交答案",
+    "justTellMe": "直接看答案",
     "newHand": "下一题"
   },
   "quiz": {
+    "correct": "正确！",
+    "incorrect": "错误",
+    "disabledOnLimit": "满贯以上时禁用",
     "han": "番",
+    "exactFu": "精确符数",
     "fu": "符",
+    "limits": {
+      "baiman": "倍满",
+      "haneman": "跳满",
+      "mangan": "满贯"
+    },
+    "marks": {
+      "correct": "正确",
+      "wrong": "错误"
+    },
     "points": "点数",
     "pointsFromEach": "点数 (各家)",
     "pointsFromNonDealer": "点数 (从子家)",
     "pointsFromDealer": "点数 (从亲家)",
     "yourAnswer": "作答",
+    "youPicked": "你的选择",
     "realAnswer": "答案",
-    "noOptionsSelected": "未选择任何循环选项。请在“选项”菜单中至少选择一个选项。"
+    "noOptionsSelected": "未选择任何循环选项。请在“选项”菜单中至少选择一个选项。",
+    "errorPrefix": "错误：",
+    "notANumber": {
+      "fu": "请用数字输入，例如 30",
+      "points": "请用数字输入，例如 2000"
+    }
+  },
+  "biggerHand": {
+    "open": "点按牌可放大查看"
+  },
+  "handParts": {
+    "concealed": "手牌",
+    "wonOnRon": "荣和",
+    "wonOnTsumo": "自摸和",
+    "meld": "副露",
+    "melds": "副露",
+    "meldNumber": "副露{}"
   },
   "info": {
     "round": "场风",
     "seatWind": "自风",
+    "doraIndicator": "宝牌指示牌",
     "doraIndicators": "宝牌指示牌",
+    "uraDoraIndicator": "里宝牌指示牌",
     "uraDoraIndicators": "里宝牌指示牌",
-    "tsumo": "自摸",
-    "riichi": "立直",
-    "riichiSticks": "立直棒",
+    "tsumo": "自摸！",
+    "riichi": "立直！",
+    "ron": "荣和！",
+    "honbaStick": "本场棒",
     "honbaSticks": "本场棒"
   },
   "options": {
@@ -37,12 +73,44 @@
     "kiriageMangan": "切上满贯模式",
     "testHonba": "包含本场棒",
     "ignoreFuOnLimit": "满贯免算符",
-    "language": "语言"
+    "nextHandNote": "题目的更改从下一手牌开始生效。",
+    "unavailableWhileOff": "「{}」关闭时不可用。",
+    "exactFu": "精确符数（不进位）",
+    "language": "语言",
+    "handId": "手牌ID：",
+    "showTileNames": "显示牌名",
+    "fancyTiles": "使用立体牌",
+    "highContrast": "高对比度",
+    "homeScreenIcon": "主屏幕图标",
+    "installApp": "安装应用",
+    "installFromShareSheet": "要安装应用，请轻点“共享”，然后轻点“添加到主屏幕”。",
+    "installFromMenu": "要安装应用，请打开菜单，然后轻点“安装”。",
+    "iconColors": {
+      "dark": "深色",
+      "deep-mat-green": "深绿",
+      "mat-green": "绿色",
+      "teal": "青绿",
+      "mat-blue": "蓝色",
+      "deep-mat-blue": "深蓝",
+      "jade": "翡翠绿",
+      "cyan": "青色",
+      "indigo": "靛蓝",
+      "deep-indigo": "深靛蓝",
+      "ruby": "宝石红",
+      "red": "红色"
+    }
   },
   "winRate": {
     "correct": "正确",
+    "hand": "手牌",
+    "handShort": "手牌",
     "wrong": "错误",
     "rate": "正确率"
+  },
+  "handLink": {
+    "copy": "复制这手牌的链接",
+    "copied": "已复制链接",
+    "failed": "无法复制链接"
   },
   "footer": {
     "logIssues": "项目issue地址"
@@ -137,5 +205,33 @@
     "tsumoDealer": "自摸 (亲家)",
     "roundUp": "向上取整: {} (+{})",
     "honba": "本场: {} (+{})"
+  },
+  "tiles": {
+    "back": "背面牌",
+    "called": "{}（副露）",
+    "red": "红{}",
+    "suits": {
+      "m": "{}万",
+      "p": "{}筒",
+      "s": "{}索"
+    },
+    "honors": {
+      "1": "东",
+      "2": "南",
+      "3": "西",
+      "4": "北",
+      "5": "白",
+      "6": "发",
+      "7": "中"
+    },
+    "labels": {
+      "1": "东",
+      "2": "南",
+      "3": "西",
+      "4": "北",
+      "5": "白",
+      "6": "发",
+      "7": "中"
+    }
   }
 }

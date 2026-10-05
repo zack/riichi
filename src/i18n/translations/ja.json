@@ -1,32 +1,68 @@
 {
   "common": {
-    "yes": "はい",
-    "no": "いいえ",
-    "apply": "適用"
+    "close": "閉じる",
+    "darkMode": "ダークモード",
+    "help": "点数計算ヘルプ",
+    "skipToMain": "メインコンテンツへスキップ"
   },
   "buttons": {
+    "andHide": "{}も非表示にする",
     "checkAnswer": "回答を確認",
+    "justTellMe": "答えを見る",
     "newHand": "次の問題"
   },
   "quiz": {
+    "correct": "正解！",
+    "incorrect": "不正解",
+    "disabledOnLimit": "満貫以上では無効",
     "han": "翻",
+    "exactFu": "切り上げ前の符",
     "fu": "符",
+    "limits": {
+      "baiman": "倍満",
+      "haneman": "跳満",
+      "mangan": "満貫"
+    },
+    "marks": {
+      "correct": "正解",
+      "wrong": "不正解"
+    },
     "points": "点数",
     "pointsFromEach": "点数（各）",
     "pointsFromNonDealer": "点数（子から）",
     "pointsFromDealer": "点数（親から）",
     "yourAnswer": "あなたの回答",
+    "youPicked": "あなたの選択",
     "realAnswer": "正解",
-    "noOptionsSelected": "テストオプションが選択されていません。オプションメニューで少なくとも一つ選択してください。"
+    "noOptionsSelected": "テストオプションが選択されていません。オプションメニューで少なくとも一つ選択してください。",
+    "errorPrefix": "エラー：",
+    "notANumber": {
+      "fu": "30のように数字で入力",
+      "points": "2000のように数字で入力"
+    }
+  },
+  "biggerHand": {
+    "open": "牌をタップすると大きく表示"
+  },
+  "handParts": {
+    "concealed": "手牌",
+    "wonOnRon": "ロン和了",
+    "wonOnTsumo": "ツモ和了",
+    "meld": "副露",
+    "melds": "副露",
+    "meldNumber": "副露{}"
   },
   "info": {
     "round": "場",
     "seatWind": "自風",
+    "doraIndicator": "ドラ表示牌",
     "doraIndicators": "ドラ表示牌",
+    "uraDoraIndicator": "裏ドラ表示牌",
     "uraDoraIndicators": "裏ドラ表示牌",
-    "tsumo": "ツモ",
-    "riichi": "立直",
-    "riichiSticks": "供託棒",
+    "tsumo": "ツモ！",
+    "riichi": "立直！",
+    "ron": "ロン！",
+    "honbaStick": "本場棒",
     "honbaSticks": "本場棒"
   },
   "options": {
@@ -36,13 +72,45 @@
     "testPoints": "点数をテスト",
     "kiriageMangan": "切り上げ満貫モード",
     "testHonba": "本場棒を含む",
-    "ignoreFuOnLimit": "役満で符を無視",
-    "language": "言語"
+    "ignoreFuOnLimit": "満貫以上で符を無視",
+    "nextHandNote": "出題の変更は次の手から反映されます。",
+    "unavailableWhileOff": "「{}」がオフの間は使用できません。",
+    "exactFu": "符の切り上げなし",
+    "language": "言語",
+    "handId": "手牌ID：",
+    "showTileNames": "牌の名前を表示",
+    "fancyTiles": "立体的な牌を使う",
+    "highContrast": "ハイコントラスト",
+    "homeScreenIcon": "ホーム画面のアイコン",
+    "installApp": "アプリをインストール",
+    "installFromShareSheet": "アプリをインストールするには、「共有」をタップしてから「ホーム画面に追加」をタップします。",
+    "installFromMenu": "アプリをインストールするには、メニューを開いて「インストール」をタップします。",
+    "iconColors": {
+      "dark": "ダーク",
+      "deep-mat-green": "深緑",
+      "mat-green": "緑",
+      "teal": "ティール",
+      "mat-blue": "青",
+      "deep-mat-blue": "紺",
+      "jade": "翡翠",
+      "cyan": "シアン",
+      "indigo": "藍",
+      "deep-indigo": "濃藍",
+      "ruby": "ルビー",
+      "red": "赤"
+    }
   },
   "winRate": {
     "correct": "正解",
+    "hand": "手牌",
+    "handShort": "手牌",
     "wrong": "不正解",
     "rate": "正解率"
+  },
+  "handLink": {
+    "copy": "この問題へのリンクをコピー",
+    "copied": "リンクをコピーしました",
+    "failed": "リンクをコピーできませんでした"
   },
   "footer": {
     "logIssues": "問題を報告"
@@ -137,5 +205,33 @@
     "tsumoDealer": "ツモ（親）",
     "roundUp": "切り上げ: {} (+{})",
     "honba": "本場: {} (+{})"
+  },
+  "tiles": {
+    "back": "裏向きの牌",
+    "called": "{}（鳴き）",
+    "red": "赤{}",
+    "suits": {
+      "m": "{}萬",
+      "p": "{}筒",
+      "s": "{}索"
+    },
+    "honors": {
+      "1": "東",
+      "2": "南",
+      "3": "西",
+      "4": "北",
+      "5": "白",
+      "6": "發",
+      "7": "中"
+    },
+    "labels": {
+      "1": "東",
+      "2": "南",
+      "3": "西",
+      "4": "北",
+      "5": "白",
+      "6": "發",
+      "7": "中"
+    }
   }
 }
