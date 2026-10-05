@@ -1,6 +1,6 @@
 # Translation Guide
 
-This project supports multiple languages to make the Mahjong Scoring Trainer accessible to more users. Translations are managed through JSON files and localized markdown help pages.
+This project supports multiple languages to make the Riichi Scoring Trainer accessible to more users. Translations are managed through JSON files and localized markdown help pages.
 
 ## Current Languages
 
@@ -16,6 +16,7 @@ This project supports multiple languages to make the Mahjong Scoring Trainer acc
 UI text translations are stored in JSON files in `src/i18n/translations/`.
 
 **File structure:**
+
 ```
 src/i18n/translations/
 ├── en.json    # English translations
@@ -28,18 +29,18 @@ src/i18n/translations/
 
 1. Create a new JSON file: `src/i18n/translations/{language-code}.json`
 2. Copy the structure from `en.json` and translate all the values
-3. Update `src/i18n/I18nContext.js`:
+3. Update `src/i18n/I18nContext.jsx`:
    - Add your language to the `LANGUAGES` object
    - Import your translation file
    - Add it to the `translations` object
 
 **Translation file structure example:**
+
 ```json
 {
   "common": {
-    "yes": "Yes",
-    "no": "No",
-    "apply": "Apply"
+    "close": "Close",
+    "help": "Help"
   },
   "buttons": {
     "checkAnswer": "Check Answer",
@@ -58,6 +59,7 @@ src/i18n/translations/
 Help pages are markdown files in `src/helpPages/`.
 
 **File naming convention:**
+
 - `scoring.en.md` - English help page
 - `scoring.ja.md` - Japanese help page
 - `scoring.{language-code}.md` - New language help page
@@ -71,8 +73,9 @@ Help pages are markdown files in `src/helpPages/`.
 5. Add a translation note at the top if the page was AI-translated
 
 **Example translation note (in target language):**
+
 ```markdown
-> **About this translation**: This page has been translated by AI to make it more accessible. If you notice any issues with the translations, please report them on [GitHub](https://github.com/Varantha/Mahjong-ScoringTrainer/).
+> **About this translation**: This page has been translated by AI to make it more accessible. If you notice any issues with the translations, please report them on [GitHub](https://github.com/zack/riichi).
 ```
 
 ### 3. Using Special Formatting
@@ -80,6 +83,7 @@ Help pages are markdown files in `src/helpPages/`.
 **Furigana (for Japanese):**
 
 Use HTML `<ruby>` tags to add pronunciation guides:
+
 ```markdown
 <ruby>三元牌<rt>サンゲンハイ</rt></ruby>
 ```
@@ -96,7 +100,7 @@ This displays as: 三元牌 with サンゲンハイ above it.
 
 ## Testing Your Translation
 
-1. Start the development server: `npm run start`
+1. Start the development server: `npm run dev`
 2. Open the language selector in the options menu
 3. Select your language
 4. Check all UI elements and help pages

@@ -1,5 +1,3 @@
-# :mahjong: 점수 관련 도움 :mahjong:
-
 ## 룰
 
 이 사이트에서 사용되는 모든 손패들은 천봉 게임 로그에서 추출했기에, 이 사이트의 룰은 천봉 게임 룰을 따릅니다.
@@ -20,7 +18,7 @@
 
 만약에 승리 배치를 여러가지로 볼 수 있을 때, 그 중 가장 판수가 높은 것을 따릅니다.
 
-참고로, 해당 사이트는 너무 쉽기 때문에 역만이 나오지 않습니다.
+참고로, 해당 사이트에는 10판을 넘는 패가 나오지 않습니다.
 
 하단에서 역이 갖고 있는 판수를 확인했습니다.
 
@@ -251,9 +249,7 @@
 
 처음에는 기본 점수를 구해야합니다.
 
-```latex
-	\text{기본점수} = \text{부} \times 2^{2+\text{판}}
-```
+<math><mtext>기본점수</mtext><mo>=</mo><mtext>부</mtext><mo>×</mo><msup><mn>2</mn><mrow><mn>2</mn><mo>+</mo><mtext>판</mtext></mrow></msup></math>
 <br />
 
 ### 만관
@@ -298,3 +294,9 @@
 ![점수표](./img/riichi-scoring.webp)
 
 판수랑 부수만 확인해서 최종 점수를 확인할 수가 있습니다.
+
+## 크레딧
+
+이 사이트는 Varantha 님의 [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer)를 포크한 것입니다. 패, 점수 계산 로직, 이 도움말 페이지는 모두 원본에서 가져온 것입니다.
+
+입체 패는 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 님의 작품이며, 일부는 Jerry Crimson Mann 님과 Dewclouds 님의 원작을 다시 만든 것입니다. [위키미디어 공용](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)에 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)으로 공개되어 있습니다. 이 사이트에서는 파일 크기를 줄였으며, 뒷면 패와 앱 아이콘은 이 패들을 바탕으로 만들었습니다.

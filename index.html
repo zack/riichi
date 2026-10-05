@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      Chrome prefers the .ico over the SVG unless the .ico has a sizes
+      attribute.
+    -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Radix's light --color-background -->
+    <meta name="theme-color" content="#ffffff" />
+    <!--
+      Sets the theme and contrast classes before first paint so a dark page
+      doesn't flash white while the app loads.
+    -->
+    <script>
+      try {
+        var appearance = localStorage.getItem('mahjong-appearance');
+        var deviceIsDark = matchMedia('(prefers-color-scheme: dark)').matches;
+        var contrast = localStorage.getItem('mahjong-contrast');
+        var deviceIsHighContrast = matchMedia(
+          '(prefers-contrast: more)',
+        ).matches;
+        var isDark = appearance === 'dark' || (!appearance && deviceIsDark);
+        var isHighContrast =
+          contrast === 'high' || (!contrast && deviceIsHighContrast);
+        if (isHighContrast) {
+          document.documentElement.classList.add('high-contrast');
+        }
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          // Radix's dark --slate-4, the dark page color, or --slate-1 for
+          // high contrast
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute('content', isHighContrast ? '#111113' : '#272a2d');
+        }
+      } catch (e) {}
+    </script>
+    <meta
+      name="description"
+      content="Web site created to help you practice scoring in riichi mahjong"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://riichi.youngren.io/" />
+    <meta property="og:title" content="Riichi Scoring Trainer" />
+    <meta
+      property="og:description"
+      content="Web site created to help you practice scoring in riichi mahjong."
+    />
+    <meta
+      property="og:image"
+      content="https://riichi.youngren.io/icon512-maskable.png"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Riichi Scoring Trainer</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

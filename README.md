@@ -1,37 +1,82 @@
-# Riichi Mahjong Score Trainer
+# Riichi Scoring Trainer
 
-A web application to help people practice scoring in Riichi Mahjong. All winning hands are taken from Tenhou logs using the python scripts in [https://github.com/Varantha/Mahjong-LogParser](https://github.com/Varantha/Mahjong-LogParser)
+A web app for practicing scoring in riichi mahjong. It deals you a winning hand, and you work out the han, the fu, and the points.
 
-<img src="scoring-trainer.png" alt="Scoring Trainer Screenshot" width="70%" />
+<table>
+  <tr>
+    <th valign="middle">Light mode, before showing the answer</th>
+    <th valign="middle">Dark mode, with more options turned on,<br />showing the answer</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="screenshot-light.png" alt="The trainer in light mode, showing a hand with a concealed kan and a han and fu picked but not checked yet" width="380" /></td>
+    <td align="center" valign="top"><img src="screenshot-dark.png" alt="The trainer in dark mode with the fancy tiles and the tile names, showing a riichi hand won by tsumo with a concealed kan, uradora, and honba, and the answer box with the points from the dealer and from the others" width="380" /></td>
+  </tr>
+</table>
 
-## Site URL
+# FAQ
 
-https://scoringtrainer.konbamwa.net/
+## Where did this come from?
 
-## Translations
+This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer), which lives at https://scoringtrainer.konbamwa.net/. The hands, the scoring logic, the help page, and the translations are all Varantha's work and the work of the people who contributed there.
 
-This site supports multiple languages! Currently available:
-- English
-- Japanese (日本語)
-- Korean (한국어)
-- Chinese(Simplified) (中文简体)
+## Where do the hands come from?
 
-Want to help translate the site into another language? Check out the [Translation Guide](TRANSLATION_GUIDE.md) for detailed instructions on how to contribute translations.
+All hands are taken directly from the [original repository](https://github.com/Varantha/Mahjong-ScoringTrainer), which themselves came from Tenhou logs.
 
-## Contributions
+## What languages does it support?
 
-Contributions are welcome! Feel free to open an issue or submit a pull request if you'd like to improve the project or suggest new features.
+English, Japanese (日本語), Korean (한국어), and Chinese (Simplified) (中文简体).
 
-## Thanks to
+All of the non-english text is computer generated. If you'd like to provide translation support, please reach out, or check out the [Translation Guide](TRANSLATION_GUIDE.md).
 
-Work was inspired / made possible by the following people:
+# Running it locally
 
-<a href="https://github.com/Euophrys"><img src="https://github.com/Euophrys.png?size=50" width="50" height="50" alt="Euophrys" style="border-radius: 50%;" /></a>
-<a href="https://github.com/ApplySci"><img src="https://github.com/ApplySci.png?size=50" width="50" height="50" alt="ApplySci" style="border-radius: 50%;" /></a>
-<a href="https://github.com/MahjongRepository"><img src="https://github.com/MahjongRepository.png?size=50" width="50" height="50" alt="MahjongRepository" style="border-radius: 50%;" /></a>
-<a href="https://github.com/NegativeMjark"><img src="https://github.com/NegativeMjark.png?size=50" width="50" height="50" alt="NegativeMjark" style="border-radius: 50%;" /></a>
-<a href="https://github.com/FluffyStuff"><img src="https://github.com/FluffyStuff.png?size=50" width="50" height="50" alt="FluffyStuff" style="border-radius: 50%;" /></a>
-<a href="https://github.com/Elthron"><img src="https://github.com/Elthron.png?size=50" width="50" height="50" alt="Elthron" style="border-radius: 50%;" /></a>
-<a href="https://github.com/fathoms"><img src="https://github.com/fathoms.png?size=50" width="50" height="50" alt="fathoms" style="border-radius: 50%;" /></a>
+1. Clone the repo
+   ```sh
+   git clone git@github.com:zack/riichi.git
+   cd riichi
+   ```
+1. Install the dependencies
+   ```sh
+   npm install
+   ```
+1. Start the dev server. It prints the address to open, usually http://localhost:5173
+   ```sh
+   npm run dev
+   ```
+1. Or make a production build, which lands in `dist/`, and serve it
+   ```sh
+   npm run build
+   npm run preview
+   ```
+
+The service worker that makes it work offline only runs in a production build.
+
+# Testing
+
+There are Cypress tests for the scoring, for accessibility, and for how it looks. They run in Chrome against the production build on port 5173.
+
+1. Build and serve the app
+   ```sh
+   npm run build
+   npm run preview -- --port 5173
+   ```
+1. Run the tests
+   ```sh
+   npm run cypress:cli
+   ```
+
+The visual tests compare screenshots against the ones in `cypress/snapshots/base`. If you changed how something looks on purpose, take new ones and commit them.
+
+```sh
+npm run cypress:update-snapshots
+```
+
+# Special Thanks
+
+- [Varantha](https://github.com/Varantha) for the original trainer and the log parser.
+- [escheraz](https://github.com/escheraz) for the exact fu option.
+- [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) for the fancy tiles, which are on Wikimedia Commons under CC BY-SA 4.0. The details are in [their folder](public/assets/tiles/fancy/README.md).
+- The people the original thanks: [Euophrys](https://github.com/Euophrys), [ApplySci](https://github.com/ApplySci), [MahjongRepository](https://github.com/MahjongRepository), [NegativeMjark](https://github.com/NegativeMjark), [FluffyStuff](https://github.com/FluffyStuff), [Elthron](https://github.com/Elthron), and [fathoms](https://github.com/fathoms).
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)

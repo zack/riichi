@@ -1,6 +1,4 @@
-# :mahjong: 点数计算帮助 :mahjong:
-
-> **关于翻译**：为方便更多人阅读，本页面通过Gemini进行AI翻译后，经人工重新润色修改。如发现翻译问题，请在[GitHub](https://github.com/Varantha/Mahjong-ScoringTrainer/)上反馈。
+> **关于翻译**：为方便更多人阅读，本页面通过Gemini进行AI翻译后，经人工重新润色修改。如发现翻译问题，请在[GitHub](https://github.com/zack/riichi)上反馈。
 
 ## 规则
 
@@ -22,7 +20,7 @@
 
 如果一手牌有多种和牌组合，则取点数最高的一种。
 
-注意：由于役满（Yakuman）过于简单，本练习器不包含役满实例。
+注意：本练习器不包含超过10番的手牌。
 
 以下是各项役种的番数指南：
 
@@ -243,7 +241,7 @@
 
 基本分的计算公式如下：
 
-$$\text{基本分} = \text{符数} \times 2^{2+\text{番数}}$$
+<math><mtext>基本分</mtext><mo>=</mo><mtext>符数</mtext><mo>×</mo><msup><mn>2</mn><mrow><mn>2</mn><mo>+</mo><mtext>番数</mtext></mrow></msup></math>
 
 <br />
 
@@ -263,10 +261,10 @@ $$\text{基本分} = \text{符数} \times 2^{2+\text{番数}}$$
 
 ## 计算总分
 
-* **子家自摸**：亲家付 $$2 \times 基本分$$，其余子家各付 $$1 \times 基本分$$。
-* **亲家自摸**：三名子家各付 $$2 \times 基本分$$。
-* **子家荣和**：放铳者支付 $$4 \times 基本分$$。
-* **亲家荣和**：放铳者支付 $$6 \times 基本分$$。
+* **子家自摸**：亲家付 <math><mn>2</mn><mo>×</mo><mtext>基本分</mtext></math>，其余子家各付 <math><mn>1</mn><mo>×</mo><mtext>基本分</mtext></math>。
+* **亲家自摸**：三名子家各付 <math><mn>2</mn><mo>×</mo><mtext>基本分</mtext></math>。
+* **子家荣和**：放铳者支付 <math><mn>4</mn><mo>×</mo><mtext>基本分</mtext></math>。
+* **亲家荣和**：放铳者支付 <math><mn>6</mn><mo>×</mo><mtext>基本分</mtext></math>。
 
 计算出的点数需**向上进位**至最接近的100点。
 
@@ -283,3 +281,9 @@ $$\text{基本分} = \text{符数} \times 2^{2+\text{番数}}$$
 ![Scoring Table](./img/riichi-scoring.webp)
 
 只需根据番数和符数即可查到对应的正确分值。
+
+## 致谢
+
+本站是 Varantha 的 [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) 的分支。牌例、算分逻辑和本帮助页面均来自原项目。
+
+立体牌由 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 绘制，其中一部分是根据 Jerry Crimson Mann 和 Dewclouds 的原作重新制作的。这些牌收录于[维基共享资源](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)，以 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 许可发布。本站压缩了文件大小，背面朝上的牌和应用图标也是以这些牌为基础制作的。

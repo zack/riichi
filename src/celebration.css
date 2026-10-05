@@ -1,0 +1,57 @@
+/* The rainbow border and glow on the Correct counter. Adapted from "Rainbow
+   Color Border Glowing Animated Button" at
+   https://www.css-buttons.com/buttons/142/rainbow-color-border-glowing-animated-button */
+.win-rate {
+  isolation: isolate;
+}
+
+.badge.correct.celebrating::after,
+.badge.correct.celebrating::before {
+  animation: celebrate 1.5s linear forwards;
+  background: linear-gradient(
+    45deg,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000
+  );
+  background-size: 400%;
+  border-radius: calc(var(--radius-2) + 1px);
+  content: '';
+  inset: -1px;
+  position: absolute;
+  z-index: -1;
+}
+
+.badge.correct.celebrating::after {
+  filter: blur(6px);
+}
+
+@keyframes celebrate {
+  from {
+    background-position: 0 0;
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    background-position: 112.5% 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge.correct.celebrating::after,
+  .badge.correct.celebrating::before {
+    display: none;
+  }
+}

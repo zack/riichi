@@ -1,33 +1,69 @@
 {
   "common": {
-    "yes": "Yes",
-    "no": "No",
-    "apply": "Apply"
+    "close": "Close",
+    "darkMode": "Dark mode",
+    "help": "Scoring Help",
+    "skipToMain": "Skip to main content"
   },
   "buttons": {
+    "andHide": "And hide {}",
     "checkAnswer": "Check Answer",
+    "justTellMe": "Just tell me",
     "newHand": "New Hand"
   },
   "quiz": {
+    "correct": "Correct!",
+    "incorrect": "Incorrect",
+    "disabledOnLimit": "Disabled on limit hands",
     "han": "Han",
+    "exactFu": "Exact fu",
     "fu": "Fu",
+    "limits": {
+      "baiman": "Baiman",
+      "haneman": "Haneman",
+      "mangan": "Mangan"
+    },
+    "marks": {
+      "correct": "Correct",
+      "wrong": "Wrong"
+    },
     "points": "Points",
     "pointsFromEach": "Points (from each)",
     "pointsFromNonDealer": "Points (from non-dealer)",
     "pointsFromDealer": "Points (from dealer)",
     "yourAnswer": "Your Answer",
-    "realAnswer": "Real Answer",
-    "noOptionsSelected": "No Test options selected. Please select at least one option in the Options menu."
+    "youPicked": "You picked",
+    "realAnswer": "Answer",
+    "noOptionsSelected": "No test options selected. Select at least one in the Options menu.",
+    "errorPrefix": "Error:",
+    "notANumber": {
+      "fu": "Enter the fu as a number, like 30.",
+      "points": "Enter the points as a number, like 2000."
+    }
+  },
+  "biggerHand": {
+    "open": "Tap the tiles to see them bigger"
+  },
+  "handParts": {
+    "concealed": "Concealed",
+    "wonOnRon": "Won on a ron",
+    "wonOnTsumo": "Won on a tsumo",
+    "meld": "Meld",
+    "melds": "Melds",
+    "meldNumber": "Meld {}"
   },
   "info": {
-    "round": "Round",
-    "seatWind": "Seat Wind",
+    "round": "Round wind",
+    "seatWind": "Seat wind",
+    "doraIndicator": "Dora indicator",
     "doraIndicators": "Dora indicators",
+    "uraDoraIndicator": "Uradora indicator",
     "uraDoraIndicators": "Uradora indicators",
-    "tsumo": "Tsumo",
-    "riichi": "Riichi",
-    "riichiSticks": "Riichi Sticks",
-    "honbaSticks": "Honba Sticks"
+    "tsumo": "Tsumo!",
+    "riichi": "Riichi!",
+    "ron": "Ron!",
+    "honbaStick": "Honba stick",
+    "honbaSticks": "Honba sticks"
   },
   "options": {
     "title": "Test Options",
@@ -37,12 +73,44 @@
     "kiriageMangan": "Kiriage Mangan Mode",
     "testHonba": "Include Honba Sticks",
     "ignoreFuOnLimit": "Ignore Fu on Limit Hands",
-    "language": "Language"
+    "nextHandNote": "Changes to the quiz start with the next hand.",
+    "unavailableWhileOff": "Unavailable while {} is off.",
+    "exactFu": "Exact Fu (No Rounding)",
+    "language": "Language",
+    "handId": "Hand ID:",
+    "showTileNames": "Show Tile Names",
+    "fancyTiles": "Use Fancy Tiles",
+    "highContrast": "High Contrast",
+    "homeScreenIcon": "Home screen icon",
+    "installApp": "Install app",
+    "installFromShareSheet": "To install app, tap \"Share\", then \"Add to Home Screen\".",
+    "installFromMenu": "To install app, tap the menu, then \"Install\".",
+    "iconColors": {
+      "dark": "Dark",
+      "deep-mat-green": "Deep mat green",
+      "mat-green": "Mat green",
+      "teal": "Teal",
+      "mat-blue": "Mat blue",
+      "deep-mat-blue": "Deep mat blue",
+      "jade": "Jade",
+      "cyan": "Cyan",
+      "indigo": "Indigo",
+      "deep-indigo": "Deep indigo",
+      "ruby": "Ruby",
+      "red": "Red"
+    }
   },
   "winRate": {
     "correct": "Correct",
+    "hand": "Hand",
+    "handShort": "H",
     "wrong": "Wrong",
     "rate": "Rate"
+  },
+  "handLink": {
+    "copy": "Copy a link to this hand",
+    "copied": "Link copied",
+    "failed": "Couldn't copy the link"
   },
   "footer": {
     "logIssues": "Log issues on"
@@ -137,5 +205,33 @@
     "tsumoDealer": "Tsumo (dealer)",
     "roundUp": "Round up: {} (+{})",
     "honba": "Honba: {} (+{})"
+  },
+  "tiles": {
+    "back": "Face-down tile",
+    "called": "{} (called)",
+    "red": "red {}",
+    "suits": {
+      "m": "{} man",
+      "p": "{} pin",
+      "s": "{} sou"
+    },
+    "honors": {
+      "1": "East",
+      "2": "South",
+      "3": "West",
+      "4": "North",
+      "5": "White Dragon",
+      "6": "Green Dragon",
+      "7": "Red Dragon"
+    },
+    "labels": {
+      "1": "E",
+      "2": "S",
+      "3": "W",
+      "4": "N",
+      "5": "Wh",
+      "6": "Gr",
+      "7": "Rd"
+    }
   }
 }
