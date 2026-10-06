@@ -1,12 +1,10 @@
 {
   "common": {
     "close": "Close",
-    "darkMode": "Dark mode",
     "help": "Scoring Help",
     "skipToMain": "Skip to main content"
   },
   "buttons": {
-    "andHide": "And hide {}",
     "checkAnswer": "Check Answer",
     "justTellMe": "Just tell me",
     "newHand": "New Hand"
@@ -15,13 +13,18 @@
     "correct": "Correct!",
     "incorrect": "Incorrect",
     "disabledOnLimit": "Disabled on limit hands",
+    "noFuOnLimit": "No fu on limit hands",
+    "linksOpenNewTab": "Links open in a new tab",
+    "opensWiki": "(opens the wiki in a new tab)",
     "han": "Han",
     "exactFu": "Exact fu",
     "fu": "Fu",
     "limits": {
       "baiman": "Baiman",
       "haneman": "Haneman",
-      "mangan": "Mangan"
+      "mangan": "Mangan",
+      "sanbaiman": "Sanbaiman",
+      "yakuman": "Yakuman"
     },
     "marks": {
       "correct": "Correct",
@@ -66,21 +69,20 @@
     "honbaSticks": "Honba sticks"
   },
   "options": {
-    "title": "Test Options",
-    "testHan": "Test Han",
-    "testFu": "Test Fu",
-    "testPoints": "Test Points",
-    "kiriageMangan": "Kiriage Mangan Mode",
-    "testHonba": "Include Honba Sticks",
-    "ignoreFuOnLimit": "Ignore Fu on Limit Hands",
+    "title": "Options",
+    "testHan": "Han",
+    "testFu": "Fu",
+    "testPoints": "Points",
+    "kiriageMangan": "Kiriage mangan",
+    "testHonba": "Honba sticks",
+    "ignoreFuOnLimit": "Skip fu on limit hands",
     "nextHandNote": "Changes to the quiz start with the next hand.",
     "unavailableWhileOff": "Unavailable while {} is off.",
-    "exactFu": "Exact Fu (No Rounding)",
+    "exactFu": "Exact fu, not rounded up",
     "language": "Language",
-    "handId": "Hand ID:",
-    "showTileNames": "Show Tile Names",
-    "fancyTiles": "Use Fancy Tiles",
-    "highContrast": "High Contrast",
+    "showTileNames": "Names on tiles",
+    "fancyTiles": "Fancy tiles",
+    "highContrast": "High contrast",
     "homeScreenIcon": "Home screen icon",
     "installApp": "Install app",
     "installFromShareSheet": "To install app, tap \"Share\", then \"Add to Home Screen\".",
@@ -98,7 +100,21 @@
       "deep-indigo": "Deep indigo",
       "ruby": "Ruby",
       "red": "Red"
-    }
+    },
+    "groups": {
+      "questions": "Ask for",
+      "rules": "Rules",
+      "display": "Display"
+    },
+    "theme": "Theme",
+    "themes": {
+      "device": "Device",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "reportHand": "Report a problem with this hand",
+    "onGitHub": "on GitHub",
+    "opensNewTab": "(opens in a new tab)"
   },
   "winRate": {
     "correct": "Correct",
@@ -111,9 +127,6 @@
     "copy": "Copy a link to this hand",
     "copied": "Link copied",
     "failed": "Couldn't copy the link"
-  },
-  "footer": {
-    "logIssues": "Log issues on"
   },
   "fuDetails": {
     "base": "Base",
@@ -206,6 +219,27 @@
     "roundUp": "Round up: {} (+{})",
     "honba": "Honba: {} (+{})"
   },
+  "scoringTable": {
+    "caption": "Points for a win by ron and by tsumo, by han and fu. The dealer's are on the left and a non-dealer's on the right.",
+    "captionDealer": "Points for a dealer's win by ron and by tsumo, by han and fu.",
+    "captionNonDealer": "Points for a non-dealer's win by ron and by tsumo, by han and fu.",
+    "dealer": "Dealer",
+    "fromEachNonDealer": "from each non-dealer",
+    "fromEachPlayer": "from each player",
+    "fromTheDealer": "from the dealer",
+    "fuRange": "{} to {} fu",
+    "kiriageNote": "Kiriage mangan is on, so 4 han 30 fu and 3 han 60 fu are shown as mangan.",
+    "limitHan": "Han",
+    "name": "Scoring table",
+    "nonDealer": "Non-dealer",
+    "pinfuTsumoOnly": "pinfu tsumo only",
+    "ron": "Ron",
+    "ronOnly": "ron only",
+    "seat": "Winner's seat",
+    "sevenPairsOnly": "seven pairs only",
+    "tsumo": "Tsumo",
+    "tsumoOnly": "tsumo only"
+  },
   "tiles": {
     "back": "Face-down tile",
     "called": "{} (called)",
@@ -232,6 +266,108 @@
       "5": "Wh",
       "6": "Gr",
       "7": "Rd"
+    }
+  },
+  "helpYaku": {
+    "badge": {
+      "closed": "{} han, closed hand required",
+      "han": "{} han",
+      "plus": "{} han, and 1 more when closed"
+    },
+    "families": {
+      "closed": "Closed hand required",
+      "dora": "Dora, which are not yaku",
+      "flushes": "Flushes",
+      "runs": "Simples and runs",
+      "triplets": "Triplets and kans",
+      "value": "Value tiles"
+    },
+    "legend": {
+      "plus": "+1 han when closed"
+    },
+    "unusedNotListed": "Unused yaku are not listed",
+    "yaku": {
+      "akadora": {
+        "description": "Red 5s are dora.",
+        "gloss": "Red five"
+      },
+      "chanta": {
+        "description": "All groups contain a 1, 9, or honor.",
+        "gloss": "Half outside hand"
+      },
+      "chiitoitsu": {
+        "description": "Seven different pairs.",
+        "gloss": "Seven pairs"
+      },
+      "chinitsu": {
+        "description": "Only one suit. (no honors)",
+        "gloss": "Full flush"
+      },
+      "dora": {
+        "description": "Bonus han that do not count as yaku. Score 1 han per dora tile in winning hand. Flip an extra indicator per kan.",
+        "gloss": ""
+      },
+      "honitsu": {
+        "description": "Only one suit plus honors.",
+        "gloss": "Half flush"
+      },
+      "honroutou": {
+        "description": "Only 1s, 9s, and honors. (no 2 through 8)",
+        "gloss": "All terminals and honors"
+      },
+      "iipeikou": {
+        "description": "Two of the exact same run.",
+        "gloss": "Pure double sequence"
+      },
+      "ikkitsuukan": {
+        "description": "The runs 123, 456, and 789 in a suit.",
+        "gloss": "Pure straight"
+      },
+      "junchan": {
+        "description": "All groups contain a 1 or 9. (no honors)",
+        "gloss": "Fully outside hand"
+      },
+      "pinfu": {
+        "description": "A hand worth 0 fu. All runs, with a non-yakuhai pair and a two-sided open wait (like 23, not 12, 13, or 1234).",
+        "gloss": "No points hand"
+      },
+      "riichi": {
+        "description": "1000 point bet. Cannot change your hand, discard draws unless you win. Upon win, reveal and score ura dora.",
+        "gloss": "Ready hand"
+      },
+      "sanankou": {
+        "description": "Three concealed sets. The rest of the hand may be open.",
+        "gloss": "Three concealed triplets"
+      },
+      "sanshokuDoujun": {
+        "description": "The same run in each suit.",
+        "gloss": "Mixed triple sequence"
+      },
+      "shousangen": {
+        "description": "Two sets and a pair of each dragon.",
+        "gloss": "Little three dragons"
+      },
+      "tanyao": {
+        "description": "Only the tiles 2 through 8. (no 1s, 9s, or honors)",
+        "gloss": "All simples"
+      },
+      "toitoi": {
+        "description": "Only sets (triplets or kans), no runs.",
+        "gloss": "All triplets"
+      },
+      "tsumo": {
+        "description": "Draw your winning tile with a closed hand.",
+        "gloss": "Fully concealed hand"
+      },
+      "uradora": {
+        "description": "For riichi wins, tiles under the indicator(s) are additional indicators.",
+        "gloss": ""
+      },
+      "yakuhai": {
+        "description": "A set (triplet or kan) of value honor tiles. Score for each set. Dragons: any of the three dragons. Prevalent wind: the round wind. Seat wind: your seat wind. Dealer is East.",
+        "gloss": "Value triplet",
+        "name": "Yakuhai"
+      }
     }
   }
 }

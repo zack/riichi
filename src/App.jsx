@@ -7,7 +7,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnswerKey } from './components/AnswerKey';
 import { BiggerHand } from './components/BiggerHand';
 import { CopyHandLink } from './components/CopyHandLink';
-import { DarkModeToggle } from './components/DarkModeToggle';
 import { HelpPanel } from './components/HelpPanel';
 import { InfoPanel } from './components/InfoPanel';
 import { OptionsMenu } from './components/OptionsMenu';
@@ -23,9 +22,9 @@ import {
   REVEALED,
   WRONG,
   answerIsCorrect,
+  fuIsIgnored,
   getGradedFields,
   getQuizFields,
-  getSkippedOptionIds,
 } from './scripts/QuizFields';
 import { scrollToBottom } from './scripts/ScrollToBottom';
 import { useNamesOnTiles } from './scripts/TileNames';
@@ -44,6 +43,8 @@ const CARD_COLORS = {
   [WRONG]: 'red',
 };
 const UNANSWERED_CARD_COLOR = 'orange';
+
+const WIDEST_HAND_NUMBER = 80;
 
 const CELEBRATION_INTERVAL = 10;
 
@@ -167,13 +168,25 @@ function App() {
   );
 
   const handleChangeAnswer = (fieldId, value) => {
-    setAnswers((current) => ({ ...current, [fieldId]: value }));
+    setAnswers((current) => {
+      const next = { ...current, [fieldId]: value };
+
+      if (fieldId === 'han' && fuIsIgnored(options, next)) {
+        next.fu = '';
+      }
+
+      return next;
+    });
   };
 
   const handleChangeOption = (optionId, value) => {
     setOptions((current) => ({ ...current, [optionId]: value }));
 
-    if (optionId === EXACT_FU && !checked) {
+    const switchesFuOff = fuIsIgnored(
+      { ...options, [optionId]: value },
+      answers,
+    );
+    if ((optionId === EXACT_FU || switchesFuOff) && !checked) {
       setAnswers((current) => ({ ...current, fu: '' }));
     }
   };
@@ -181,28 +194,17 @@ function App() {
   const handleCheck = () => {
     const gradedFields = getGradedFields(fields, answers);
 
-    const skippedOptionIds = getSkippedOptionIds(fields, answers);
-
-    const shownFields = fields.filter(
-      (field) => !skippedOptionIds.includes(field.optionId),
-    );
-
-    const newOptions = { ...options };
-    skippedOptionIds.forEach((optionId) => {
-      newOptions[optionId] = false;
-    });
-    setCheckedOptions(newOptions);
-
-    if (skippedOptionIds.length > 0) {
-      setOptions(newOptions);
-    }
+    setCheckedOptions({ ...options });
 
     const isCorrect = gradedFields.every((field) =>
       answerIsCorrect(field, answers),
     );
 
-    const realAnswers = shownFields
-      .map((field) => `${field.label}: ${field.answer}`)
+    const realAnswers = fields
+      .map(
+        (field) =>
+          `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`,
+      )
       .join(', ');
 
     if (gradedFields.length === 0) {
@@ -243,7 +245,6 @@ function App() {
               Riichi Scoring Trainer
             </Heading>
             <Flex gap='2'>
-              <DarkModeToggle />
               <OptionsMenu
                 handFile={handFile}
                 handIsChecked={checked}
@@ -252,6 +253,7 @@ function App() {
               />
               <HelpPanel
                 fancyTiles={options.fancyTiles}
+                kiriageMangan={options.kiriageMangan}
                 showNames={options.showTileNames}
               />
             </Flex>
@@ -270,13 +272,20 @@ function App() {
             />
             <Flex align='center' gap='2'>
               <CopyHandLink handFile={handFile} onCopy={setStatusMessage} />
-              <span className='badge hand-number'>
+              <span className='badge hand-count hand-number'>
                 <span>
                   <span className='hand-word'>{t('winRate.hand')}</span>
                   <span aria-hidden='true' className='hand-word-short'>
                     {t('winRate.handShort')}
                   </span>
                   {` #${handNumber + 1}`}
+                </span>
+                <span aria-hidden='true' className='hand-number-sizer'>
+                  <span className='hand-word'>{t('winRate.hand')}</span>
+                  <span className='hand-word-short'>
+                    {t('winRate.handShort')}
+                  </span>
+                  {` #${WIDEST_HAND_NUMBER}`}
                 </span>
               </span>
             </Flex>

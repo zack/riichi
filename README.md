@@ -17,7 +17,7 @@ A web app for practicing scoring in riichi mahjong. It deals you a winning hand,
 
 ## Where did this come from?
 
-This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer), which lives at https://scoringtrainer.konbamwa.net/. The hands, the scoring logic, the help page, and the translations are all Varantha's work and the work of the people who contributed there.
+This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer). The hands and the scoring logic are Varantha's work and the work of the people who contributed there.
 
 ## Where do the hands come from?
 
@@ -77,6 +77,7 @@ npm run cypress:update-snapshots
 - [Varantha](https://github.com/Varantha) for the original trainer and the log parser.
 - [escheraz](https://github.com/escheraz) for the exact fu option.
 - [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) for the fancy tiles, which are on Wikimedia Commons under CC BY-SA 4.0. The details are in [their folder](public/assets/tiles/fancy/README.md).
+- [Aranlyde](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/) for the original source of much of the content in the help menus.
 - The people the original thanks: [Euophrys](https://github.com/Euophrys), [ApplySci](https://github.com/ApplySci), [MahjongRepository](https://github.com/MahjongRepository), [NegativeMjark](https://github.com/NegativeMjark), [FluffyStuff](https://github.com/FluffyStuff), [Elthron](https://github.com/Elthron), and [fathoms](https://github.com/fathoms).
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)

@@ -12,6 +12,8 @@ const TILE_BORDER = 1;
 const TILE_GAP = 0;
 const FANCY_TILE_GAP = 1;
 
+const PLAIN_HAND_TILES = 14;
+
 // These have to match --plain-tile-ratio and --tile-ratio in App.css
 const TILE_RATIO = 4 / 3;
 const FANCY_TILE_RATIO = 255 / 210;
@@ -37,11 +39,22 @@ function TilePanel({ agari, fancy, showNames }) {
     + GROUP_GAP * (groupCount - 1)
     - calledBorderSlack;
 
+  const plainHandGaps = tileGap * (PLAIN_HAND_TILES - 2) + GROUP_GAP;
+
   const style = {
     '--group-gap': `${GROUP_GAP}px`,
+    '--line-tile-width': `calc((100cqw - ${gaps}px) / ${tileWidths})`,
+    '--row-tile-width': `calc((100cqw - ${plainHandGaps}px) / ${PLAIN_HAND_TILES})`,
     '--tile-gap': `${tileGap}px`,
-    '--tile-width': `calc((100cqw - ${gaps}px) / ${tileWidths})`,
   };
+
+  const classNames = ['hand'];
+  if (meldSlots.some((slot) => slot.tiles.length > 1)) {
+    classNames.push('piled');
+  }
+  if (showNames) {
+    classNames.push('named');
+  }
 
   const lastGroupClass = melds.length === 0 ? 'last' : '';
 
@@ -55,7 +68,7 @@ function TilePanel({ agari, fancy, showNames }) {
 
   return (
     <div className='hand-container'>
-      <div className='hand' style={style}>
+      <div className={classNames.join(' ')} style={style}>
         <span
           aria-label={t('handParts.concealed')}
           className='tile-group'

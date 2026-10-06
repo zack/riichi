@@ -1,12 +1,10 @@
 {
   "common": {
     "close": "关闭",
-    "darkMode": "深色模式",
     "help": "点数计算帮助",
     "skipToMain": "跳到主要内容"
   },
   "buttons": {
-    "andHide": "并隐藏{}",
     "checkAnswer": "提交答案",
     "justTellMe": "直接看答案",
     "newHand": "下一题"
@@ -15,13 +13,17 @@
     "correct": "正确！",
     "incorrect": "错误",
     "disabledOnLimit": "满贯以上时禁用",
+    "noFuOnLimit": "满贯以上无符",
+    "linksOpenNewTab": "链接会在新标签页中打开",
     "han": "番",
     "exactFu": "精确符数",
     "fu": "符",
     "limits": {
       "baiman": "倍满",
       "haneman": "跳满",
-      "mangan": "满贯"
+      "mangan": "满贯",
+      "sanbaiman": "三倍满",
+      "yakuman": "累计役满"
     },
     "marks": {
       "correct": "正确",
@@ -66,20 +68,19 @@
     "honbaSticks": "本场棒"
   },
   "options": {
-    "title": "网站选项",
-    "testHan": "番数计算练习",
-    "testFu": "符数计算练习",
-    "testPoints": "点数计算练习",
-    "kiriageMangan": "切上满贯模式",
-    "testHonba": "包含本场棒",
+    "title": "选项",
+    "testHan": "番数",
+    "testFu": "符数",
+    "testPoints": "点数",
+    "kiriageMangan": "切上满贯",
+    "testHonba": "本场棒",
     "ignoreFuOnLimit": "满贯免算符",
     "nextHandNote": "题目的更改从下一手牌开始生效。",
     "unavailableWhileOff": "「{}」关闭时不可用。",
     "exactFu": "精确符数（不进位）",
     "language": "语言",
-    "handId": "手牌ID：",
-    "showTileNames": "显示牌名",
-    "fancyTiles": "使用立体牌",
+    "showTileNames": "牌名",
+    "fancyTiles": "立体牌",
     "highContrast": "高对比度",
     "homeScreenIcon": "主屏幕图标",
     "installApp": "安装应用",
@@ -98,7 +99,21 @@
       "deep-indigo": "深靛蓝",
       "ruby": "宝石红",
       "red": "红色"
-    }
+    },
+    "groups": {
+      "questions": "出题项目",
+      "rules": "规则",
+      "display": "显示"
+    },
+    "theme": "主题",
+    "themes": {
+      "device": "跟随设备",
+      "light": "浅色",
+      "dark": "深色"
+    },
+    "reportHand": "报告这手牌的问题",
+    "onGitHub": "(GitHub)",
+    "opensNewTab": "（在新标签页中打开）"
   },
   "winRate": {
     "correct": "正确",
@@ -111,9 +126,6 @@
     "copy": "复制这手牌的链接",
     "copied": "已复制链接",
     "failed": "无法复制链接"
-  },
-  "footer": {
-    "logIssues": "项目issue地址"
   },
   "fuDetails": {
     "base": "底符",
@@ -206,6 +218,27 @@
     "roundUp": "向上取整: {} (+{})",
     "honba": "本场: {} (+{})"
   },
+  "scoringTable": {
+    "caption": "按番数和符数列出荣和与自摸的点数。左侧为亲家，右侧为子家。",
+    "captionDealer": "按番数和符数列出亲家荣和与自摸的点数。",
+    "captionNonDealer": "按番数和符数列出子家荣和与自摸的点数。",
+    "dealer": "亲家",
+    "fromEachNonDealer": "每位子家支付",
+    "fromEachPlayer": "每人支付",
+    "fromTheDealer": "亲家支付",
+    "fuRange": "{}～{}符",
+    "kiriageNote": "切上满贯已开启，因此 4番30符和 3番60符按满贯显示。",
+    "limitHan": "番",
+    "name": "点数表",
+    "nonDealer": "子家",
+    "pinfuTsumoOnly": "仅平和自摸",
+    "ron": "荣和",
+    "ronOnly": "仅荣和",
+    "seat": "和牌者",
+    "sevenPairsOnly": "仅七对子",
+    "tsumo": "自摸",
+    "tsumoOnly": "仅自摸"
+  },
   "tiles": {
     "back": "背面牌",
     "called": "{}（副露）",
@@ -232,6 +265,108 @@
       "5": "白",
       "6": "发",
       "7": "中"
+    }
+  },
+  "helpYaku": {
+    "badge": {
+      "closed": "{}番，须门前",
+      "han": "{}番",
+      "plus": "{}番，门前时加1番"
+    },
+    "families": {
+      "closed": "仅限门前",
+      "dora": "宝牌（不是役）",
+      "flushes": "一色",
+      "runs": "断幺九与顺子",
+      "triplets": "刻子与杠子",
+      "value": "役牌"
+    },
+    "legend": {
+      "plus": "门前时+1番"
+    },
+    "unusedNotListed": "未使用的役种没有列出",
+    "yaku": {
+      "akadora": {
+        "description": "红5是宝牌。",
+        "gloss": ""
+      },
+      "chanta": {
+        "description": "所有的面子和雀头都包含1、9或字牌。",
+        "gloss": ""
+      },
+      "chiitoitsu": {
+        "description": "七个不同的对子。",
+        "gloss": ""
+      },
+      "chinitsu": {
+        "description": "只有一种花色的数牌。（没有字牌）",
+        "gloss": ""
+      },
+      "dora": {
+        "description": "额外的番，不算作役。和牌的手牌中每有一张宝牌计1番。每开一次杠，多翻开一张指示牌。",
+        "gloss": ""
+      },
+      "honitsu": {
+        "description": "只有一种花色的数牌和字牌。",
+        "gloss": ""
+      },
+      "honroutou": {
+        "description": "只有1、9和字牌。（没有2到8）",
+        "gloss": ""
+      },
+      "iipeikou": {
+        "description": "两组完全相同的顺子。",
+        "gloss": ""
+      },
+      "ikkitsuukan": {
+        "description": "同一种花色的顺子123、456、789。",
+        "gloss": ""
+      },
+      "junchan": {
+        "description": "所有的面子和雀头都包含1或9。（没有字牌）",
+        "gloss": ""
+      },
+      "pinfu": {
+        "description": "0符的手牌。全部是顺子，雀头不是役牌，并且是两面听牌（如23，而不是12、13或1234）。",
+        "gloss": ""
+      },
+      "riichi": {
+        "description": "支付1000点供托。不能再改变手牌，摸到的牌若不能和牌就必须打出。和牌时翻开里宝牌并计番。",
+        "gloss": ""
+      },
+      "sanankou": {
+        "description": "三个暗刻。手牌的其余部分可以副露。",
+        "gloss": ""
+      },
+      "sanshokuDoujun": {
+        "description": "三种花色各有相同的顺子。",
+        "gloss": ""
+      },
+      "shousangen": {
+        "description": "三种三元牌组成两个刻子和一个雀头。",
+        "gloss": ""
+      },
+      "tanyao": {
+        "description": "只有2到8的牌。（没有1、9和字牌）",
+        "gloss": ""
+      },
+      "toitoi": {
+        "description": "只有刻子（或杠子），没有顺子。",
+        "gloss": ""
+      },
+      "tsumo": {
+        "description": "门前状态下自己摸到和牌的牌。",
+        "gloss": ""
+      },
+      "uradora": {
+        "description": "立直和牌时，指示牌下面的牌也作为指示牌。",
+        "gloss": ""
+      },
+      "yakuhai": {
+        "description": "役牌字牌的刻子（或杠子）。每组各计一次。三元牌：三种中的任意一种。场风牌：当前的场风。自风牌：自己座位的风。亲家是东。",
+        "gloss": "",
+        "name": "役牌"
+      }
     }
   }
 }

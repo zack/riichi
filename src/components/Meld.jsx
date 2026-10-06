@@ -18,16 +18,17 @@ function Meld({ fancy, name, showNames, slots }) {
   return (
     <span aria-label={name} className='tile-group' role='group'>
       {slots.map(({ called, tiles }, slotIndex) => (
-        <span className='tile-slot' key={slotIndex}>
+        <span
+          className={tiles.length > 1 ? 'tile-slot pile' : 'tile-slot'}
+          key={slotIndex}
+        >
           {tiles.map((tile, index) => (
             <Tile
               alt={getMeldTileName(called, tile, t)}
               called={called}
               key={index}
               label={
-                showNames && index === 0
-                  ? TileConversion.tileToLabel(tile, t)
-                  : undefined
+                showNames ? TileConversion.tileToLabel(tile, t) : undefined
               }
               path={TileConversion.tileToPath(tile, fancy)}
             />

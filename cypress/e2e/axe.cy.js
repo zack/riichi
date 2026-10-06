@@ -1,6 +1,7 @@
 import 'cypress-axe';
 import en from '../../src/i18n/translations/en.json';
 import ja from '../../src/i18n/translations/ja.json';
+import { switchToDarkMode } from '../support/options';
 import { waitForAnimations } from '../support/wait';
 
 const RON_HAND_PAGE = '/?hand=2011010101gm-00a9-0000-370cfc0a2';
@@ -41,6 +42,9 @@ function getContrast(foreground, background) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+// Same as TABS in src/components/HelpPanel.jsx
+const HELP_TABS = ['steps', 'yaku', 'table', 'site'];
+
 const checkPages = ({ exactFu = false, strings = en } = {}) => {
   it('should pass the homepage', () => {
     cy.injectAxe();
@@ -77,18 +81,22 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     cy.checkA11y();
   });
 
-  it('should pass the help dialog', () => {
-    cy.get(`button[aria-label="${strings.common.help}"]`).click();
-    cy.get('.help-title').should('be.visible');
-    waitForAnimations();
-    cy.injectAxe();
-    cy.checkA11y();
+  HELP_TABS.forEach((tab, index) => {
+    it(`should pass the help dialog's ${tab} tab`, () => {
+      cy.get(`button[aria-label="${strings.common.help}"]`).click();
+      cy.get('.help-title').should('be.visible');
+      cy.get('.help-tabs [role="tab"]').eq(index).click();
+      cy.get(`.help-${tab}`).should('exist');
+      waitForAnimations();
+      cy.injectAxe();
+      cy.checkA11y();
+    });
   });
 };
 
 const turnOnHighContrast = () => {
-  cy.get('button[aria-label="Test Options"]').click();
-  cy.contains('label', 'High Contrast').click();
+  cy.get('button[aria-label="Options"]').click();
+  cy.contains('label', 'High contrast').click();
   cy.contains('button', 'Close').click();
   cy.get('html').should('have.class', 'high-contrast');
 };
@@ -105,8 +113,7 @@ describe('aXe Tests', () => {
   describe('Dark mode', () => {
     beforeEach(() => {
       cy.visit(RON_HAND_PAGE);
-      cy.get('button[aria-label="Dark mode"]').click();
-      cy.get('html').should('have.class', 'dark');
+      switchToDarkMode();
     });
 
     checkPages();
@@ -124,8 +131,7 @@ describe('aXe Tests', () => {
   describe('High contrast, dark mode', () => {
     beforeEach(() => {
       cy.visit(RON_HAND_PAGE);
-      cy.get('button[aria-label="Dark mode"]').click();
-      cy.get('html').should('have.class', 'dark');
+      switchToDarkMode();
       turnOnHighContrast();
     });
 
