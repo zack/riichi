@@ -30,9 +30,16 @@ function fuIsIgnored(options, answers) {
   );
 }
 
+function fuHasNoAnswer(agari, options) {
+  return (
+    options.ignoreFuOnLimit && options.testHan && agari.han > MAX_NON_LIMIT_HAN
+  );
+}
+
 function getQuizFields(agari, options, points, answers, t) {
   const fields = [];
   const fuIgnored = fuIsIgnored(options, answers);
+  const fuUnanswerable = fuHasNoAnswer(agari, options);
 
   if (options.testHan) {
     fields.push({
@@ -47,7 +54,7 @@ function getQuizFields(agari, options, points, answers, t) {
 
   if (options.testFu && options.exactFu) {
     fields.push({
-      answer: String(getExactFu(agari)),
+      answer: fuUnanswerable ? '' : String(getExactFu(agari)),
       id: 'fu',
       ignored: fuIgnored,
       label: t('quiz.exactFu'),
@@ -56,7 +63,7 @@ function getQuizFields(agari, options, points, answers, t) {
     });
   } else if (options.testFu) {
     fields.push({
-      answer: String(agari.fu),
+      answer: fuUnanswerable ? '' : String(agari.fu),
       choiceRows: FU_CHOICE_ROWS,
       id: 'fu',
       ignored: fuIgnored,
@@ -149,25 +156,6 @@ function getGradedFields(fields, answers) {
   });
 }
 
-function getSkippedOptionIds(fields, answers) {
-  const gradedFields = getGradedFields(fields, answers);
-  const skippedOptionIds = [];
-
-  if (gradedFields.length > 0) {
-    fields.forEach((field) => {
-      if (
-        !field.ignored
-        && !gradedFields.includes(field)
-        && !skippedOptionIds.includes(field.optionId)
-      ) {
-        skippedOptionIds.push(field.optionId);
-      }
-    });
-  }
-
-  return skippedOptionIds;
-}
-
 export {
   CORRECT,
   REVEALED,
@@ -175,8 +163,9 @@ export {
   WRONG,
   answerIsCorrect,
   answerIsNumber,
+  fuHasNoAnswer,
+  fuIsIgnored,
   getExactFu,
   getGradedFields,
   getQuizFields,
-  getSkippedOptionIds,
 };

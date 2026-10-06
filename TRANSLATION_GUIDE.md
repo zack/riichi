@@ -68,9 +68,9 @@ Help pages are markdown files in `src/helpPages/`.
 
 1. Create a new markdown file: `src/helpPages/scoring.{language-code}.md`
 2. Translate the content from `scoring.en.md`
-3. Keep all tile examples (e.g., `^^234666s45688p567m^^`) unchanged
-4. Keep the same heading structure
-5. Add a translation note at the top if the page was AI-translated
+3. Keep all tile examples (e.g., `^^234666s45688p567m^^`) unchanged, along with the `%%yaku-list%%` and `%%scoring-table%%` markers
+4. Keep the same heading structure. Each `#` heading is the name of a tab, so keep those short
+5. Add a translation note at the top of the last tab if the page was AI-translated
 
 **Example translation note (in target language):**
 
@@ -96,7 +96,7 @@ This displays as: 三元牌 with サンゲンハイ above it.
 2. **Consistency**: Use the same translation for the same term throughout
 3. **Completeness**: Translate all content - the translated page should match the English version exactly
 4. **Tile Examples**: Keep tile notation unchanged (e.g., `^^234s^^`)
-5. **Code/Settings**: Keep code examples and setting names in their original form
+5. **Code/Settings**: Keep code examples in their original form, and write setting names as they appear in the language's JSON file
 
 ## Testing Your Translation
 

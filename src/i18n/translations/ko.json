@@ -1,12 +1,10 @@
 {
   "common": {
     "close": "닫기",
-    "darkMode": "다크 모드",
     "help": "점수 관련 도움",
     "skipToMain": "본문으로 건너뛰기"
   },
   "buttons": {
-    "andHide": "{}도 숨기기",
     "checkAnswer": "정답 확인",
     "justTellMe": "정답 보기",
     "newHand": "새 손패"
@@ -15,13 +13,17 @@
     "correct": "정답!",
     "incorrect": "오답",
     "disabledOnLimit": "만관 이상에서는 비활성",
+    "noFuOnLimit": "만관 이상에서는 부수 없음",
+    "linksOpenNewTab": "링크는 새 탭에서 열립니다",
     "han": "판수",
     "exactFu": "반올림 전 부수",
     "fu": "부수",
     "limits": {
       "baiman": "배만",
       "haneman": "하네만",
-      "mangan": "만관"
+      "mangan": "만관",
+      "sanbaiman": "삼배만",
+      "yakuman": "헤아림 역만"
     },
     "marks": {
       "correct": "정답",
@@ -66,20 +68,19 @@
     "honbaSticks": "장봉"
   },
   "options": {
-    "title": "연습 옵션",
-    "testHan": "판수 계산 연습",
-    "testFu": "부수 계산 연습",
-    "testPoints": "점수 계산 연습",
-    "kiriageMangan": "절상만관 채용",
-    "testHonba": "장봉 포함",
+    "title": "옵션",
+    "testHan": "판수",
+    "testFu": "부수",
+    "testPoints": "점수",
+    "kiriageMangan": "절상만관",
+    "testHonba": "장봉",
     "ignoreFuOnLimit": "5판 이상 부수 무시",
     "nextHandNote": "문제 설정 변경은 다음 패부터 적용됩니다.",
     "unavailableWhileOff": "「{}」 옵션이 꺼져 있는 동안에는 사용할 수 없습니다.",
     "exactFu": "부수 반올림 없음",
     "language": "언어",
-    "handId": "패 ID:",
-    "showTileNames": "패 이름 표시",
-    "fancyTiles": "입체 패 사용",
+    "showTileNames": "패 이름",
+    "fancyTiles": "입체 패",
     "highContrast": "고대비",
     "homeScreenIcon": "홈 화면 아이콘",
     "installApp": "앱 설치",
@@ -98,7 +99,21 @@
       "deep-indigo": "짙은 인디고",
       "ruby": "루비",
       "red": "빨강"
-    }
+    },
+    "groups": {
+      "questions": "출제 항목",
+      "rules": "룰",
+      "display": "화면"
+    },
+    "theme": "테마",
+    "themes": {
+      "device": "기기",
+      "light": "라이트",
+      "dark": "다크"
+    },
+    "reportHand": "이 패의 문제 신고",
+    "onGitHub": "(GitHub)",
+    "opensNewTab": "(새 탭에서 열림)"
   },
   "winRate": {
     "correct": "정답",
@@ -111,9 +126,6 @@
     "copy": "이 패의 링크 복사",
     "copied": "링크를 복사했습니다",
     "failed": "링크를 복사하지 못했습니다"
-  },
-  "footer": {
-    "logIssues": "이슈 제보는"
   },
   "fuDetails": {
     "base": "부저",
@@ -206,6 +218,27 @@
     "roundUp": "올림: {} (+{})",
     "honba": "본장: {} (+{})"
   },
+  "scoringTable": {
+    "caption": "론과 쯔모의 점수를 판수와 부수별로 정리한 표입니다. 왼쪽이 친, 오른쪽이 자입니다.",
+    "captionDealer": "친의 론과 쯔모 점수를 판수와 부수별로 정리한 표입니다.",
+    "captionNonDealer": "자의 론과 쯔모 점수를 판수와 부수별로 정리한 표입니다.",
+    "dealer": "친",
+    "fromEachNonDealer": "자에게서",
+    "fromEachPlayer": "각자에게서",
+    "fromTheDealer": "친에게서",
+    "fuRange": "{}~{}부",
+    "kiriageNote": "절상만관이 켜져 있어 4판 30부와 3판 60부는 만관으로 표시됩니다.",
+    "limitHan": "판",
+    "name": "점수표",
+    "nonDealer": "자",
+    "pinfuTsumoOnly": "핑후 쯔모만",
+    "ron": "론",
+    "ronOnly": "론만",
+    "seat": "화료자의 자리",
+    "sevenPairsOnly": "치또이쯔만",
+    "tsumo": "쯔모",
+    "tsumoOnly": "쯔모만"
+  },
   "tiles": {
     "back": "뒤집힌 패",
     "called": "{} (운 패)",
@@ -232,6 +265,108 @@
       "5": "백",
       "6": "발",
       "7": "중"
+    }
+  },
+  "helpYaku": {
+    "badge": {
+      "closed": "{}판, 멘젠 한정",
+      "han": "{}판",
+      "plus": "{}판, 멘젠이면 +1판"
+    },
+    "families": {
+      "closed": "멘젠 한정",
+      "dora": "도라 (역이 아님)",
+      "flushes": "일색",
+      "runs": "탕야오와 슌쯔",
+      "triplets": "커쯔와 깡쯔",
+      "value": "역패"
+    },
+    "legend": {
+      "plus": "멘젠이면 +1판"
+    },
+    "unusedNotListed": "쓰이지 않는 역은 목록에 없습니다",
+    "yaku": {
+      "akadora": {
+        "description": "붉은 5는 도라.",
+        "gloss": "赤ドラ"
+      },
+      "chanta": {
+        "description": "모든 몸통과 머리에 1, 9 또는 자패가 들어 있음.",
+        "gloss": "混全帯幺九"
+      },
+      "chiitoitsu": {
+        "description": "각기 다른 또이쯔 7개.",
+        "gloss": "七対子"
+      },
+      "chinitsu": {
+        "description": "한 종류의 수패만. (자패 없음)",
+        "gloss": "清一色"
+      },
+      "dora": {
+        "description": "역으로 치지 않는 보너스 판. 화료한 손패의 도라 1장마다 1판. 깡을 할 때마다 표시패를 1장 더 엶.",
+        "gloss": ""
+      },
+      "honitsu": {
+        "description": "한 종류의 수패와 자패만.",
+        "gloss": "混一色"
+      },
+      "honroutou": {
+        "description": "1, 9와 자패만. (2-8 없음)",
+        "gloss": "混老頭"
+      },
+      "iipeikou": {
+        "description": "완전히 같은 슌쯔 2개.",
+        "gloss": "一盃口"
+      },
+      "ikkitsuukan": {
+        "description": "한 종류의 수패로 슌쯔 123, 456, 789.",
+        "gloss": "一気通貫"
+      },
+      "junchan": {
+        "description": "모든 몸통과 머리에 1 또는 9가 들어 있음. (자패 없음)",
+        "gloss": "純全帯幺九"
+      },
+      "pinfu": {
+        "description": "0부짜리 패. 몸통은 모두 슌쯔, 머리는 역패가 아니며, 양면 대기(23 같은 모양. 12, 13, 1234는 안 됨).",
+        "gloss": "平和"
+      },
+      "riichi": {
+        "description": "1000점을 검. 손패를 바꿀 수 없고, 화료가 아니면 쯔모한 패를 그대로 버림. 화료하면 뒷도라를 공개해 셈.",
+        "gloss": "立直"
+      },
+      "sanankou": {
+        "description": "안커 3개. 손패의 나머지는 울어도 됨.",
+        "gloss": "三暗刻"
+      },
+      "sanshokuDoujun": {
+        "description": "세 종류의 수패 각각에 같은 슌쯔.",
+        "gloss": "三色同順"
+      },
+      "shousangen": {
+        "description": "삼원패 세 종류로 커쯔 2개와 머리.",
+        "gloss": "小三元"
+      },
+      "tanyao": {
+        "description": "2-8의 패만. (1, 9와 자패 없음)",
+        "gloss": "断幺九"
+      },
+      "toitoi": {
+        "description": "커쯔(또는 깡쯔)만, 슌쯔 없음.",
+        "gloss": "対々和"
+      },
+      "tsumo": {
+        "description": "멘젠인 손패로 화료패를 쯔모.",
+        "gloss": "門前清自摸和"
+      },
+      "uradora": {
+        "description": "리치하고 화료하면 표시패 아래의 패도 표시패가 됨.",
+        "gloss": ""
+      },
+      "yakuhai": {
+        "description": "역패가 되는 자패의 커쯔(또는 깡쯔). 1개마다 셈. 삼원패: 세 종류 중 어느 것이든. 장풍패: 그 장의 바람. 자풍패: 자기 자리의 바람. 친은 동.",
+        "gloss": "役牌",
+        "name": "역패"
+      }
     }
   }
 }

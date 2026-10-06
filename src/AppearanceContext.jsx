@@ -4,10 +4,15 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const DARK = 'dark';
 const LIGHT = 'light';
 
+const DEVICE = 'device';
+export const APPEARANCE_CHOICES = [DEVICE, LIGHT, DARK];
+
 const HIGH = 'high';
 const NORMAL = 'normal';
 
 const HIGH_CONTRAST = 'high-contrast';
+
+export const ACCENT_COLOR = 'indigo';
 
 const STORAGE_KEY = 'mahjong-appearance';
 const CONTRAST_STORAGE_KEY = 'mahjong-contrast';
@@ -58,6 +63,14 @@ function storeChoice(storageKey, value) {
   }
 }
 
+function forgetChoice(storageKey) {
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {
+    // localStorage is blocked, so there was nothing saved to forget
+  }
+}
+
 function useDeviceSetting(followsDevice, query, onChange) {
   useEffect(() => {
     if (!followsDevice) {
@@ -85,7 +98,6 @@ export function AppearanceProvider({ children }) {
   const [contrastFollowsDevice, setContrastFollowsDevice] = useState(
     () => !playerHasChosen(CONTRAST_STORAGE_KEY),
   );
-  const isDark = appearance === DARK;
   const isHighContrast = contrast === HIGH;
 
   useEffect(() => {
@@ -112,11 +124,18 @@ export function AppearanceProvider({ children }) {
     },
   );
 
-  const toggleDarkMode = () => {
-    const newAppearance = isDark ? LIGHT : DARK;
-    setFollowsDevice(false);
-    storeChoice(STORAGE_KEY, newAppearance);
-    setAppearance(newAppearance);
+  const appearanceChoice = followsDevice ? DEVICE : appearance;
+
+  const chooseAppearance = (choice) => {
+    if (choice === DEVICE) {
+      forgetChoice(STORAGE_KEY);
+      setFollowsDevice(true);
+      setAppearance(matchMedia(DEVICE_DARK_QUERY).matches ? DARK : LIGHT);
+    } else {
+      setFollowsDevice(false);
+      storeChoice(STORAGE_KEY, choice);
+      setAppearance(choice);
+    }
   };
 
   const toggleHighContrast = () => {
@@ -128,9 +147,18 @@ export function AppearanceProvider({ children }) {
 
   return (
     <AppearanceContext.Provider
-      value={{ isDark, isHighContrast, toggleDarkMode, toggleHighContrast }}
+      value={{
+        appearanceChoice,
+        chooseAppearance,
+        isHighContrast,
+        toggleHighContrast,
+      }}
     >
-      <Theme accentColor='indigo' appearance={appearance} grayColor='slate'>
+      <Theme
+        accentColor={ACCENT_COLOR}
+        appearance={appearance}
+        grayColor='slate'
+      >
         {children}
       </Theme>
     </AppearanceContext.Provider>

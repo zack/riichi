@@ -1,312 +1,150 @@
-## Ruleset
+# Steps
 
-All hands on this site have been extracted from Tenhou game logs, so the rules used on this site use Tenhou's ruleset.
+## 1. Han
 
-## Site Options
+Add up every yaku in the hand. The Yaku tab lists them.
 
-A brief overview of the different options on the site: 
+**+1 han** for each dora and each red five.
 
-- `Test Han` - When disabled, you aren't required to calculate Han.
-- `Test Fu` - When disabled, you aren't required to calculate Fu.
-- `Kiriage Mangan Mode` - When enabled, a 4 han and 30 fu hand, as well as a 3 han 60 fu hand, are considered a mangan hand.
-- `Include Honba Sticks` - When enabled, an extra field will be added and you will need to calculate the total score including additional points from honba sticks.
-- `Ignore Fu on Limit Hands` - When enabled, if a hand has 5 or more han then you won't get penalised for an incorrect Fu answer.
+Dora order: ^^9m>1m 1h>2h>3h>4h>1h 5h>6h>7h>5h^^
 
-## Calculating Han
+### Riichi?
 
-Han is the sum of the number of yaku (and their worth) added to the number of dora (ドラ) that are in your hand. 
+The ura dora count too.
 
-If there are multiple winning arrangements of your hand then the arrangement with the highest point value is taken. 
+### 5 or more han?
 
-Note: This trainer does not have any hands above 10 han.
+The fu no longer changes the points. Go to step 5.
 
-See below a guide of how much each Yaku is worth:
+## 2. Group fu
 
-### Yaku List
+### Seven pairs?
 
-Below is a list of all the possible yaku available (excluding ones not available in this trainer) and their yaku scores. The first value is for an open hand, and the second closed. The symbol - means that the yaku is not possible with an open hand. 
+The hand is **25 fu**, and nothing is added to it. Go to step 5.
 
-**Examples**
+### Run?
 
-[-/1] Not possible if open, 1 han is closed  
-[2/3] Two han is open, 3 han if closed
+**0 fu** ^^234s^^
 
-#### Riichi [-/1]
+### Triplet or kan?
 
-Win after calling riichi. 
+**2 fu** ^^888p^^
 
-*This will be indicated in the info panel*
+- ×2 if it wasn't called. A triplet finished by ron counts as called.
+- ×2 if it's 1s, 9s or honors
+- ×4 if it's a kan
 
-#### Menzen Tsumo [-/1]
+## 3. Wait and pair fu
 
-Win by self-draw with a closed hand.
+### Middle or edge wait?
 
-*Tsumo will show in the info panel, but this is only a yaku in a closed hand*
+**2 fu** ^^13m 89m^^
 
-#### Tanyao [1/1]
+### Pair wait?
 
-Win with only number tiles and no terminals (1,9) or honour tiles.
+**2 fu** ^^2s^^
 
-^^234666s45688p567m^^
+A wait on either end of a run, or on either of two pairs, is 0 fu.
 
-#### Pinfu [-/1]
+### Dragon, round wind or seat wind pair?
 
-Win with a hand that consists of only straights and a pair without using yaku tiles. Must be waiting to complete a straight on either side.
+**2 fu**, or 4 if it's both winds
 
-^^123s12345688p567m^^
+## 4. Hand fu
 
-#### Pure Double Chi [-/1]
+Every hand starts at **20 fu**.
 
-Win with two identical straights of the same numbers in the same suit.
+### Closed ron?
 
-^^123123p^^
+**+10 fu**
 
-#### Dragon Triplet [1/1]
+### Tsumo?
 
-Win with a triplet (or kan) of dragon tiles
+**+2 fu**, unless the hand is pinfu
 
-^^666h^^
+### Open, with nothing from steps 2 and 3?
 
-#### Seat Wind Triplet [1/1]
+The hand is **30 fu**.
 
-Win with a triplet (or kan) of your seat wind tiles
+Add steps 2, 3 and 4 together, then **round up to the next 10**.
 
-^^111h^^
+With **Exact fu, not rounded up** on, the answer is the sum before rounding.
 
-#### Round Wind Triplet [1/1]
+## 5. Points
 
-Win with a triplet (or kan) of the round wind tiles
-
-^^444h^^
-
-#### Seven Pairs [-/2]
-
-Win with 7 different pairs
-
-^^22s223388p66m1166h^^
-
-#### Triple Chi [1/2]
-
-Win with the same straight in each suit.
-
-^^123s123p123m^^
-
-#### Pure Straight [1/2]
-
-Win with three straights of the same suit. Forming 1,2,3 and 4,5,6 and 7,8,9.
-
-^^123456789p^^
-
-#### Outside Hand [1/2]
-
-Win with all groups and the pair containing terminals or honour tiles
-
-^^123s123999p123m11h^^
-
-#### Triple Pon [2/2]
-
-Win with three triplets of the same number in each suit
-
-^^333s333p333m^^
-
-#### Three Concealed Pon [2/2]
-
-Win with three triplets, where the triplets are concealed (not taken by pon)
-
-^^111s222p777m^^
-
-#### Three Kan [2/2]
-
-Win with three kan
-
-^^3333s7777p5555m^^
-
-#### All Triplets [2/2]
-
-Win with four triplets (or kan) 
-
-^^333s777p555m66677h^^
-
-#### All Terminals and Honours [2/2]
-
-Win with a hand that only uses terminals and honour tiles
-
-^^111999s999p111m55h^^
-
-#### Little Three Dragons [2/2]
-
-Win with two dragon triples and a pair of dragon tiles
-
-^^55566677h^^
-
-#### Twice Pure Double Chi [-/3]
-
-Win with two identical straights of the same numbers in the same suit
-
-^^456456s123123p^^
-
-#### Half Flush [2/3]
-
-Win using only number tiles from one suit and honour tiles
-
-^^123444666777s55h^^
-
-#### Terminals in All Groups [2/3]
-
-Win with a hand where each tile group has at least one terminal in it
-
-^^111789s123p12399m^^
-
-#### Full Flush [5/6]
-
-Win using only number tiles from one suit
-
-^^1233366677799s^^
-
-### Dora
-
-On top of the han you get for yaku, you get an additional han for each dora tile in your hand. 
-
-A dora tile is the tile that is ordered one after the dora indicator tile. For example, if the dora indicator is `8s` then the dora tile is `9s` and you will get an additional han for each `9s` in your winning hand. 
-
-#### Dragons
-
-The dragon tile's order goes white -> green -> red  (You can remember this as alphabetical order)
-
-^^567h^^
-
-#### Winds
-
-The wind tile's order goes east -> south -> west -> north (the same as the rotational order of a compass)
-
-^^1234h^^
-
-
-<br />
-
-## Calculating Fu
-
-### Win Type 
-
-A winning hand is automatically awarded 20 fu to start with. 
-
-If you have won by Tsumo, add an additional 2 fu.
-
-If you have won by Ron with a closed hand, add an additional 10 fu. 
-
-### Melds
-
-Now you need to calculate the fu you get from your melds. (3+ copies of the same tile)
-
-Their value is shown in the table below:
-
-|Condition | simple tiles | terminal or honor tiles
-|---|--------------|------------------------
-|An open triplet | 2 fu | 4 fu
-|A closed triplet | 4 fu | 8 fu
-|An open kan | 8 fu | 16 fu
-|A closed kan | 16 fu | 32 fu
-
-A simple way to remember this is: 
-
-* Start with 2 fu per meld (a set of 3 or 4 matching tiles)
-* For each meld:
-    * If it's a terminal / honour, double your fu
-    * If it's a closed meld, double your fu
-    * If it's a kan, double your fu twice (or x4)
-
-### Pairs
-
-You get an additional +2 Fu if your pair is a: 
-
-- Seat Wind
-- Round Wind
-- Dragon Tile
-
-Note that if your pair is both the Seat Wind and Round Wind then that counts as +4 fu
-
-### Winning wait
-
-You get additional fu depending on the shape of your hand whilst waiting for your last tile. 
-
-Simply: 
-
-- If you are waiting on a single type of tile to complete your hand, +2 fu
-- If you are waiting on 2 or more types of tiles to complete your hand, +0 fu
-
-### Rounding
-
-Finally round your fu score up to the next 10. 
-
-*That means if you have 32 fu, you still round up to 40.*
-
-This is your final fu score. 
-
-### Exceptions
-
-There are a couple of fu exceptions to learn:
-
-- A Seven Pairs hand is always worth 25 fu (You do not round up)
-- A Pinfu hand won by Tsumo is always 20 fu
-- A Pinfu hand won by ron is always 30 fu
-
-## Calculating Basic Points
-
-First we'll go through how points are actually calculated. 
-
-Initially we need to work out the basic points which you get using this function:
+Look the han and fu up in the Table tab, or work the points out:
 
 <math><mtext>basic points</mtext><mo>=</mo><mtext>fu</mtext><mo>×</mo><msup><mn>2</mn><mrow><mn>2</mn><mo>+</mo><mtext>han</mtext></mrow></msup></math>
-<br />
 
-## Mangans
+More than 2,000 counts as 2,000, which is mangan. The bigger limits have basic points of their own: 3,000 at 6 and 7 han, 4,000 at 8 to 10, 6,000 at 11 and 12, and 8,000 from 13 up.
 
-When it is clear that your basic points calculation is over 2,000, it is limited to a basic point value of 2,000 and called mangan.
+- Non-dealer's ron: the discarder pays <math><mn>4</mn><mo>×</mo><mtext>basic points</mtext></math>.
+- Dealer's ron: the discarder pays <math><mn>6</mn><mo>×</mo><mtext>basic points</mtext></math>.
+- Non-dealer's tsumo: the dealer pays <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>, and the other two pay <math><mn>1</mn><mo>×</mo><mtext>basic points</mtext></math> each.
+- Dealer's tsumo: all three pay <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>.
 
-If your basic point calculation is below 2000, feel free to skip this section. 
+Round each payment up to the next 100.
 
-As you get more han, it raises the value of a mangan. You can memorise the values from this table: 
+## 6. Honba
 
-|Name |Han Value| Basic Point Value
-|:----:|:----:|:----:
-|Mangan | 3 han, 70 fu or more <br> 4 han, 40 fu or more <br> 5 han | 2000 
-|Haneman |6-7 han | 3000
-|Baiman | 8-10 han | 4000
-|Sanbaiman | 11-12 han | 6000
-|Kazoe-yakuman | 13+ han | 8000
+For each honba stick, **+300** on a ron, and **+100** from each player on a tsumo.
 
-Now you have your basic point value you can move onto calculating the total points awarded.
+The trainer asks for this only with **Honba sticks** on.
 
-## Calculating Total Points
+## Fu at a glance
 
-Once the basic points are calculated, multiply them depending on the scenario. The four possible scenarios are:
+- **20** every hand. Seven pairs is 25, and nothing is added.
+- **+10** closed ron
+- **+2** tsumo, unless the hand is pinfu
+- **+2** dragon, round wind or seat wind pair. 4 if it's both winds.
+- **+2** middle, edge or pair wait
+- **+2** each triplet. ×2 if not called, ×2 for 1s, 9s or honors, ×4 for a kan.
+- **=** rounded up to the next 10. An open hand with nothing added is 30.
 
-* For a non-dealer tsumo, the dealer pays the winner <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>, and the other two players pay the winner <math><mn>1</mn><mo>×</mo><mtext>basic points</mtext></math>.
-* For a dealer tsumo, all the three non-dealers pay the winner <math><mn>2</mn><mo>×</mo><mtext>basic points</mtext></math>.
-* For a non-dealer ron, the discarding player pays the winner <math><mn>4</mn><mo>×</mo><mtext>basic points</mtext></math>.
-* For a dealer ron, the discarding non-dealer pays the winner <math><mn>6</mn><mo>×</mo><mtext>basic points</mtext></math>.
+# Yaku
 
-Round **up** those points to the nearest 100. 
+%%yaku-list%%
 
-You now have a final score (or two) to input into the trainer. 
+# Table
 
-### (Optional) Honba Sticks
+%%scoring-table%%
 
-If you have the `Include Honba Sticks` setting turned on then you will also need to add additional points to that score. 
-The number of point is calculated by multiplying 300 by the number of Honba Sticks there are. These are then divided up as per the rules above. 
+**More than 70 fu?** At 1 or 2 han, add the figures for two smaller fu, one of them 50: 80 fu is 50 and 30, 90 fu is 50 and 40, and 100 fu is 50 and 50.
 
-<br />
+## Honba
 
-## Scoring table
+For each honba stick, add **300** to a ron, and **100** to what each player pays on a tsumo.
 
-If you don't feel like doing some fairly serious mental arithmetic every time you're scoring, you can also use the point table: 
+# Site
 
-![Scoring Table](./img/riichi-scoring.webp)
+## Rules
 
-Simply look up your han / fu values and it will give you the correct score. 
+Every hand is from a Tenhou game log, and is scored by Tenhou's rules.
+
+## Han, Fu, Points
+
+Select which skills you'd like to test.
+
+## Exact fu, not rounded up
+
+Asks for the exact answer instead of the rounded answer.
+
+## Skip fu on limit hands
+
+Limit hands won't ask for fu.
+
+## Kiriage mangan
+
+4 han 30 fu and 3 han 60 fu count as mangan.
+
+## Honba sticks
+
+Include honba sticks in the quiz.
 
 ## Credits
 
-This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) by Varantha. The hands, the scoring logic, and this help page all come from the original.
+This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) by Varantha. The hands and the scoring logic come from the original.
 
 The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6), some of them remade from originals by Jerry Crimson Mann and Dewclouds. They're on [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The files here have been made smaller, and the face-down tile and the app's icon are made from them.
+
+The steps, the list of yaku and the scoring table are laid out after a reference sheet by Aranlyde, updated by hyperistic, which is under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The explanations of the yaku are the sheet's words. The colors and the numbers are this site's own.

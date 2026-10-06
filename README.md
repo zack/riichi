@@ -17,7 +17,7 @@ A web app for practicing scoring in riichi mahjong. It deals you a winning hand,
 
 ## Where did this come from?
 
-This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer), which lives at https://scoringtrainer.konbamwa.net/. The hands, the scoring logic, the help page, and the translations are all Varantha's work and the work of the people who contributed there.
+This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer). The hands and the scoring logic are Varantha's work and the work of the people who contributed there.
 
 ## Where do the hands come from?
 

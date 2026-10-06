@@ -1,12 +1,10 @@
 {
   "common": {
     "close": "閉じる",
-    "darkMode": "ダークモード",
     "help": "点数計算ヘルプ",
     "skipToMain": "メインコンテンツへスキップ"
   },
   "buttons": {
-    "andHide": "{}も非表示にする",
     "checkAnswer": "回答を確認",
     "justTellMe": "答えを見る",
     "newHand": "次の問題"
@@ -15,13 +13,17 @@
     "correct": "正解！",
     "incorrect": "不正解",
     "disabledOnLimit": "満貫以上では無効",
+    "noFuOnLimit": "満貫以上では符なし",
+    "linksOpenNewTab": "リンクは新しいタブで開きます",
     "han": "翻",
     "exactFu": "切り上げ前の符",
     "fu": "符",
     "limits": {
       "baiman": "倍満",
       "haneman": "跳満",
-      "mangan": "満貫"
+      "mangan": "満貫",
+      "sanbaiman": "三倍満",
+      "yakuman": "数え役満"
     },
     "marks": {
       "correct": "正解",
@@ -66,20 +68,19 @@
     "honbaSticks": "本場棒"
   },
   "options": {
-    "title": "テストオプション",
-    "testHan": "翻をテスト",
-    "testFu": "符をテスト",
-    "testPoints": "点数をテスト",
-    "kiriageMangan": "切り上げ満貫モード",
-    "testHonba": "本場棒を含む",
+    "title": "オプション",
+    "testHan": "翻",
+    "testFu": "符",
+    "testPoints": "点数",
+    "kiriageMangan": "切り上げ満貫",
+    "testHonba": "本場棒",
     "ignoreFuOnLimit": "満貫以上で符を無視",
     "nextHandNote": "出題の変更は次の手から反映されます。",
     "unavailableWhileOff": "「{}」がオフの間は使用できません。",
     "exactFu": "符の切り上げなし",
     "language": "言語",
-    "handId": "手牌ID：",
-    "showTileNames": "牌の名前を表示",
-    "fancyTiles": "立体的な牌を使う",
+    "showTileNames": "牌の名前",
+    "fancyTiles": "立体的な牌",
     "highContrast": "ハイコントラスト",
     "homeScreenIcon": "ホーム画面のアイコン",
     "installApp": "アプリをインストール",
@@ -98,7 +99,21 @@
       "deep-indigo": "濃藍",
       "ruby": "ルビー",
       "red": "赤"
-    }
+    },
+    "groups": {
+      "questions": "出題する項目",
+      "rules": "ルール",
+      "display": "表示"
+    },
+    "theme": "テーマ",
+    "themes": {
+      "device": "端末",
+      "light": "ライト",
+      "dark": "ダーク"
+    },
+    "reportHand": "この手の問題を報告",
+    "onGitHub": "(GitHub)",
+    "opensNewTab": "（新しいタブで開きます）"
   },
   "winRate": {
     "correct": "正解",
@@ -111,9 +126,6 @@
     "copy": "この問題へのリンクをコピー",
     "copied": "リンクをコピーしました",
     "failed": "リンクをコピーできませんでした"
-  },
-  "footer": {
-    "logIssues": "問題を報告"
   },
   "fuDetails": {
     "base": "副底",
@@ -206,6 +218,27 @@
     "roundUp": "切り上げ: {} (+{})",
     "honba": "本場: {} (+{})"
   },
+  "scoringTable": {
+    "caption": "ロンとツモの点数を翻と符ごとにまとめた表です。左が親、右が子です。",
+    "captionDealer": "親のロンとツモの点数を翻と符ごとにまとめた表です。",
+    "captionNonDealer": "子のロンとツモの点数を翻と符ごとにまとめた表です。",
+    "dealer": "親",
+    "fromEachNonDealer": "子から",
+    "fromEachPlayer": "各プレイヤーから",
+    "fromTheDealer": "親から",
+    "fuRange": "{}〜{}符",
+    "kiriageNote": "切り上げ満貫がオンのため、4翻30符と3翻60符は満貫として表示しています。",
+    "limitHan": "翻",
+    "name": "点数表",
+    "nonDealer": "子",
+    "pinfuTsumoOnly": "平和ツモ",
+    "ron": "ロン",
+    "ronOnly": "ロンのみ",
+    "seat": "和了者",
+    "sevenPairsOnly": "七対子",
+    "tsumo": "ツモ",
+    "tsumoOnly": "ツモのみ"
+  },
   "tiles": {
     "back": "裏向きの牌",
     "called": "{}（鳴き）",
@@ -232,6 +265,108 @@
       "5": "白",
       "6": "發",
       "7": "中"
+    }
+  },
+  "helpYaku": {
+    "badge": {
+      "closed": "{}翻、門前のみ",
+      "han": "{}翻",
+      "plus": "{}翻、門前なら＋1翻"
+    },
+    "families": {
+      "closed": "門前のみ",
+      "dora": "ドラ（役ではない）",
+      "flushes": "染め手",
+      "runs": "断么九と順子",
+      "triplets": "刻子と槓子",
+      "value": "役牌"
+    },
+    "legend": {
+      "plus": "門前なら＋1翻"
+    },
+    "unusedNotListed": "使われない役は載せていません",
+    "yaku": {
+      "akadora": {
+        "description": "赤い5はドラ。",
+        "gloss": ""
+      },
+      "chanta": {
+        "description": "すべての面子と雀頭に1・9・字牌のいずれかが含まれる。",
+        "gloss": "チャンタ"
+      },
+      "chiitoitsu": {
+        "description": "異なる対子が7つ。",
+        "gloss": "チートイツ"
+      },
+      "chinitsu": {
+        "description": "1色の数牌のみ。（字牌なし）",
+        "gloss": "チンイツ"
+      },
+      "dora": {
+        "description": "役にはならないボーナスの翻。和了した手牌のドラ1枚につき1翻。槓1回につき表示牌を1枚追加でめくる。",
+        "gloss": ""
+      },
+      "honitsu": {
+        "description": "1色の数牌と字牌のみ。",
+        "gloss": "ホンイツ"
+      },
+      "honroutou": {
+        "description": "1・9・字牌のみ。（2〜8なし）",
+        "gloss": "ホンロウトウ"
+      },
+      "iipeikou": {
+        "description": "まったく同じ順子が2つ。",
+        "gloss": "イーペーコー"
+      },
+      "ikkitsuukan": {
+        "description": "同じ色の順子123・456・789。",
+        "gloss": "イッキツウカン"
+      },
+      "junchan": {
+        "description": "すべての面子と雀頭に1か9が含まれる。（字牌なし）",
+        "gloss": "ジュンチャン"
+      },
+      "pinfu": {
+        "description": "0符の手。すべて順子で、雀頭は役牌以外、待ちは両面（23のような形。12、13、1234は不可）。",
+        "gloss": "ピンフ"
+      },
+      "riichi": {
+        "description": "1000点を供託する。手牌は変えられず、和了でなければツモった牌をそのまま切る。和了したら裏ドラをめくって数える。",
+        "gloss": "リーチ"
+      },
+      "sanankou": {
+        "description": "暗刻が3つ。手牌の残りは鳴いていてもよい。",
+        "gloss": "サンアンコー"
+      },
+      "sanshokuDoujun": {
+        "description": "3色それぞれに同じ順子。",
+        "gloss": "サンショクドウジュン"
+      },
+      "shousangen": {
+        "description": "三元牌3種で刻子2つと雀頭。",
+        "gloss": "ショウサンゲン"
+      },
+      "tanyao": {
+        "description": "2〜8の牌のみ。（1・9・字牌なし）",
+        "gloss": "タンヤオ"
+      },
+      "toitoi": {
+        "description": "刻子（または槓子）のみで、順子なし。",
+        "gloss": "トイトイホー"
+      },
+      "tsumo": {
+        "description": "門前の手で和了牌をツモる。",
+        "gloss": "メンゼンチンツモホー"
+      },
+      "uradora": {
+        "description": "立直して和了した場合、表示牌の下の牌も表示牌になる。",
+        "gloss": ""
+      },
+      "yakuhai": {
+        "description": "役牌となる字牌の刻子（または槓子）。1組ごとに数える。三元牌：3種のどれでも。場風牌：その場の風。自風牌：自分の席の風。親は東。",
+        "gloss": "ヤクハイ",
+        "name": "役牌"
+      }
     }
   }
 }

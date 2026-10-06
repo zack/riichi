@@ -12,7 +12,7 @@ const DEFAULT_OPTIONS = {
   [TEST_POINTS]: true,
   kiriageMangan: false,
   testHonba: false,
-  ignoreFuOnLimit: false,
+  ignoreFuOnLimit: true,
   [EXACT_FU]: false,
   showTileNames: false,
   fancyTiles: false,

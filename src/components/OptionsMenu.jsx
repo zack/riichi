@@ -1,27 +1,44 @@
-import { Checkbox, Dialog, Flex, Link, Select, Text } from '@radix-ui/themes';
+import { Dialog, Flex, Select, Text } from '@radix-ui/themes';
+import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useRef } from 'react';
 
 import { useAppearance } from '../AppearanceContext';
 import { useTranslation } from '../i18n/I18nContext';
-import { HAND_PARAM, getHandId } from '../scripts/Hands';
-import { DEFAULT_OPTIONS, TEST_HAN } from '../scripts/Options';
+import { EXACT_FU, TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
 import { HomeScreenIconPicker } from './HomeScreenIconPicker';
+import { OptionCheckbox } from './OptionCheckbox';
+import { OptionGroup } from './OptionGroup';
+import { ReportHandLink } from './ReportHandLink';
+import { ThemeChoice } from './ThemeChoice';
 
-const REQUIRED_OPTIONS = {
-  ignoreFuOnLimit: TEST_HAN,
-};
+const ENGLISH = 'en';
+const LANGUAGE_IN_ENGLISH = 'Language';
 
-const MenuIcon = () => (
+const QUESTION_OPTIONS = [
+  { id: TEST_HAN },
+  { id: TEST_FU },
+  { id: EXACT_FU, indented: true, needs: [TEST_FU] },
+  { id: 'ignoreFuOnLimit', indented: true, needs: [TEST_HAN, TEST_FU] },
+  { id: TEST_POINTS },
+];
+const RULE_OPTIONS = [{ id: 'kiriageMangan' }, { id: 'testHonba' }];
+const TILE_OPTIONS = [{ id: 'showTileNames' }, { id: 'fancyTiles' }];
+
+// Feather's settings icon (https://feathericons.com, MIT)
+const GearIcon = () => (
   <svg
     aria-hidden='true'
-    fill='currentColor'
+    fill='none'
     height='18'
-    viewBox='0 0 18 18'
+    stroke='currentColor'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    strokeWidth='2'
+    viewBox='0 0 24 24'
     width='18'
   >
-    <rect height='2' rx='1' width='14' x='2' y='3' />
-    <rect height='2' rx='1' width='14' x='2' y='8' />
-    <rect height='2' rx='1' width='14' x='2' y='13' />
+    <circle cx='12' cy='12' r='3' />
+    <path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' />
   </svg>
 );
 
@@ -29,7 +46,29 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
   const { changeLanguage, currentLanguage, languages, t } = useTranslation();
   const { isHighContrast, toggleHighContrast } = useAppearance();
   const contentRef = useRef(null);
-  const handId = getHandId(handFile);
+
+  const renderOption = ({ id, indented, needs = [] }) => {
+    const missingOptionId = needs.find((neededId) => !options[neededId]);
+    let unavailableNote;
+    if (missingOptionId !== undefined) {
+      unavailableNote = t('options.unavailableWhileOff').replace(
+        '{}',
+        t(`options.${missingOptionId}`),
+      );
+    }
+
+    return (
+      <OptionCheckbox
+        checked={options[id]}
+        id={id}
+        indented={indented}
+        key={id}
+        label={t(`options.${id}`)}
+        onChange={(checked) => onChangeOption(id, checked)}
+        unavailableNote={unavailableNote}
+      />
+    );
+  };
 
   return (
     <Dialog.Root>
@@ -39,12 +78,13 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
           className='icon-button'
           type='button'
         >
-          <MenuIcon />
+          <GearIcon />
         </button>
       </Dialog.Trigger>
 
       <Dialog.Content
         aria-describedby={handIsChecked ? 'next-hand-note' : undefined}
+        className='options-dialog'
         maxWidth='400px'
         onOpenAutoFocus={(event) => {
           event.preventDefault();
@@ -52,118 +92,83 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
         }}
         ref={contentRef}
       >
-        <Dialog.Title>{t('options.title')}</Dialog.Title>
-        {handIsChecked && (
-          <Text as='p' color='gray' id='next-hand-note' mb='4' mt='-2' size='2'>
-            {t('options.nextHandNote')}
-          </Text>
-        )}
-
-        <Flex direction='column' gap='3'>
-          <Flex direction='column'>
-            {Object.keys(DEFAULT_OPTIONS).map((optionId) => {
-              const requiredOptionId = REQUIRED_OPTIONS[optionId];
-              const disabled =
-                requiredOptionId !== undefined && !options[requiredOptionId];
-
-              const noteId = `${optionId}-note`;
-
-              return (
-                <div key={optionId}>
-                  <Text
-                    as='label'
-                    color={disabled ? 'gray' : undefined}
-                    size='3'
-                  >
-                    <Flex align='center' className='option-row' gap='2'>
-                      <Checkbox
-                        aria-describedby={disabled ? noteId : undefined}
-                        aria-disabled={disabled || undefined}
-                        checked={options[optionId]}
-                        className={disabled ? 'option-unavailable' : undefined}
-                        color={disabled ? 'gray' : undefined}
-                        onCheckedChange={(checked) => {
-                          if (!disabled) {
-                            onChangeOption(optionId, checked === true);
-                          }
-                        }}
-                        size='3'
-                        variant={disabled ? 'soft' : undefined}
-                      />
-                      {t(`options.${optionId}`)}
-                    </Flex>
-                  </Text>
-                  {disabled && (
-                    <Text
-                      as='p'
-                      className='option-note'
-                      color='gray'
-                      id={noteId}
-                      size='2'
-                    >
-                      {t('options.unavailableWhileOff').replace(
-                        '{}',
-                        t(`options.${requiredOptionId}`),
-                      )}
-                    </Text>
-                  )}
-                </div>
-              );
-            })}
-
-            <Text as='label' size='3'>
-              <Flex align='center' className='option-row' gap='2'>
-                <Checkbox
-                  checked={isHighContrast}
-                  onCheckedChange={toggleHighContrast}
-                  size='3'
-                />
-                {t('options.highContrast')}
-              </Flex>
-            </Text>
-          </Flex>
-
-          <Flex align='center' gap='2'>
-            <Text as='label' htmlFor='language-select' size='3'>
-              {t('options.language')}
-            </Text>
-            <Select.Root onValueChange={changeLanguage} value={currentLanguage}>
-              <Select.Trigger
-                className='language-select'
-                id='language-select'
-              />
-              <Select.Content>
-                {Object.entries(languages).map(([code, language]) => (
-                  <Select.Item
-                    key={code}
-                    lang={code.replace('_', '-')}
-                    value={code}
-                  >
-                    {language.name}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </Flex>
-
-          <HomeScreenIconPicker />
-
-          <Text as='p' color='gray' size='2'>
-            {t('footer.logIssues')}{' '}
-            <Link href='https://github.com/zack/riichi'>GitHub</Link>
-          </Text>
-          <Text as='p' className='hand-id' color='gray' size='2'>
-            {t('options.handId')}{' '}
-            <Link href={`?${HAND_PARAM}=${handId}`}>{handId}</Link>
-          </Text>
-        </Flex>
-
-        <Flex justify='end' mt='4'>
+        <Flex
+          align='center'
+          className='options-header'
+          gap='3'
+          justify='between'
+        >
+          <DialogPrimitive.Title asChild>
+            <h1 className='options-title'>{t('options.title')}</h1>
+          </DialogPrimitive.Title>
           <Dialog.Close>
             <button className='action-button' type='button'>
               {t('common.close')}
             </button>
           </Dialog.Close>
+        </Flex>
+        {handIsChecked && (
+          <Text as='p' color='gray' id='next-hand-note' mb='3' size='2'>
+            {t('options.nextHandNote')}
+          </Text>
+        )}
+
+        <Flex direction='column' gap='3'>
+          <OptionGroup name={t('options.groups.questions')}>
+            {QUESTION_OPTIONS.map(renderOption)}
+          </OptionGroup>
+
+          <OptionGroup name={t('options.groups.rules')}>
+            {RULE_OPTIONS.map(renderOption)}
+          </OptionGroup>
+
+          <OptionGroup name={t('options.groups.display')}>
+            <ThemeChoice />
+            <OptionCheckbox
+              checked={isHighContrast}
+              id='highContrast'
+              label={t('options.highContrast')}
+              onChange={toggleHighContrast}
+            />
+            {TILE_OPTIONS.map(renderOption)}
+
+            <Flex
+              align='center'
+              className='option-row'
+              gap='3'
+              justify='between'
+            >
+              <Text as='label' htmlFor='language-select' size='3'>
+                {t('options.language')}
+                {currentLanguage !== ENGLISH && (
+                  <span lang={ENGLISH}> / {LANGUAGE_IN_ENGLISH}</span>
+                )}
+              </Text>
+              <Select.Root
+                onValueChange={changeLanguage}
+                value={currentLanguage}
+              >
+                <Select.Trigger
+                  className='language-select'
+                  id='language-select'
+                />
+                <Select.Content>
+                  {Object.entries(languages).map(([code, language]) => (
+                    <Select.Item
+                      key={code}
+                      lang={code.replace('_', '-')}
+                      value={code}
+                    >
+                      {language.name}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </Flex>
+          </OptionGroup>
+
+          <HomeScreenIconPicker />
+          <ReportHandLink handFile={handFile} />
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

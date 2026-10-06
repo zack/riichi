@@ -4,6 +4,18 @@ html {
   padding: 0;
 }
 
+/* Reserve room for the scrollbar so the page doesn't shift sideways when
+   checking an answer makes it tall enough to scroll */
+html {
+  scrollbar-gutter: stable;
+}
+
+@supports (scrollbar-gutter: stable) {
+  #root {
+    margin-right: calc(-1 * var(--removed-body-scroll-bar-size, 0px));
+  }
+}
+
 html.dark {
   background: var(--slate-4);
   color-scheme: dark;

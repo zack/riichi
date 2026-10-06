@@ -1,9 +1,8 @@
-import { Flex, Text } from '@radix-ui/themes';
+import { Text } from '@radix-ui/themes';
 import { RadioGroup } from 'radix-ui';
 import { useRef } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
 import {
   CORRECT,
   REVEALED,
@@ -11,17 +10,10 @@ import {
   answerIsCorrect,
   answerIsNumber,
   getGradedFields,
-  getSkippedOptionIds,
 } from '../scripts/QuizFields';
 
 const CHECK_MARK = String.fromCodePoint(0x2713);
 const CROSS_MARK = String.fromCodePoint(0x2717);
-
-const OPTION_NAMES = {
-  [TEST_FU]: 'quiz.fu',
-  [TEST_HAN]: 'quiz.han',
-  [TEST_POINTS]: 'quiz.points',
-};
 
 const MARKS = {
   [CORRECT]: CHECK_MARK,
@@ -32,6 +24,13 @@ const MARK_NAMES = {
   [CORRECT]: 'quiz.marks.correct',
   [WRONG]: 'quiz.marks.wrong',
 };
+
+const BUTTON_LABELS = [
+  'buttons.checkAnswer',
+  'buttons.justTellMe',
+  'buttons.newHand',
+];
+const VERDICT_LABELS = ['buttons.justTellMe', 'quiz.correct', 'quiz.incorrect'];
 
 const RESULT_LABELS = {
   [CORRECT]: 'quiz.correct',
@@ -54,7 +53,17 @@ function getChoiceResult(answers, checked, choice, field) {
 const RealAnswer = ({ answers, field, graded }) => {
   const { t } = useTranslation();
 
-  if (!graded) {
+  if (field.answer === '' && graded) {
+    return (
+      <Text className='wrong' weight='bold'>
+        <span aria-label={t('winRate.wrong')} role='img'>
+          {CROSS_MARK}
+        </span>
+      </Text>
+    );
+  } else if (field.answer === '') {
+    return null;
+  } else if (!graded) {
     return (
       <Text color='gray' weight='bold'>
         {field.answer}
@@ -91,6 +100,22 @@ const DisabledNote = ({ field }) => {
   );
 };
 
+const NoAnswerNote = ({ answered, field }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Text
+      as='span'
+      className={`field-note ${answered ? 'field-error' : ''}`}
+      color={answered ? undefined : 'gray'}
+      id={`${field.id}-no-answer`}
+      size='1'
+    >
+      {t('quiz.noFuOnLimit')}
+    </Text>
+  );
+};
+
 const NotANumberNote = ({ field }) => {
   const { t } = useTranslation();
 
@@ -110,8 +135,10 @@ const NotANumberNote = ({ field }) => {
 const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
   const notANumber =
     !checked && !field.ignored && !answerIsNumber(field, answers);
+  const noAnswer = checked && !field.ignored && field.answer === '';
   const describedBy = [
     field.ignored && `${field.id}-note`,
+    noAnswer && `${field.id}-no-answer`,
     notANumber && `${field.id}-error`,
   ]
     .filter(Boolean)
@@ -136,6 +163,7 @@ const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
           value={answers[field.id] ?? ''}
         />
         {field.ignored && <DisabledNote field={field} />}
+        {noAnswer && <NoAnswerNote answered={graded} field={field} />}
         {notANumber && <NotANumberNote field={field} />}
       </span>
       <span className='real-answer'>
@@ -149,6 +177,13 @@ const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
 
 const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
   const { t } = useTranslation();
+  const noAnswer = checked && !field.ignored && field.answer === '';
+  const describedBy = [
+    field.ignored && `${field.id}-note`,
+    noAnswer && `${field.id}-no-answer`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className='choice-field'>
@@ -156,7 +191,7 @@ const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
         {field.label}
       </Text>
       <RadioGroup.Root
-        aria-describedby={field.ignored ? `${field.id}-note` : undefined}
+        aria-describedby={describedBy || undefined}
         aria-labelledby={`${field.id}-label`}
         aria-readonly={checked || undefined}
         className={`choices ${field.id}-choices`}
@@ -223,7 +258,25 @@ const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
         ))}
       </RadioGroup.Root>
       {field.ignored && <DisabledNote field={field} />}
+      {noAnswer && (
+        <NoAnswerNote answered={Boolean(answers[field.id])} field={field} />
+      )}
     </div>
+  );
+};
+
+const ActionSizer = () => {
+  const { tEveryLanguage } = useTranslation();
+
+  return (
+    <span aria-hidden='true' className='quiz-action-sizer'>
+      {[...new Set(BUTTON_LABELS.flatMap(tEveryLanguage))].map((label) => (
+        <span data-label={label} key={label} />
+      ))}
+      {[...new Set(VERDICT_LABELS.flatMap(tEveryLanguage))].map((label) => (
+        <span className='verdict-words' data-label={label} key={label} />
+      ))}
+    </span>
   );
 };
 
@@ -240,10 +293,6 @@ function QuizPanel({
   const { t } = useTranslation();
   const newHandRef = useRef(null);
   const gradedFields = getGradedFields(fields, answers);
-  const hiddenNames = getSkippedOptionIds(fields, answers).map((optionId) =>
-    t(OPTION_NAMES[optionId]).toLowerCase(),
-  );
-  const showHideNote = !checked && hiddenNames.length > 0;
   const checkLabel =
     gradedFields.length > 0
       ? t('buttons.checkAnswer')
@@ -298,33 +347,21 @@ function QuizPanel({
           </Text>
         )}
 
-        <Flex align='start' gap='3' justify='center'>
-          <Flex align='center' direction='column' gap='1'>
-            {resultLabel ? (
-              <span className={`verdict ${result}`}>
-                <span aria-hidden='true' className='verdict-sizer'>
-                  {checkLabel}
-                </span>
-                <span className='verdict-label'>{t(resultLabel)}</span>
-              </span>
-            ) : (
-              <button
-                aria-describedby={showHideNote ? 'hide-note' : undefined}
-                className='action-button'
-                disabled={checked || fields.length === 0}
-                type='submit'
-              >
-                {checkLabel}
-              </button>
-            )}
-            <span className='hide-note-line'>
-              {showHideNote && (
-                <Text color='gray' id='hide-note' size='1'>
-                  {t('buttons.andHide').replace('{}', hiddenNames.join(', '))}
-                </Text>
-              )}
+        <div className='quiz-actions'>
+          <ActionSizer />
+          {resultLabel ? (
+            <span className={`verdict ${result}`}>
+              <span className='verdict-label'>{t(resultLabel)}</span>
             </span>
-          </Flex>
+          ) : (
+            <button
+              className='action-button'
+              disabled={checked || fields.length === 0}
+              type='submit'
+            >
+              {checkLabel}
+            </button>
+          )}
           <button
             className='action-button'
             onClick={onNewHand}
@@ -333,7 +370,7 @@ function QuizPanel({
           >
             {t('buttons.newHand')}
           </button>
-        </Flex>
+        </div>
       </form>
     </section>
   );

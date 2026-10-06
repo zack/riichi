@@ -83,10 +83,18 @@ export function I18nProvider({ children }) {
     return value || fallback;
   };
 
+  const tEveryLanguage = (key) =>
+    Object.values(translations)
+      .map((language) =>
+        key.split('.').reduce((memo, k) => memo?.[k], language),
+      )
+      .filter((label) => typeof label === 'string');
+
   const value = {
     currentLanguage,
     changeLanguage,
     t,
+    tEveryLanguage,
     languages: LANGUAGES,
   };
 

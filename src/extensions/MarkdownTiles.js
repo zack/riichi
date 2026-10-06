@@ -8,6 +8,9 @@ function escapeAttribute(value) {
     .replaceAll('>', '&gt;');
 }
 
+const ORDER_MARK = '>';
+const ORDER_ARROW = '\u2192';
+
 function getTileHtml(tile, t, fancy, showNames) {
   const alt = escapeAttribute(TileConversion.tileToName(tile, t));
   const src = escapeAttribute(TileConversion.tileToPath(tile, fancy));
@@ -18,14 +21,31 @@ function getTileHtml(tile, t, fancy, showNames) {
   return `<span class="tile-cell"><span class="tile"><img alt="${alt}" src="${src}" /></span>${label}</span>`;
 }
 
+export function getTilesHtml(tileString, t, fancy, showNames) {
+  return tileString
+    .trim()
+    .split(/\s+/)
+    .map((group) => {
+      const tiles = group
+        .split(ORDER_MARK)
+        .map((part) =>
+          TileConversion.tileStringToArray(part)
+            .map((tile) => getTileHtml(tile, t, fancy, showNames))
+            .join(''),
+        )
+        .join(`<span class="tile-arrow">${ORDER_ARROW}</span>`);
+
+      return `<span class="help-tiles">${tiles}</span>`;
+    })
+    .join('');
+}
+
 export function getMarkdownTiles(t, fancy, showNames) {
   return {
     hooks: {
       preprocess: (text) =>
         text.replace(/\^\^(.*?)\^\^/g, (_match, tileString) =>
-          TileConversion.tileStringToArray(tileString)
-            .map((tile) => getTileHtml(tile, t, fancy, showNames))
-            .join(''),
+          getTilesHtml(tileString, t, fancy, showNames),
         ),
     },
   };
