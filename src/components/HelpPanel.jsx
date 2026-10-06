@@ -1,9 +1,12 @@
-import { Dialog, Flex } from '@radix-ui/themes';
+import { Dialog, Flex, Text } from '@radix-ui/themes';
 import { Marked } from 'marked';
-import { Dialog as DialogPrimitive } from 'radix-ui';
-import { useRef } from 'react';
+import { Dialog as DialogPrimitive, Tabs } from 'radix-ui';
+import { useRef, useState } from 'react';
 
+import { getMarkdownScoringTable } from '../extensions/MarkdownScoringTable';
+import { getMarkdownSteps } from '../extensions/MarkdownSteps';
 import { getMarkdownTiles } from '../extensions/MarkdownTiles';
+import { getMarkdownYakuList } from '../extensions/MarkdownYakuList';
 import scoringEn from '../helpPages/scoring.en.md?raw';
 import scoringJa from '../helpPages/scoring.ja.md?raw';
 import scoringKo from '../helpPages/scoring.ko.md?raw';
@@ -18,9 +21,24 @@ const HELP_PAGES = {
   zh_cn: scoringZhCn,
 };
 
+const STEPS_TAB = 'steps';
+const YAKU_TAB = 'yaku';
+const TABS = [STEPS_TAB, YAKU_TAB, 'table', 'site'];
+
+function getTabs(page) {
+  return page
+    .split(/^# /m)
+    .slice(1)
+    .map((part, index) => {
+      const [label, ...lines] = part.split('\n');
+
+      return { id: TABS[index], label: label.trim(), text: lines.join('\n') };
+    });
+}
+
 // This is its own component because Radix mounts a dialog's content after the
 // dialog opens, so anything that measures has to be a child
-function HelpContent({ fancyTiles, showNames }) {
+function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
   const { currentLanguage, t } = useTranslation();
   const helpRef = useRef(null);
   const namesOnTiles = useNamesOnTiles(
@@ -29,30 +47,72 @@ function HelpContent({ fancyTiles, showNames }) {
     `${currentLanguage} ${fancyTiles}`,
   );
 
-  const markdown = new Marked(getMarkdownTiles(t, fancyTiles, showNames), {
-    renderer: {
-      link({ href, tokens }) {
-        const text = this.parser.parseInline(tokens);
-        return `<a href="${href}" rel="noopener noreferrer" target="_blank">${text}</a>`;
+  const markdown = new Marked(
+    getMarkdownTiles(t, fancyTiles, showNames),
+    getMarkdownYakuList(t, currentLanguage, fancyTiles, showNames),
+    getMarkdownScoringTable(t, kiriageMangan),
+    id === STEPS_TAB ? getMarkdownSteps() : {},
+    {
+      renderer: {
+        link({ href, tokens }) {
+          const text = this.parser.parseInline(tokens);
+          return `<a href="${href}" rel="noopener noreferrer" target="_blank">${text}</a>`;
+        },
       },
     },
-  });
-  const helpHtml = markdown.parse(HELP_PAGES[currentLanguage] ?? HELP_PAGES.en);
+  );
+  const helpHtml = markdown.parse(text);
+
+  const hasLinks = helpHtml.includes('<a ');
+  const isYakuTab = id === YAKU_TAB;
 
   // This is safe because it's only ever our own help pages, which ship with the
   // app
   return (
-    <div
-      className={`help-content ${fancyTiles ? 'fancy-tiles' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
-      dangerouslySetInnerHTML={{ __html: helpHtml }}
-      ref={helpRef}
-    />
+    <>
+      {(hasLinks || isYakuTab) && (
+        <div className='help-top'>
+          {isYakuTab && (
+            <p className='yaku-legend tone-gray'>
+              <span aria-hidden='true' className='han-badge'>
+                +
+              </span>
+              {t('helpYaku.legend.plus')}
+            </p>
+          )}
+          <div className='help-notes'>
+            {hasLinks && (
+              <Text as='p' color='gray' size='1'>
+                {t('quiz.linksOpenNewTab')}
+              </Text>
+            )}
+            {isYakuTab && (
+              <Text as='p' color='gray' size='1'>
+                {t('helpYaku.unusedNotListed')}
+              </Text>
+            )}
+          </div>
+        </div>
+      )}
+      <div
+        className={`help-content help-${id} ${fancyTiles ? 'fancy-tiles' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
+        dangerouslySetInnerHTML={{ __html: helpHtml }}
+        ref={helpRef}
+      />
+    </>
   );
 }
 
-function HelpPanel({ fancyTiles, showNames }) {
-  const { t } = useTranslation();
+function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
+  const { currentLanguage, t } = useTranslation();
   const contentRef = useRef(null);
+  const [tab, setTab] = useState(STEPS_TAB);
+  const tabs = getTabs(HELP_PAGES[currentLanguage] ?? HELP_PAGES.en);
+
+  function handleTabChange(newTab) {
+    setTab(newTab);
+    contentRef.current?.scrollIntoView();
+  }
 
   return (
     <Dialog.Root>
@@ -76,18 +136,39 @@ function HelpPanel({ fancyTiles, showNames }) {
         }}
         ref={contentRef}
       >
-        <Flex align='center' className='help-header' gap='3' justify='between'>
-          <DialogPrimitive.Title asChild>
-            <h1 className='help-title'>{t('common.help')}</h1>
-          </DialogPrimitive.Title>
-          <Dialog.Close>
-            <button className='action-button' type='button'>
-              {t('common.close')}
-            </button>
-          </Dialog.Close>
-        </Flex>
+        <Tabs.Root onValueChange={handleTabChange} value={tab}>
+          <div className='help-header'>
+            <Flex align='center' gap='3' justify='between'>
+              <DialogPrimitive.Title asChild>
+                <h1 className='help-title'>{t('common.help')}</h1>
+              </DialogPrimitive.Title>
+              <Dialog.Close>
+                <button className='action-button' type='button'>
+                  {t('common.close')}
+                </button>
+              </Dialog.Close>
+            </Flex>
+            <Tabs.List className='segments help-tabs'>
+              {tabs.map((each) => (
+                <Tabs.Trigger className='segment' key={each.id} value={each.id}>
+                  {each.label}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+          </div>
 
-        <HelpContent fancyTiles={fancyTiles} showNames={showNames} />
+          {tabs.map((each) => (
+            <Tabs.Content className='help-panel' key={each.id} value={each.id}>
+              <HelpContent
+                fancyTiles={fancyTiles}
+                id={each.id}
+                kiriageMangan={kiriageMangan}
+                showNames={showNames}
+                text={each.text}
+              />
+            </Tabs.Content>
+          ))}
+        </Tabs.Root>
       </Dialog.Content>
     </Dialog.Root>
   );

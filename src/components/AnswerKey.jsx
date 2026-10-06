@@ -1,16 +1,24 @@
-import { Flex, Heading } from '@radix-ui/themes';
+import { Flex, Heading, Text } from '@radix-ui/themes';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { ROUNDING, getExactFu } from '../scripts/QuizFields';
+import { ROUNDING, fuHasNoAnswer, getExactFu } from '../scripts/QuizFields';
+import { getFuWikiUrl, getYakuWikiUrl } from '../scripts/WikiLinks';
 import * as YakuConversion from '../scripts/YakuConversion';
+import { WikiLink } from './WikiLink';
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
-const BreakdownLine = ({ label, value }) => (
+const BreakdownLine = ({ href, label, value }) => (
   <>
-    <span className='breakdown-label'>{label && `${label}:`}</span>
+    <span className='breakdown-label'>
+      {label && (
+        <>
+          <WikiLink href={href}>{label}</WikiLink>:
+        </>
+      )}
+    </span>
     <span className='breakdown-value'>{value}</span>
   </>
 );
@@ -39,7 +47,7 @@ const Section = ({ children, title }) => (
 );
 
 function AnswerKey({ agari, options, points }) {
-  const { t } = useTranslation();
+  const { currentLanguage, t } = useTranslation();
   const han = t('quiz.han').toLowerCase();
   const fu = t('quiz.fu').toLowerCase();
   const dealerPaysMore = agari.isTsumo && !agari.isDealer;
@@ -70,13 +78,20 @@ function AnswerKey({ agari, options, points }) {
     pointsTitle = t('quiz.points');
   }
 
+  const showFu = options.testFu && !fuHasNoAnswer(agari, options);
+
+  const hasLinks = currentLanguage === 'en' && (options.testHan || showFu);
+  const breakdownClass =
+    currentLanguage === 'en' ? 'breakdown linked' : 'breakdown';
+
   const hanAndFu = (
     <>
       {options.testHan && (
         <Section title={`${t('quiz.han')}: ${agari.han}`}>
-          <div className='breakdown'>
+          <div className={breakdownClass}>
             {scoringYaku.map(([yakuId, value]) => (
               <BreakdownLine
+                href={getYakuWikiUrl(yakuId, currentLanguage)}
                 key={yakuId}
                 label={YakuConversion.YakuIdToName(yakuId, t)}
                 value={`${value} ${han}`}
@@ -86,11 +101,12 @@ function AnswerKey({ agari, options, points }) {
         </Section>
       )}
 
-      {options.testFu && (
+      {showFu && (
         <Section title={`${fuTitle}: ${fuAnswer}`}>
-          <div className='breakdown'>
+          <div className={breakdownClass}>
             {fuDetails.map((line, index) => (
               <BreakdownLine
+                href={getFuWikiUrl(line.reason, currentLanguage)}
                 key={index}
                 label={t(
                   `fuDetails.${line.reason}`,
@@ -125,9 +141,16 @@ function AnswerKey({ agari, options, points }) {
 
   return (
     <section className='color-card purple'>
-      <Heading as='h2' size='4'>
-        {t('quiz.realAnswer')}
-      </Heading>
+      <Flex align='center' direction='column' gap='1'>
+        <Heading as='h2' size='4'>
+          {t('quiz.realAnswer')}
+        </Heading>
+        {hasLinks && (
+          <Text as='p' color='gray' size='1'>
+            {t('quiz.linksOpenNewTab')}
+          </Text>
+        )}
+      </Flex>
       <Flex className='answer-key' gapY='5' wrap='wrap'>
         {hanAndFu}
         {options.testPoints && !pointsGetOwnRow && pointsSections}

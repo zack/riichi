@@ -1,3 +1,15 @@
+import {
+  MANGAN_BASIC_POINTS,
+  getBasicPoints,
+  getLimit,
+  getLimitBasicPoints,
+  getRonMultiplier,
+  getTsumoMultipliers,
+  getUncappedBasicPoints,
+  roundUpToHundred,
+  roundsUpToMangan,
+} from './ScoringTable';
+
 const LABEL_SEPARATOR = ': ';
 
 function splitStep(text) {
@@ -20,6 +32,8 @@ function calculatePoints(agari, options, t) {
   //Initialise Point totals
   let basicPoints, pointValue, pointValueDealer;
 
+  const han = parseInt(agari.han);
+  const fu = parseInt(agari.fu);
   const isTsumo = agari.isTsumo;
   const isDealer = agari.isDealer;
   const isKiriageMangan = options.kiriageMangan;
@@ -34,15 +48,12 @@ function calculatePoints(agari, options, t) {
   calculationSteps.push({
     value: agari.han + ' ' + t('pointCalculations.han'),
   });
-  switch (parseInt(agari.han)) {
+  switch (han) {
     case 1:
     case 2:
     case 3:
     case 4:
-      basicPoints = Math.min(
-        parseInt(agari.fu) * Math.pow(2, 2 + parseInt(agari.han)),
-        2000,
-      );
+      basicPoints = getBasicPoints(han, fu, isKiriageMangan);
       calculationSteps.push({
         value: agari.fu + ' ' + t('pointCalculations.fu'),
       });
@@ -61,43 +72,19 @@ function calculatePoints(agari, options, t) {
       calculationSteps.push({
         value: agari.fu + ' x ' + Math.pow(2, 2 + agari.han),
       });
-      if (parseInt(agari.fu) * Math.pow(2, 2 + parseInt(agari.han)) > 2000) {
+      if (getUncappedBasicPoints(han, fu) > MANGAN_BASIC_POINTS) {
         calculationSteps.push({
           remark: t('pointCalculations.basicPointsLimited'),
         });
       }
 
       //KiriageMangan is a mode which rounds up points for certain han/fu values
-      if (isKiriageMangan) {
-        if (
-          (agari.han === 3 && agari.fu === '60')
-          || (agari.han === 4 && agari.fu === '30')
-        ) {
-          basicPoints = 2000;
-          calculationSteps.push(
-            splitStep(t('pointCalculations.kiriageMangan')),
-          );
-        }
+      if (isKiriageMangan && roundsUpToMangan(han, fu)) {
+        calculationSteps.push(splitStep(t('pointCalculations.kiriageMangan')));
       }
       break;
-    case 5:
-      basicPoints = 2000;
-      break;
-    case 6:
-    case 7:
-      basicPoints = 3000;
-      break;
-    case 8:
-    case 9:
-    case 10:
-      basicPoints = 4000;
-      break;
-    case 11:
-    case 12:
-      basicPoints = 6000;
-      break;
     default:
-      basicPoints = 8000;
+      basicPoints = getLimitBasicPoints(getLimit(han).mangans);
       break;
   }
 
@@ -108,9 +95,13 @@ function calculatePoints(agari, options, t) {
   calculationStepsDealer = [].concat(calculationSteps);
 
   //Work out final points based on whether winner is dealer / whether it was tsumo
-  const pointMultiplier = getBasicPointsMultiplier(isTsumo, isDealer);
+  const [tsumoMultiplier, tsumoMultiplierDealer] =
+    getTsumoMultipliers(isDealer);
+  const pointMultiplier = isTsumo
+    ? tsumoMultiplier
+    : getRonMultiplier(isDealer);
   const unroundedPointValue = basicPoints * pointMultiplier;
-  pointValue = Math.ceil(unroundedPointValue / 100) * 100;
+  pointValue = roundUpToHundred(unroundedPointValue);
   const winTypeString = getWinTypeText(isTsumo, isDealer, t);
 
   addCalculationSteps(
@@ -123,13 +114,13 @@ function calculatePoints(agari, options, t) {
   );
 
   if (isTsumo && !isDealer) {
-    pointValueDealer = Math.ceil((basicPoints * 2) / 100) * 100;
+    pointValueDealer = roundUpToHundred(basicPoints * tsumoMultiplierDealer);
 
     addCalculationSteps(
       calculationStepsDealer,
       t('pointCalculations.tsumoDealer'),
-      basicPoints * 2,
-      2,
+      basicPoints * tsumoMultiplierDealer,
+      tsumoMultiplierDealer,
       pointValueDealer,
       t,
     );
@@ -168,21 +159,6 @@ function format(template, ...values) {
   return template.replace(/{}/g, function () {
     return typeof values[i] != 'undefined' ? values[i++] : '';
   });
-}
-
-function getBasicPointsMultiplier(isTsumo, isDealer) {
-  if (isTsumo && isDealer) {
-    return 2;
-  }
-  if (!isTsumo && !isDealer) {
-    return 4;
-  }
-  if (!isTsumo && isDealer) {
-    return 6;
-  }
-  if (isTsumo && !isDealer) {
-    return 1;
-  }
 }
 
 function getWinTypeText(isTsumo, isDealer, t) {
