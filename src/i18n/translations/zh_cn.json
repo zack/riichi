@@ -12,6 +12,7 @@
   "quiz": {
     "correct": "正确！",
     "incorrect": "错误",
+    "toldYou": "已告诉你",
     "disabledOnLimit": "满贯以上时禁用",
     "noFuOnLimit": "满贯以上无符",
     "linksOpenNewTab": "链接会在新标签页中打开",

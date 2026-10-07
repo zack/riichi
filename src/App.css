@@ -87,6 +87,15 @@ html.dark:not(.high-contrast) .radix-themes {
   }
 }
 
+.app-title {
+  font-family: var(--heading-font-family);
+  font-size: clamp(var(--font-size-4), 5.6vw, var(--font-size-7));
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-6);
+  line-height: 1.25;
+  margin: 0;
+}
+
 /* CARDS */
 
 .color-card {
@@ -123,11 +132,6 @@ html.dark:not(.high-contrast) .radix-themes {
   border-color: var(--orange-8);
 }
 
-.color-card.purple {
-  background: var(--purple-2);
-  border-color: var(--purple-8);
-}
-
 .color-card.red {
   background: var(--red-2);
 }
@@ -144,11 +148,6 @@ html.dark:not(.high-contrast) .radix-themes {
 .dark .color-card.orange {
   background: color-mix(in srgb, var(--orange-11) 5%, var(--gray-2));
   border-color: color-mix(in srgb, var(--orange-11) 60%, transparent);
-}
-
-.dark .color-card.purple {
-  background: color-mix(in srgb, var(--purple-11) 5%, var(--gray-2));
-  border-color: color-mix(in srgb, var(--purple-11) 60%, transparent);
 }
 
 .dark .color-card.red {
@@ -902,6 +901,43 @@ html.dark:not(.high-contrast) .radix-themes {
   width: 100%;
 }
 
+.quiz-form.checked {
+  flex: 1;
+  gap: var(--space-4);
+}
+
+.quiz-form.checked .quiz-actions {
+  margin-top: auto;
+}
+
+.answer-tabs,
+.answer-panel {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.answer-panel[hidden] {
+  display: none;
+}
+
+.answer-tabs .segments {
+  max-width: 100%;
+  width: 17rem;
+}
+
+.answer-tabs .segment {
+  white-space: nowrap;
+}
+
+.answer-panel:focus-visible {
+  border-radius: var(--radius-2);
+  outline: var(--focus-width) solid var(--focus-8);
+  outline-offset: 2px;
+}
+
 .quiz-fields {
   align-items: center;
   display: grid;
@@ -1319,15 +1355,25 @@ html.dark:not(.high-contrast) .radix-themes {
 
 /* ANSWER KEY */
 
-/* ANSWER KEY */
 .answer-key {
   align-items: flex-start;
+  column-gap: var(--space-2);
   justify-content: space-evenly;
   width: 100%;
 }
 
-.answer-key p {
+.answer-key p,
+.answer-panel > p {
   margin: 0;
+}
+
+.answer-total.correct {
+  color: var(--correct-color);
+}
+
+.answer-total.wrong,
+.answer-picked {
+  color: var(--wrong-color);
 }
 
 .breakdown {
@@ -1335,7 +1381,7 @@ html.dark:not(.high-contrast) .radix-themes {
   column-gap: var(--space-1);
   display: grid;
   font-size: var(--font-size-2);
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: auto auto;
   line-height: var(--line-height-2);
 }
 
@@ -1682,7 +1728,7 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .help-title {
   font-family: var(--heading-font-family);
-  font-size: clamp(var(--font-size-6), 6vw, var(--font-size-7));
+  font-size: var(--font-size-6);
   font-weight: var(--font-weight-bold);
   line-height: 1.25;
   margin: 0;
@@ -2519,11 +2565,6 @@ html.high-contrast.dark .radix-themes {
 .high-contrast .color-card.orange {
   background: var(--color-background);
   border-color: var(--orange-11);
-}
-
-.high-contrast .color-card.purple {
-  background: var(--color-background);
-  border-color: var(--purple-11);
 }
 
 .high-contrast .color-card.red {

@@ -1,8 +1,9 @@
-import { Text } from '@radix-ui/themes';
-import { RadioGroup } from 'radix-ui';
+import { Heading, Text } from '@radix-ui/themes';
+import { RadioGroup, Tabs } from 'radix-ui';
 import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
+import { CHECK_MARK, MARKS, MARK_NAMES } from '../scripts/Marks';
 import {
   CORRECT,
   REVEALED,
@@ -13,31 +14,21 @@ import {
   getMissingFields,
 } from '../scripts/QuizFields';
 
-const CHECK_MARK = String.fromCodePoint(0x2713);
-const CROSS_MARK = String.fromCodePoint(0x2717);
-
-const MARKS = {
-  [CORRECT]: CHECK_MARK,
-  [WRONG]: CROSS_MARK,
-};
-
-const MARK_NAMES = {
-  [CORRECT]: 'quiz.marks.correct',
-  [WRONG]: 'quiz.marks.wrong',
-};
-
 const BUTTON_LABELS = [
   'buttons.checkAnswer',
   'buttons.justTellMe',
   'buttons.newHand',
 ];
-const VERDICT_LABELS = ['buttons.justTellMe', 'quiz.correct', 'quiz.incorrect'];
+const VERDICT_LABELS = ['quiz.correct', 'quiz.incorrect', 'quiz.toldYou'];
 
 const RESULT_LABELS = {
   [CORRECT]: 'quiz.correct',
-  [REVEALED]: 'buttons.justTellMe',
+  [REVEALED]: 'quiz.toldYou',
   [WRONG]: 'quiz.incorrect',
 };
+
+const ANSWER_TAB = 'answer';
+const YOUR_ANSWER_TAB = 'your-answer';
 
 function getChoiceResult(answers, checked, choice, field) {
   if (!checked) {
@@ -313,8 +304,10 @@ const ActionSizer = () => {
 };
 
 function QuizPanel({
+  answerKey,
   answers,
   cardColor,
+  cardRef,
   checked,
   fields,
   onChangeAnswer,
@@ -330,6 +323,7 @@ function QuizPanel({
       ? t('buttons.checkAnswer')
       : t('buttons.justTellMe');
   const resultLabel = RESULT_LABELS[result];
+  const revealed = result === REVEALED;
 
   const [flaggedIds, setFlaggedIds] = useState([]);
   const missingFields = getMissingFields(fields, answers);
@@ -374,38 +368,73 @@ function QuizPanel({
     newHandRef.current?.focus({ preventScroll: true });
   };
 
+  const questions =
+    fields.length > 0 ? (
+      <div className='quiz-fields'>
+        {fields.map((field) => {
+          const Field = field.choiceRows ? ChoiceField : NumberField;
+          return (
+            <Field
+              answers={answers}
+              checked={checked}
+              field={field}
+              graded={gradedFields.includes(field)}
+              key={field.id}
+              missing={fieldIsFlagged(field)}
+              onChangeAnswer={onChangeAnswer}
+            />
+          );
+        })}
+      </div>
+    ) : (
+      <Text as='p' size='3'>
+        {t('quiz.noOptionsSelected')}
+      </Text>
+    );
+
+  let contents;
+  if (!checked) {
+    contents = questions;
+  } else if (revealed) {
+    contents = <div className='answer-panel'>{answerKey}</div>;
+  } else {
+    contents = (
+      <Tabs.Root className='answer-tabs' defaultValue={ANSWER_TAB}>
+        <Tabs.List className='segments'>
+          <Tabs.Trigger className='segment' value={ANSWER_TAB}>
+            {t('quiz.realAnswer')}
+          </Tabs.Trigger>
+          <Tabs.Trigger className='segment' value={YOUR_ANSWER_TAB}>
+            {t('quiz.yourAnswer')}
+          </Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content className='answer-panel' value={ANSWER_TAB}>
+          {answerKey}
+        </Tabs.Content>
+        <Tabs.Content className='answer-panel' value={YOUR_ANSWER_TAB}>
+          {questions}
+        </Tabs.Content>
+      </Tabs.Root>
+    );
+  }
+
   return (
-    <section className={`color-card ${cardColor}`}>
-      <h2 className='visually-hidden' id='quiz-heading'>
-        {t('quiz.yourAnswer')}
-      </h2>
+    <section className={`color-card ${cardColor}`} ref={cardRef}>
+      {revealed ? (
+        <Heading as='h2' id='quiz-heading' size='4'>
+          {t('quiz.realAnswer')}
+        </Heading>
+      ) : (
+        <h2 className='visually-hidden' id='quiz-heading'>
+          {checked ? t('quiz.realAnswer') : t('quiz.yourAnswer')}
+        </h2>
+      )}
       <form
         aria-labelledby='quiz-heading'
-        className='quiz-form'
+        className={`quiz-form ${checked ? 'checked' : ''}`}
         onSubmit={handleSubmit}
       >
-        {fields.length > 0 ? (
-          <div className='quiz-fields'>
-            {fields.map((field) => {
-              const Field = field.choiceRows ? ChoiceField : NumberField;
-              return (
-                <Field
-                  answers={answers}
-                  checked={checked}
-                  field={field}
-                  graded={gradedFields.includes(field)}
-                  key={field.id}
-                  missing={fieldIsFlagged(field)}
-                  onChangeAnswer={onChangeAnswer}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <Text as='p' size='3'>
-            {t('quiz.noOptionsSelected')}
-          </Text>
-        )}
+        {contents}
 
         <div className='quiz-actions'>
           <ActionSizer />
@@ -416,14 +445,14 @@ function QuizPanel({
           ) : (
             <button
               className='action-button'
-              disabled={checked || fields.length === 0}
+              disabled={fields.length === 0}
               type='submit'
             >
               {checkLabel}
             </button>
           )}
           <button
-            className='action-button'
+            className='action-button new-hand-button'
             onClick={onNewHand}
             ref={newHandRef}
             type='button'

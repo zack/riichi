@@ -1,6 +1,6 @@
 import './App.css';
 import './celebration.css';
-import { Container, Flex, Heading } from '@radix-ui/themes';
+import { Container, Flex } from '@radix-ui/themes';
 import { Analytics } from '@vercel/analytics/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -15,6 +15,7 @@ import { TilePanel } from './components/TilePanel';
 import { WinRate } from './components/WinRate';
 import { useTranslation } from './i18n/I18nContext';
 import { HAND_FILE_EXTENSION, HAND_PARAM, getHandId } from './scripts/Hands';
+import { showHandWithAnswer } from './scripts/HandWithAnswer';
 import { EXACT_FU, getStoredOptions, storeOptions } from './scripts/Options';
 import { calculatePoints } from './scripts/PointCalculation';
 import {
@@ -26,7 +27,6 @@ import {
   getGradedFields,
   getQuizFields,
 } from './scripts/QuizFields';
-import { scrollToBottom } from './scripts/ScrollToBottom';
 import { useNamesOnTiles } from './scripts/TileNames';
 
 const HANDS = import.meta.glob('./data/*.json', {
@@ -103,6 +103,8 @@ function App() {
   const [statusMessage, setStatusMessage] = useState('');
   const [countIsCrowded, setCountIsCrowded] = useState(false);
   const handRef = useRef(null);
+  const quizRef = useRef(null);
+  const quizHeightBeforeCheck = useRef(0);
 
   // Move focus up to the new hand so a screen reader starts from the new tiles,
   // the same way it would on a new page. Not on page load though
@@ -143,9 +145,13 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (result !== undefined) {
-      scrollToBottom();
+      showHandWithAnswer(
+        handRef.current,
+        quizRef.current,
+        quizHeightBeforeCheck.current,
+      );
     }
   }, [result]);
 
@@ -195,6 +201,8 @@ function App() {
     const gradedFields = getGradedFields(fields, answers);
 
     setCheckedOptions({ ...options });
+    quizHeightBeforeCheck.current =
+      quizRef.current.getBoundingClientRect().height;
 
     const isCorrect = gradedFields.every((field) =>
       answerIsCorrect(field, answers),
@@ -248,9 +256,7 @@ function App() {
       <Container size='2'>
         <header>
           <Flex align='center' gap='2' justify='between'>
-            <Heading as='h1' size={{ initial: '4', xs: '6' }} weight='bold'>
-              Riichi Scoring Trainer
-            </Heading>
+            <h1 className='app-title'>Riichi Scoring Trainer</h1>
             <Flex gap='2'>
               <OptionsMenu
                 handFile={handFile}
@@ -322,8 +328,20 @@ function App() {
           </section>
 
           <QuizPanel
+            answerKey={
+              checked && (
+                <AnswerKey
+                  agari={agari}
+                  answers={answers}
+                  fields={fields}
+                  options={handOptions}
+                  points={points}
+                />
+              )
+            }
             answers={answers}
             cardColor={CARD_COLORS[result] ?? UNANSWERED_CARD_COLOR}
+            cardRef={quizRef}
             checked={checked}
             fields={fields}
             key={handNumber}
@@ -332,10 +350,6 @@ function App() {
             onNewHand={handleNewHand}
             result={result}
           />
-
-          {checked && (
-            <AnswerKey agari={agari} options={handOptions} points={points} />
-          )}
 
           <div aria-atomic='true' className='visually-hidden' role='status'>
             {statusMessage}

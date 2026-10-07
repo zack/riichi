@@ -50,9 +50,20 @@ const checkStates = (appearance) => {
     cy.contains('[role="radio"]', /^60$/).click();
     cy.get('#points').type('1000');
     cy.contains('button', 'Check Answer').click();
-    cy.get('.color-card.purple').should('exist');
+    cy.get('.answer-key').should('exist');
     waitForScrollToStop();
     cy.compareSnapshot(`${appearance}-checked`, FULL_PAGE);
+  });
+
+  it('should match the questions of a checked answer', () => {
+    cy.contains('[role="radio"]', /^2$/).click();
+    cy.contains('[role="radio"]', /^60$/).click();
+    cy.get('#points').type('1000');
+    cy.contains('button', 'Check Answer').click();
+    waitForScrollToStop();
+    cy.contains('[role="tab"]', 'Your Answer').click().blur();
+    cy.get('.quiz-fields').should('exist');
+    cy.compareSnapshot(`${appearance}-your-answer`, FULL_PAGE);
   });
 
   it('should match the options dialog', () => {

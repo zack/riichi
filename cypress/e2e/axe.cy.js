@@ -60,7 +60,22 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     }
     cy.get('#points').type('1');
     cy.get('button[type="submit"]').click();
-    cy.get('.color-card.purple').should('exist');
+    cy.get('.answer-key').should('exist');
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
+  it('should pass the questions of a checked answer', () => {
+    cy.contains('[role="radio"]', /^2$/).click();
+    if (exactFu) {
+      cy.get('#fu').type('70');
+    } else {
+      cy.contains('[role="radio"]', /^70$/).click();
+    }
+    cy.get('#points').type('1');
+    cy.get('button[type="submit"]').click();
+    cy.contains('[role="tab"]', strings.quiz.yourAnswer).click();
+    cy.get('.quiz-fields').should('exist');
     cy.injectAxe();
     cy.checkA11y();
   });
@@ -107,6 +122,7 @@ const turnOnHighContrast = () => {
   cy.contains('label', 'High contrast').click();
   cy.contains('button', 'Close').click();
   cy.get('html').should('have.class', 'high-contrast');
+  cy.get('[role="dialog"]').should('not.exist');
 };
 
 describe('aXe Tests', () => {

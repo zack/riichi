@@ -12,6 +12,7 @@
   "quiz": {
     "correct": "Correct!",
     "incorrect": "Incorrect",
+    "toldYou": "I told you",
     "disabledOnLimit": "Disabled on limit hands",
     "noFuOnLimit": "No fu on limit hands",
     "linksOpenNewTab": "Links open in a new tab",
