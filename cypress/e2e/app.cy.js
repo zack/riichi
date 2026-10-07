@@ -1886,6 +1886,42 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     });
   });
 
+  describe('A page that says it is taller than the screen', () => {
+    const HIDDEN = 275;
+
+    it('should end a dialog where the screen ends', () => {
+      cy.viewport(414, 968);
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad(win) {
+          Object.defineProperty(win.visualViewport, 'height', {
+            get: () => win.innerHeight - HIDDEN,
+          });
+        },
+      });
+      openHelp();
+
+      cy.get('.rt-BaseDialogScroll').then(([scroller]) => {
+        const visibleHeight =
+          scroller.ownerDocument.defaultView.innerHeight - HIDDEN;
+        scroller.scrollTop = scroller.scrollHeight;
+
+        expect(scroller.getBoundingClientRect().bottom).to.equal(visibleHeight);
+        expect(
+          scroller.querySelector('.help-dialog').getBoundingClientRect().bottom,
+        ).to.be.lessThan(visibleHeight);
+      });
+    });
+
+    it('should leave a dialog alone where the page and the screen agree', () => {
+      visitHand(RON_HAND);
+      openHelp();
+
+      cy.document().then((doc) => {
+        expect(doc.documentElement.style.cssText).to.not.contain('--visible');
+      });
+    });
+  });
+
   describe('Help tabs', () => {
     const JAPANESE_SCRIPT = /[\u3040-\u30ff\u3400-\u9fff]/;
 
@@ -1894,10 +1930,10 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       openHelp();
 
       cy.get('.help-tabs [role="tab"]').then((tabs) => {
-        expect([...tabs].map((tab) => tab.textContent)).to.deep.equal([
+        expect([...tabs].map((tab) => tab.innerText)).to.deep.equal([
           'Steps',
           'Yaku',
-          'Table',
+          'Points Table',
           'Site',
         ]);
       });
@@ -1914,6 +1950,33 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
       cy.get('.help-steps .step').first().should('contain', 'red five');
       cy.get('.help-steps .step.sums li').should('have.length', 7);
+    });
+
+    it('should shorten a name where the tabs have no room for it', () => {
+      const getNames = () =>
+        cy
+          .get('.help-tabs [role="tab"]')
+          .then((tabs) => [...tabs].map((tab) => tab.innerText));
+
+      cy.viewport(320, 660);
+      visitHand(RON_HAND);
+      openHelp();
+      getNames().should('deep.equal', ['Steps', 'Yaku', 'Table', 'Site']);
+
+      cy.viewport(412, 660);
+      getNames().should('deep.equal', [
+        'Steps',
+        'Yaku',
+        'Points Table',
+        'Site',
+      ]);
+
+      cy.get('.help-tabs').then(([tabs]) => {
+        expect(tabs.scrollWidth).to.equal(tabs.clientWidth);
+        expect(tabs.offsetHeight).to.equal(
+          tabs.firstElementChild.offsetHeight + 4,
+        );
+      });
     });
 
     it('should show one tab at a time, from its top', () => {

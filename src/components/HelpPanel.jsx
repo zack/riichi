@@ -25,14 +25,18 @@ const STEPS_TAB = 'steps';
 const YAKU_TAB = 'yaku';
 const TABS = [STEPS_TAB, YAKU_TAB, 'table', 'site'];
 
+const YEAR_MARKER = '%%year%%';
+const CURRENT_YEAR = new Date().getFullYear();
+
 function getTabs(page) {
   return page
     .split(/^# /m)
     .slice(1)
     .map((part, index) => {
-      const [label, ...lines] = part.split('\n');
+      const [names, ...lines] = part.split('\n');
+      const [label, longLabel] = names.split('|').map((name) => name.trim());
 
-      return { id: TABS[index], label: label.trim(), text: lines.join('\n') };
+      return { id: TABS[index], label, longLabel, text: lines.join('\n') };
     });
 }
 
@@ -61,7 +65,7 @@ function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
       },
     },
   );
-  const helpHtml = markdown.parse(text);
+  const helpHtml = markdown.parse(text.replaceAll(YEAR_MARKER, CURRENT_YEAR));
 
   const hasLinks = helpHtml.includes('<a ');
   const isYakuTab = id === YAKU_TAB;
@@ -127,6 +131,7 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
       </Dialog.Trigger>
 
       <Dialog.Content
+        align='start'
         aria-describedby={undefined}
         className='help-dialog'
         maxWidth='800px'
@@ -151,7 +156,14 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
             <Tabs.List className='segments help-tabs'>
               {tabs.map((each) => (
                 <Tabs.Trigger className='segment' key={each.id} value={each.id}>
-                  {each.label}
+                  {each.longLabel ? (
+                    <>
+                      <span className='tab-short'>{each.label}</span>
+                      <span className='tab-long'>{each.longLabel}</span>
+                    </>
+                  ) : (
+                    each.label
+                  )}
                 </Tabs.Trigger>
               ))}
             </Tabs.List>

@@ -105,7 +105,7 @@ The trainer asks for this only with **Honba sticks** on.
 
 %%yaku-list%%
 
-# Table
+# Table | Points Table
 
 %%scoring-table%%
 
@@ -148,3 +148,5 @@ This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varanth
 The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6), some of them remade from originals by Jerry Crimson Mann and Dewclouds. They're on [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The files here have been made smaller, and the face-down tile and the app's icon are made from them.
 
 Much of the content in these help pages comes from [a reference sheet by Aranlyde](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/), which is under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
