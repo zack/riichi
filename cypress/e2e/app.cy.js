@@ -77,6 +77,33 @@ const layOutAsOnAPhone = (width) => {
 
 const showYourAnswer = () => cy.contains('[role="tab"]', 'Your Answer').click();
 
+const getHue = (color) => {
+  const [red, green, blue] = color.match(/[\d.]+/g).map(Number);
+  const strongest = Math.max(red, green, blue);
+  const spread = strongest - Math.min(red, green, blue);
+
+  let sixth;
+  if (strongest === red) {
+    sixth = ((green - blue) / spread + 6) % 6;
+  } else if (strongest === green) {
+    sixth = (blue - red) / spread + 2;
+  } else {
+    sixth = (red - green) / spread + 4;
+  }
+
+  return sixth * 60;
+};
+
+const isGreen = (color) => {
+  const hue = getHue(color);
+  return hue > 90 && hue < 180;
+};
+
+const isRed = (color) => {
+  const hue = getHue(color);
+  return hue < 30 || hue > 330;
+};
+
 const cardBorderMatchesTotals = (card, total) => {
   const borderMatches = () => {
     cy.get(total).then((totals) => {
@@ -655,6 +682,41 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       );
       cy.get('[role="radio"] .visually-hidden').should('have.length', 1);
       cy.get('[role="radio"].correct').should('have.length', 2);
+    });
+
+    it('should mark a right choice in green and a wrong one in red', () => {
+      const COLORED = ['background-color', 'border-top-color', 'color'];
+
+      const choicesHaveTheirColors = () => {
+        cy.get('[role="radio"].correct').should((choices) => {
+          const style = getComputedStyle(choices[0]);
+          COLORED.forEach((property) => {
+            expect(
+              isGreen(style.getPropertyValue(property)),
+              property,
+            ).to.equal(true);
+          });
+        });
+        cy.get('[role="radio"].wrong').should((choices) => {
+          const style = getComputedStyle(choices[0]);
+          COLORED.forEach((property) => {
+            expect(isRed(style.getPropertyValue(property)), property).to.equal(
+              true,
+            );
+          });
+        });
+      };
+
+      visitHand(RON_HAND);
+      pick('han', '2');
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
+
+      choicesHaveTheirColors();
+      switchToDarkMode();
+      choicesHaveTheirColors();
     });
 
     it('should mark wrong points as wrong', () => {
