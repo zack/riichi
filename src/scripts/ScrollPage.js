@@ -10,9 +10,9 @@ function easeInOut(progress) {
   }
 }
 
-function scrollToBottom() {
+// Done by hand because the browser's smooth scrolling picks its own speed
+function scrollPageTo(end) {
   const start = window.scrollY;
-  const end = document.documentElement.scrollHeight - window.innerHeight;
   const startTime = performance.now();
   let lastY = start;
 
@@ -30,7 +30,7 @@ function scrollToBottom() {
     }
   }
 
-  if (end <= start) {
+  if (Math.abs(end - start) < 1) {
     return;
   }
 
@@ -41,4 +41,4 @@ function scrollToBottom() {
   }
 }
 
-export { scrollToBottom };
+export { scrollPageTo };

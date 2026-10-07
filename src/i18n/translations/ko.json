@@ -12,6 +12,7 @@
   "quiz": {
     "correct": "정답!",
     "incorrect": "오답",
+    "toldYou": "알려 드렸어요",
     "disabledOnLimit": "만관 이상에서는 비활성",
     "noFuOnLimit": "만관 이상에서는 부수 없음",
     "linksOpenNewTab": "링크는 새 탭에서 열립니다",

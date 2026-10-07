@@ -12,6 +12,7 @@
   "quiz": {
     "correct": "正解！",
     "incorrect": "不正解",
+    "toldYou": "教えました",
     "disabledOnLimit": "満貫以上では無効",
     "noFuOnLimit": "満貫以上では符なし",
     "linksOpenNewTab": "リンクは新しいタブで開きます",
