@@ -38,9 +38,12 @@
     "realAnswer": "正解",
     "noOptionsSelected": "テストオプションが選択されていません。オプションメニューで少なくとも一つ選択してください。",
     "errorPrefix": "エラー：",
-    "notANumber": {
-      "fu": "30のように数字で入力",
-      "points": "2000のように数字で入力"
+    "notANumber": "数字で入力",
+    "missing": {
+      "han": "翻を選択",
+      "fu": "符を選択",
+      "exactFu": "符を入力",
+      "points": "点数を入力"
     }
   },
   "biggerHand": {

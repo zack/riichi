@@ -65,6 +65,14 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     cy.checkA11y();
   });
 
+  it('should pass an unfinished answer that was turned away', () => {
+    cy.contains('[role="radio"]', /^2$/).click();
+    cy.get('button[type="submit"]').click();
+    cy.get('.missing-note').should('have.length', 2);
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
   it('should pass the options dialog', () => {
     cy.get(`button[aria-label="${strings.options.title}"]`).click();
     cy.get('[role="dialog"]').should('be.visible');

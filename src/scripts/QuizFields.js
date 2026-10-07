@@ -48,6 +48,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'han',
       ignored: false,
       label: t('quiz.han'),
+      missing: t('quiz.missing.han'),
       optionId: TEST_HAN,
     });
   }
@@ -58,7 +59,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'fu',
       ignored: fuIgnored,
       label: t('quiz.exactFu'),
-      notANumber: t('quiz.notANumber.fu'),
+      missing: t('quiz.missing.exactFu'),
       optionId: TEST_FU,
     });
   } else if (options.testFu) {
@@ -68,6 +69,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'fu',
       ignored: fuIgnored,
       label: t('quiz.fu'),
+      missing: t('quiz.missing.fu'),
       optionId: TEST_FU,
     });
   }
@@ -78,7 +80,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'points',
       ignored: false,
       label: t('quiz.pointsFromEach'),
-      notANumber: t('quiz.notANumber.points'),
+      missing: t('quiz.missing.points'),
       optionId: TEST_POINTS,
     });
   } else if (options.testPoints && agari.isTsumo) {
@@ -87,7 +89,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'points',
       ignored: false,
       label: t('quiz.pointsFromNonDealer'),
-      notANumber: t('quiz.notANumber.points'),
+      missing: t('quiz.missing.points'),
       optionId: TEST_POINTS,
     });
     fields.push({
@@ -95,7 +97,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'pointsDealer',
       ignored: false,
       label: t('quiz.pointsFromDealer'),
-      notANumber: t('quiz.notANumber.points'),
+      missing: t('quiz.missing.points'),
       optionId: TEST_POINTS,
     });
   } else if (options.testPoints) {
@@ -104,7 +106,7 @@ function getQuizFields(agari, options, points, answers, t) {
       id: 'points',
       ignored: false,
       label: t('quiz.points'),
-      notANumber: t('quiz.notANumber.points'),
+      missing: t('quiz.missing.points'),
       optionId: TEST_POINTS,
     });
   }
@@ -136,24 +138,16 @@ function answerIsCorrect(field, answers) {
   return field.answer === readAnswer(field, answers);
 }
 
-function isPointsField(field) {
-  return field.optionId === TEST_POINTS;
+function getGradedFields(fields, answers) {
+  return fields.filter(
+    (field) => !field.ignored && !answerIsBlank(field, answers),
+  );
 }
 
-function getGradedFields(fields, answers) {
-  const pointsAreAnswered = fields.some(
-    (field) => isPointsField(field) && !answerIsBlank(field, answers),
+function getMissingFields(fields, answers) {
+  return fields.filter(
+    (field) => !field.ignored && answerIsBlank(field, answers),
   );
-
-  return fields.filter((field) => {
-    if (field.ignored) {
-      return false;
-    } else if (isPointsField(field)) {
-      return pointsAreAnswered;
-    } else {
-      return !answerIsBlank(field, answers);
-    }
-  });
 }
 
 export {
@@ -167,5 +161,6 @@ export {
   fuIsIgnored,
   getExactFu,
   getGradedFields,
+  getMissingFields,
   getQuizFields,
 };

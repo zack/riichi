@@ -1,6 +1,6 @@
 import { Text } from '@radix-ui/themes';
 import { RadioGroup } from 'radix-ui';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
 import {
@@ -10,6 +10,7 @@ import {
   answerIsCorrect,
   answerIsNumber,
   getGradedFields,
+  getMissingFields,
 } from '../scripts/QuizFields';
 
 const CHECK_MARK = String.fromCodePoint(0x2713);
@@ -50,44 +51,30 @@ function getChoiceResult(answers, checked, choice, field) {
   }
 }
 
-const RealAnswer = ({ answers, field, graded }) => {
+function getBoxResult(answers, checked, field, graded) {
+  if (!checked || !graded) {
+    return undefined;
+  } else if (answerIsCorrect(field, answers)) {
+    return CORRECT;
+  } else {
+    return WRONG;
+  }
+}
+
+const RealAnswer = ({ field }) => {
   const { t } = useTranslation();
 
-  if (field.answer === '' && graded) {
-    return (
-      <Text className='wrong' weight='bold'>
-        <span aria-label={t('winRate.wrong')} role='img'>
-          {CROSS_MARK}
-        </span>
+  return (
+    <span className='answer-stack'>
+      <span className='answer-caption'>
+        {t('quiz.realAnswer')}
+        <span className='visually-hidden'>: </span>
+      </span>
+      <Text className='answer-number' weight='bold'>
+        {field.answer} <span aria-hidden='true'>{CHECK_MARK}</span>
       </Text>
-    );
-  } else if (field.answer === '') {
-    return null;
-  } else if (!graded) {
-    return (
-      <Text color='gray' weight='bold'>
-        {field.answer}
-      </Text>
-    );
-  } else if (answerIsCorrect(field, answers)) {
-    return (
-      <Text className='correct' weight='bold'>
-        {field.answer}{' '}
-        <span aria-label={t('winRate.correct')} role='img'>
-          {CHECK_MARK}
-        </span>
-      </Text>
-    );
-  } else {
-    return (
-      <Text className='wrong' weight='bold'>
-        {field.answer}{' '}
-        <span aria-label={t('winRate.wrong')} role='img'>
-          {CROSS_MARK}
-        </span>
-      </Text>
-    );
-  }
+    </span>
+  );
 };
 
 const DisabledNote = ({ field }) => {
@@ -122,24 +109,53 @@ const NotANumberNote = ({ field }) => {
   return (
     <Text
       as='span'
-      className='field-note field-error'
+      className='field-error field-note not-a-number-note'
       id={`${field.id}-error`}
       size='2'
     >
       <span className='visually-hidden'>{t('quiz.errorPrefix')} </span>
-      {field.notANumber}
+      {t('quiz.notANumber')}
     </Text>
   );
 };
 
-const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
+const MissingNote = ({ field }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Text
+      as='span'
+      className='field-error field-note missing-note'
+      id={`${field.id}-missing`}
+      size={field.choiceRows ? '1' : '2'}
+    >
+      <span className='visually-hidden'>{t('quiz.errorPrefix')} </span>
+      {field.missing}
+    </Text>
+  );
+};
+
+const NumberField = ({
+  answers,
+  checked,
+  field,
+  graded,
+  missing,
+  onChangeAnswer,
+}) => {
+  const { t } = useTranslation();
   const notANumber =
     !checked && !field.ignored && !answerIsNumber(field, answers);
   const noAnswer = checked && !field.ignored && field.answer === '';
+  const result = getBoxResult(answers, checked, field, graded);
+  const showsAnswer = checked && result !== CORRECT && field.answer !== '';
   const describedBy = [
     field.ignored && `${field.id}-note`,
+    result && `${field.id}-verdict`,
+    showsAnswer && `${field.id}-answer`,
     noAnswer && `${field.id}-no-answer`,
     notANumber && `${field.id}-error`,
+    missing && `${field.id}-missing`,
   ]
     .filter(Boolean)
     .join(' ');
@@ -149,10 +165,10 @@ const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
       <Text as='label' htmlFor={field.id} size='3'>
         {field.label}
       </Text>
-      <span className='number-input-cell'>
+      <span className={`number-input-cell ${result ?? ''}`}>
         <input
           aria-describedby={describedBy || undefined}
-          aria-invalid={notANumber || undefined}
+          aria-invalid={notANumber || missing || undefined}
           className='number-input'
           disabled={field.ignored}
           id={field.id}
@@ -162,20 +178,29 @@ const NumberField = ({ answers, checked, field, graded, onChangeAnswer }) => {
           type='text'
           value={answers[field.id] ?? ''}
         />
+        {result && (
+          <span aria-hidden='true' className='box-mark'>
+            {MARKS[result]}
+          </span>
+        )}
+        {result && (
+          <span className='visually-hidden' id={`${field.id}-verdict`}>
+            {t(MARK_NAMES[result])}.
+          </span>
+        )}
         {field.ignored && <DisabledNote field={field} />}
         {noAnswer && <NoAnswerNote answered={graded} field={field} />}
         {notANumber && <NotANumberNote field={field} />}
+        {missing && <MissingNote field={field} />}
       </span>
-      <span className='real-answer'>
-        {checked && (
-          <RealAnswer answers={answers} field={field} graded={graded} />
-        )}
+      <span className='real-answer' id={`${field.id}-answer`}>
+        {showsAnswer && <RealAnswer field={field} />}
       </span>
     </>
   );
 };
 
-const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
+const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
   const { t } = useTranslation();
   const noAnswer = checked && !field.ignored && field.answer === '';
   const describedBy = [
@@ -186,12 +211,13 @@ const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
     .join(' ');
 
   return (
-    <div className='choice-field'>
+    <div className={`choice-field ${missing ? 'missing' : ''}`}>
       <Text className='choice-label' id={`${field.id}-label`} size='3'>
         {field.label}
       </Text>
       <RadioGroup.Root
         aria-describedby={describedBy || undefined}
+        aria-invalid={missing || undefined}
         aria-labelledby={`${field.id}-label`}
         aria-readonly={checked || undefined}
         className={`choices ${field.id}-choices`}
@@ -227,11 +253,16 @@ const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
                     field,
                   );
 
+                  const choiceDescribedBy = [
+                    group.limit && `${field.id}-${group.limit}`,
+                    missing && `${field.id}-missing`,
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
+
                   return (
                     <RadioGroup.Item
-                      aria-describedby={
-                        group.limit ? `${field.id}-${group.limit}` : undefined
-                      }
+                      aria-describedby={choiceDescribedBy || undefined}
                       className={`choice ${result ?? ''}`}
                       key={choice}
                       value={choice}
@@ -261,6 +292,7 @@ const ChoiceField = ({ answers, checked, field, onChangeAnswer }) => {
       {noAnswer && (
         <NoAnswerNote answered={Boolean(answers[field.id])} field={field} />
       )}
+      {missing && <MissingNote field={field} />}
     </div>
   );
 };
@@ -299,15 +331,42 @@ function QuizPanel({
       : t('buttons.justTellMe');
   const resultLabel = RESULT_LABELS[result];
 
+  const [flaggedIds, setFlaggedIds] = useState([]);
+  const missingFields = getMissingFields(fields, answers);
+  const fieldIsFlagged = (field) =>
+    !checked && flaggedIds.includes(field.id) && missingFields.includes(field);
+
+  const focusField = (field) => {
+    if (field.choiceRows) {
+      const choices = [
+        ...document.querySelectorAll(`.${field.id}-choices [role='radio']`),
+      ];
+      const tabStop = choices.find((choice) => choice.tabIndex === 0);
+      (tabStop ?? choices[0])?.focus();
+    } else {
+      document.getElementById(field.id)?.focus();
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const notANumberField = fields.find(
+    // A form with a single text input submits on Enter even with no submit
+    // button, and that includes a read-only input on a checked hand
+    if (checked) {
+      return;
+    }
+
+    const problemFields = fields.filter(
       (field) =>
-        !field.choiceRows && !field.ignored && !answerIsNumber(field, answers),
+        missingFields.includes(field)
+        || (!field.choiceRows
+          && !field.ignored
+          && !answerIsNumber(field, answers)),
     );
-    if (notANumberField && !checked) {
-      document.getElementById(notANumberField.id)?.focus();
+    if (gradedFields.length > 0 && problemFields.length > 0) {
+      setFlaggedIds(missingFields.map((field) => field.id));
+      focusField(problemFields[0]);
       return;
     }
 
@@ -336,6 +395,7 @@ function QuizPanel({
                   field={field}
                   graded={gradedFields.includes(field)}
                   key={field.id}
+                  missing={fieldIsFlagged(field)}
                   onChangeAnswer={onChangeAnswer}
                 />
               );

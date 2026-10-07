@@ -38,9 +38,12 @@
     "realAnswer": "실제 정답",
     "noOptionsSelected": "선택되어 있는 연습 옵션이 없습니다. 옵션에서 선택해주세요.",
     "errorPrefix": "오류:",
-    "notANumber": {
-      "fu": "30처럼 숫자로 입력하세요",
-      "points": "2000처럼 숫자로 입력하세요"
+    "notANumber": "숫자로 입력하세요",
+    "missing": {
+      "han": "판수를 선택하세요",
+      "fu": "부수를 선택하세요",
+      "exactFu": "부수를 입력하세요",
+      "points": "점수를 입력하세요"
     }
   },
   "biggerHand": {
