@@ -200,12 +200,19 @@ function App() {
       answerIsCorrect(field, answers),
     );
 
-    const realAnswers = fields
-      .map(
-        (field) =>
-          `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`,
-      )
-      .join(', ');
+    const getRealAnswer = (field) =>
+      `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`;
+    const getGradedAnswer = (field) => {
+      if (!gradedFields.includes(field)) {
+        return getRealAnswer(field);
+      } else if (answerIsCorrect(field, answers)) {
+        return `${getRealAnswer(field)}, ${t('quiz.marks.correct')}`;
+      } else {
+        return `${getRealAnswer(field)}, ${t('quiz.youPicked')} ${answers[field.id].trim()}`;
+      }
+    };
+    const realAnswers = fields.map(getRealAnswer).join(', ');
+    const gradedAnswers = fields.map(getGradedAnswer).join('. ');
 
     if (gradedFields.length === 0) {
       setResult(REVEALED);
@@ -217,7 +224,7 @@ function App() {
     } else {
       setResult(WRONG);
       setWrongAnswers(wrongAnswers + 1);
-      setStatusMessage(`${t('winRate.wrong')}. ${realAnswers}`);
+      setStatusMessage(`${t('winRate.wrong')}. ${gradedAnswers}`);
     }
   };
 

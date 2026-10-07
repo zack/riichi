@@ -2,7 +2,11 @@ import { Dialog, Text } from '@radix-ui/themes';
 import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { getConcealedTiles, getMelds } from '../scripts/HandTiles';
+import {
+  getConcealedTiles,
+  getMelds,
+  getRowsBySuit,
+} from '../scripts/HandTiles';
 import * as TileConversion from '../scripts/TileConversion';
 import { useNamesOnTiles } from '../scripts/TileNames';
 import { Meld } from './Meld';
@@ -48,6 +52,7 @@ function BiggerHandTiles({ agari, fancy, handLabel, showNames }) {
   const handRef = useRef(null);
   const concealedTiles = getConcealedTiles(agari);
   const melds = getMelds(agari);
+  const concealedRows = getRowsBySuit(concealedTiles);
   const namesOnTiles = useNamesOnTiles(
     handRef,
     showNames,
@@ -112,12 +117,12 @@ function BiggerHandTiles({ agari, fancy, handLabel, showNames }) {
         <Text asChild className='bigger-hand-heading' color='gray' size='2'>
           <h2>{t('handParts.concealed')}</h2>
         </Text>
-        <div className='bigger-hand-tiles'>
-          <TileList
-            fancy={fancy}
-            showNames={showNames}
-            tiles={concealedTiles}
-          />
+        <div className='bigger-hand-rows'>
+          {concealedRows.map((tiles, rowIndex) => (
+            <div className='bigger-hand-tiles' key={rowIndex}>
+              <TileList fancy={fancy} showNames={showNames} tiles={tiles} />
+            </div>
+          ))}
         </div>
       </section>
 

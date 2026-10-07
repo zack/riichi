@@ -38,6 +38,13 @@ const checkStates = (appearance) => {
     cy.compareSnapshot(`${appearance}-picked`, FULL_PAGE);
   });
 
+  it('should match an unfinished answer that was turned away', () => {
+    cy.contains('[role="radio"]', /^60$/).click();
+    cy.get('button[type="submit"]').click();
+    cy.get('.missing-note').should('have.length', 2);
+    cy.compareSnapshot(`${appearance}-refused`, FULL_PAGE);
+  });
+
   it('should match a checked answer', () => {
     cy.contains('[role="radio"]', /^2$/).click();
     cy.contains('[role="radio"]', /^60$/).click();

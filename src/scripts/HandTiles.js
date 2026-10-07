@@ -40,4 +40,38 @@ function getMelds(agari) {
   return (agari.melds ?? []).map(getMeldSlots);
 }
 
-export { getConcealedTiles, getMelds };
+// Has to match --seven-to-a-row in src/App.css
+const TILES_TO_A_ROW = 7;
+
+function getRowsBySuit(tiles) {
+  const suits = [];
+  for (const tile of tiles) {
+    const suit = tile[tile.length - 1];
+    const lastSuit = suits[suits.length - 1];
+
+    if (lastSuit?.suit === suit) {
+      lastSuit.tiles.push(tile);
+    } else {
+      suits.push({ suit, tiles: [tile] });
+    }
+  }
+
+  const rows = [[]];
+  for (const { tiles: suitTiles } of suits) {
+    const row = rows[rows.length - 1];
+    if (row.length > 0 && row.length + suitTiles.length > TILES_TO_A_ROW) {
+      rows.push([]);
+    }
+
+    for (const tile of suitTiles) {
+      if (rows[rows.length - 1].length === TILES_TO_A_ROW) {
+        rows.push([]);
+      }
+      rows[rows.length - 1].push(tile);
+    }
+  }
+
+  return rows;
+}
+
+export { getConcealedTiles, getMelds, getRowsBySuit };

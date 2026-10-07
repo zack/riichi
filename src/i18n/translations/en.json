@@ -39,9 +39,12 @@
     "realAnswer": "Answer",
     "noOptionsSelected": "No test options selected. Select at least one in the Options menu.",
     "errorPrefix": "Error:",
-    "notANumber": {
-      "fu": "Enter the fu as a number, like 30.",
-      "points": "Enter the points as a number, like 2000."
+    "notANumber": "Enter a number.",
+    "missing": {
+      "han": "Pick the han.",
+      "fu": "Pick the fu.",
+      "exactFu": "Enter the fu.",
+      "points": "Enter the points."
     }
   },
   "biggerHand": {
