@@ -1593,6 +1593,16 @@ html.dark:not(.high-contrast) .radix-themes {
 
 /* HELP */
 
+:root[style*='--visible-height'] .rt-BaseDialogOverlay {
+  bottom: auto;
+  height: var(--visible-height);
+  top: var(--visible-top);
+}
+
+:root[style*='--visible-height'] .rt-BaseDialogScrollPadding {
+  padding-bottom: max(var(--space-6), calc(var(--visible-height) * 0.06));
+}
+
 .help-dialog {
   overflow: visible;
   scroll-margin-top: var(--space-6);
@@ -1600,14 +1610,51 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .help-header {
   background: var(--color-panel-solid);
+  container-type: inline-size;
+  margin-top: calc(-1 * var(--space-2));
   padding-bottom: var(--space-3);
+  padding-top: var(--space-2);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .help-tabs {
+  display: flex;
   margin-top: var(--space-2);
+}
+
+.help-tabs .segment {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.help-tabs .segment + .segment::before {
+  border-left: 1px solid var(--gray-a8);
+  bottom: 22%;
+  content: '';
+  left: -3px;
+  position: absolute;
+  top: 22%;
+}
+
+.help-tabs .segment[data-state='active']::before,
+.help-tabs .segment[data-state='active'] + .segment::before {
+  display: none;
+}
+
+.tab-long {
+  display: none;
+}
+
+@container (min-width: 16.5rem) {
+  .tab-short {
+    display: none;
+  }
+
+  .tab-long {
+    display: inline;
+  }
 }
 
 .help-top {

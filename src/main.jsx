@@ -9,6 +9,7 @@ import { AppearanceProvider } from './AppearanceContext';
 import { I18nProvider } from './i18n/I18nContext';
 import { applyIconColor, getStoredIconColor } from './scripts/HomeScreenIcon';
 import './scripts/InstallPrompt';
+import './scripts/VisibleArea';
 
 applyIconColor(getStoredIconColor());
 
