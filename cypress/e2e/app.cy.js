@@ -2,6 +2,7 @@ import en from '../../src/i18n/translations/en.json';
 import { FU_PAGES, YAKU_PAGES } from '../../src/scripts/WikiLinks';
 import { chooseTheme, switchToDarkMode } from '../support/options';
 import { dropScrollbarRoom, getPageWidth } from '../support/page';
+import { waitForScrollToStop } from '../support/wait';
 
 const RON_HAND = '2011010101gm-00a9-0000-370cfc0a2';
 
@@ -74,13 +75,15 @@ const layOutAsOnAPhone = (width) => {
   });
 };
 
-const cardBorderMatchesVerdict = (card, verdict) => {
+const showYourAnswer = () => cy.contains('[role="tab"]', 'Your Answer').click();
+
+const cardBorderMatchesTotals = (card, total) => {
   const borderMatches = () => {
-    cy.get(`${verdict} .verdict-label`).then((label) => {
+    cy.get(total).then((totals) => {
       cy.get(card).should(
         'have.css',
         'border-top-color',
-        getComputedStyle(label[0]).color,
+        getComputedStyle(totals[0]).color,
       );
     });
   };
@@ -429,7 +432,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       reveal();
 
-      cy.get('.color-card.purple .wiki-link').should((links) => {
+      cy.get('.answer-panel .wiki-link').should((links) => {
         const pages = [...links].map((link) => [
           link.firstChild.textContent,
           link.getAttribute('href'),
@@ -443,16 +446,16 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           ['Rounding', 'https://riichi.wiki/Fu#Counting_fu'],
         ]);
       });
-      cy.get('.color-card.purple .wiki-link').each((link) => {
+      cy.get('.answer-panel .wiki-link').each((link) => {
         cy.wrap(link).should('have.attr', 'target', '_blank');
         cy.wrap(link).should('have.attr', 'rel', 'noopener noreferrer');
         cy.wrap(link).should('contain.text', '(opens the wiki in a new tab)');
       });
-      cy.get('.color-card.purple h2 + p').should(
+      cy.get('.answer-panel > p').should(
         'have.text',
         'Links open in a new tab',
       );
-      cy.get('.color-card.purple .breakdown-label')
+      cy.get('.answer-panel .breakdown-label')
         .first()
         .should('have.text', 'Round Wind (opens the wiki in a new tab):');
     });
@@ -491,7 +494,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.viewport(360, 740);
       visitHand(DORA_HAND);
       reveal();
-      cy.get('.color-card.purple .breakdown.linked')
+      cy.get('.answer-panel .breakdown.linked')
         .first()
         .find('.wiki-link')
         .should((links) => {
@@ -521,9 +524,9 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('label', /^Fu$/).click();
       cy.contains('button', 'Close').click();
       reveal();
-      cy.get('.color-card.purple .breakdown').should('exist');
+      cy.get('.answer-panel .breakdown').should('exist');
       cy.get('.wiki-link').should('not.exist');
-      cy.get('.color-card.purple h2 + p').should('not.exist');
+      cy.get('.answer-panel > p').should('not.exist');
     });
 
     it('should leave the names as plain text in another language', () => {
@@ -534,13 +537,64 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
       cy.get('html').should('have.attr', 'lang', 'ja');
       cy.get('button[type="submit"]').click();
-      cy.get('.color-card.purple .breakdown-label').should(
+      cy.get('.answer-panel .breakdown-label').should(
         'have.length.greaterThan',
         3,
       );
       cy.get('.wiki-link').should('not.exist');
       cy.get('.breakdown.linked').should('not.exist');
-      cy.get('.color-card.purple h2 + p').should('not.exist');
+      cy.get('.answer-panel > p').should('not.exist');
+    });
+  });
+
+  describe('Answer', () => {
+    const reveal = () => cy.contains('button', 'Just tell me').click();
+
+    it('should put han and fu side by side on a phone', () => {
+      cy.viewport(360, 1400);
+      visitHand(RON_HAND);
+      cy.document().its('fonts.status').should('equal', 'loaded');
+      layOutAsOnAPhone(360);
+      reveal();
+      cy.get('.answer-key > *').should((sections) => {
+        const [han, fu] = [...sections].map((section) =>
+          section.getBoundingClientRect(),
+        );
+        expect(fu.top).to.equal(han.top);
+        expect(fu.left - han.right).to.be.at.least(8);
+      });
+    });
+
+    it('should work out the points once when the dealer pays more', () => {
+      visitHand(TSUMO_HAND);
+      reveal();
+      cy.contains('.answer-key h3', 'Points (from non-dealer): 2000');
+      cy.contains('.answer-key h3', 'Points (from dealer): 3900');
+
+      cy.get('.answer-key .breakdown:not(.linked)').should((breakdowns) => {
+        expect(breakdowns).to.have.length(1);
+        const labels = [
+          ...breakdowns[0].querySelectorAll('.breakdown-label'),
+        ].map((label) => label.textContent);
+        expect(labels).to.deep.equal([
+          '',
+          '',
+          'Basic points:',
+          '',
+          'Basic points:',
+          'Tsumo (non-dealer):',
+          'Round up:',
+          'Tsumo (dealer):',
+          'Round up:',
+        ]);
+      });
+    });
+
+    it('should work out the points once for everyone else', () => {
+      visitHand(DEALER_TSUMO_HAND);
+      reveal();
+      cy.get('.answer-key h3').should('have.length', 3);
+      cy.get('.answer-key .breakdown:not(.linked)').should('have.length', 1);
     });
   });
 
@@ -553,13 +607,21 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Check Answer').click();
 
       cy.get('.color-card.green').should('exist');
+      cy.get('.answer-total.correct').should((totals) => {
+        expect([...totals].map((total) => total.textContent)).to.deep.equal([
+          'Han: 1 ✓',
+          'Fu: 60 ✓',
+          'Points: 2000 ✓',
+        ]);
+      });
+      cy.get('.answer-total.wrong, .answer-picked').should('not.exist');
       cy.get('.verdict.correct .verdict-label').should('have.text', 'Correct!');
       cy.contains('button', 'Check Answer').should('not.exist');
       cy.contains('.badge', 'Correct: 1');
       cy.contains('.badge', 'Wrong: 0');
       cy.contains('.badge', 'Rate: 100%');
-      cy.get('.color-card.purple').should('contain', 'Answer');
-      cardBorderMatchesVerdict('.color-card.green', '.verdict.correct');
+      cy.get('[role="tab"][data-state="active"]').should('have.text', 'Answer');
+      cardBorderMatchesTotals('.color-card.green', '.answer-total.correct');
     });
 
     it('should mark a wrong answer as wrong and show the right one', () => {
@@ -570,13 +632,23 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Check Answer').click();
 
       cy.get('.color-card.red').should('exist');
-      cy.get('.verdict.wrong .verdict-label').should('have.text', 'Incorrect');
       cy.contains('button', 'Check Answer').should('not.exist');
       cy.contains('.badge', 'Correct: 0');
       cy.contains('.badge', 'Wrong: 1');
+      cy.get('.verdict.wrong .verdict-label').should('have.text', 'Incorrect');
+      cy.get('.answer-total.wrong').should('have.text', 'Han: 1 ✗');
+      cy.get('.answer-total.wrong [role="img"]').should(
+        'have.attr',
+        'aria-label',
+        'Wrong',
+      );
+      cy.get('.answer-picked').should('have.text', 'You picked 2');
+      cy.get('.answer-total.correct').should('have.length', 2);
+      cardBorderMatchesTotals('.color-card.red', '.answer-total.wrong');
+
+      showYourAnswer();
       cy.get('[role="radio"].wrong').should('have.length', 1);
       cy.get('[role="radio"].wrong').should('contain', '2');
-      cardBorderMatchesVerdict('.color-card.red', '.verdict.wrong');
       cy.get('[role="radio"].wrong .visually-hidden').should(
         'have.text',
         'You picked',
@@ -591,6 +663,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '60');
       cy.get('#points').type('1000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('.number-input-cell.wrong #points').should('have.value', '1000');
@@ -610,6 +683,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '60');
       cy.get('#points').type('2000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('.number-input-cell.correct #points').should('exist');
@@ -630,6 +704,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('#points').type('2000');
       cy.get('#pointsDealer').type('2000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.get('.number-input-cell.correct #points').should('exist');
       cy.get('.number-input-cell.wrong #pointsDealer').should('exist');
@@ -646,6 +721,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.quiz-fields').then((fields) => {
         const before = fields[0].getBoundingClientRect().height;
         cy.contains('button', 'Check Answer').click();
+        showYourAnswer();
         cy.get('.number-input-cell.wrong').should('exist');
         cy.get('.quiz-fields').should((checkedFields) => {
           expect(checkedFields[0].getBoundingClientRect().height).to.equal(
@@ -685,6 +761,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '60');
       cy.get('#points').type('2000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.get('[role="radio"]').should('not.be.disabled');
       cy.get('[role="radiogroup"]').should(
@@ -726,6 +803,106 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           }),
       );
       cy.contains('.badge', 'Wrong: 1');
+    });
+  });
+
+  describe('Hand and answer together', () => {
+    const SHORT_ANSWER_HAND = '2011010102gm-00a9-0000-b7230caf6';
+
+    const getPlaces = () =>
+      cy.window().then((win) => {
+        const doc = win.document;
+        const card = doc.querySelector('.quiz-form').closest('section');
+        const button = doc.querySelector('.new-hand-button');
+
+        return {
+          cardBottom: card.getBoundingClientRect().bottom,
+          cardHeight: card.getBoundingClientRect().height,
+          handTop: doc.querySelector('.hand-card').getBoundingClientRect().top,
+          newHandTop:
+            button.getBoundingClientRect().top
+            - card.getBoundingClientRect().top,
+          screenHeight: win.innerHeight,
+        };
+      });
+
+    const check = () => {
+      cy.scrollTo('top', { ensureScrollable: false });
+      cy.get('button[type="submit"]').then((button) => {
+        button[0].click();
+      });
+      cy.get('.answer-key').should('exist');
+      waitForScrollToStop();
+    };
+
+    it('should put the hand and the whole answer on the screen', () => {
+      cy.viewport(360, 740);
+      visitHand(SHORT_ANSWER_HAND);
+      pick('han', '2');
+      pick('fu', '30');
+      cy.get('#points').type('2900');
+      check();
+      getPlaces().should((places) => {
+        expect(places.handTop).to.be.at.least(0);
+        expect(places.cardBottom).to.be.at.most(places.screenHeight);
+      });
+    });
+
+    it('should leave the new hand button where it was under a short answer', () => {
+      cy.viewport(360, 740);
+      visitHand(SHORT_ANSWER_HAND);
+      pick('han', '2');
+      pick('fu', '30');
+      cy.get('#points').type('2900');
+      getPlaces().then((before) => {
+        check();
+        getPlaces().should((after) => {
+          expect(after.cardHeight).to.equal(before.cardHeight);
+          expect(after.newHandTop).to.equal(before.newHandTop);
+        });
+      });
+    });
+
+    it('should not hold the card open when that would push the hand off', () => {
+      cy.viewport(360, 740);
+      visitHand(TWO_HONBA_HAND);
+      pick('han', '6');
+      cy.get('#points').type('3000');
+      cy.get('#pointsDealer').type('6000');
+      getPlaces().then((before) => {
+        check();
+        getPlaces().should((after) => {
+          expect(after.cardHeight).to.be.below(before.cardHeight);
+          expect(after.handTop).to.be.at.least(0);
+          expect(after.cardBottom).to.be.at.most(after.screenHeight);
+        });
+      });
+    });
+
+    it('should open on the answer, with the questions a tab away', () => {
+      visitHand(RON_HAND);
+      pick('han', '2');
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+
+      cy.get('[role="tab"]').should((tabs) => {
+        expect([...tabs].map((tab) => tab.textContent)).to.deep.equal([
+          'Answer',
+          'Your Answer',
+        ]);
+      });
+      cy.get('[role="tab"][data-state="active"]').should('have.text', 'Answer');
+      cy.get('.answer-key').should('be.visible');
+      cy.get('.quiz-fields').should('not.exist');
+      cy.focused().should('have.text', 'New Hand');
+
+      showYourAnswer();
+      cy.get('.quiz-fields').should('be.visible');
+      cy.get('.answer-key').should('not.exist');
+      cy.focused().type('{leftArrow}');
+      cy.focused().should('have.text', 'Answer');
+      cy.get('.answer-key').should('be.visible');
     });
   });
 
@@ -771,7 +948,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           pick('fu', '60');
           cy.get('#points').type('2000');
           cy.get('button[type="submit"]').click();
-          cy.get('.verdict.wrong').should('exist');
+          cy.get('.color-card.red').should('exist');
           look();
 
           visitIn(language, width);
@@ -779,7 +956,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           pick('fu', '60');
           cy.get('#points').type('2000');
           cy.get('button[type="submit"]').click();
-          cy.get('.verdict.correct').should('exist');
+          cy.get('.color-card.green').should('exist');
           look();
 
           visitIn(language, width);
@@ -802,18 +979,28 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
     });
 
-    it('should not move sideways when the answer makes the page scroll', () => {
-      cy.viewport(1280, 900);
+    it('should not move sideways when the page starts to scroll', () => {
+      cy.viewport(1280, 2400);
       visitHand(RON_HAND);
       cy.document().its('fonts.status').should('equal', 'loaded');
+      cy.get('.app').then((app) => {
+        cy.viewport(1280, Math.ceil(app[0].getBoundingClientRect().height));
+      });
       cy.document().should((doc) => {
-        expect(doc.documentElement.scrollHeight).to.equal(900);
+        expect(doc.documentElement.scrollHeight).to.equal(
+          doc.documentElement.clientHeight,
+        );
       });
       getActionBoxes().then((before) => {
+        pick('han', '1');
+        pick('fu', '60');
+        cy.get('#points').type('2000');
         cy.get('button[type="submit"]').click();
-        cy.get('.color-card.purple').should('exist');
+        showYourAnswer();
         cy.document().should((doc) => {
-          expect(doc.documentElement.scrollHeight).to.be.above(900);
+          expect(doc.documentElement.scrollHeight).to.be.above(
+            doc.documentElement.clientHeight,
+          );
         });
         getActionBoxes().should('deep.equal', before);
       });
@@ -856,7 +1043,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         cy.get('#points').type('500');
         cy.get('#pointsDealer').type('1000');
         cy.get('button[type="submit"]').click();
-        cy.get('.verdict.correct').should('exist');
+        cy.get('.color-card.green').should('exist');
       };
 
       visitHand(FIRST_HAND);
@@ -888,25 +1075,18 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       cy.contains('button', 'Just tell me').click();
       cy.get('button[type="submit"]').should('not.exist');
-      cy.get('.verdict.revealed .verdict-label').should(
-        'have.text',
-        'Just tell me',
-      );
 
       cy.contains('.badge', 'Correct: 0');
       cy.contains('.badge', 'Wrong: 0');
-      cy.get('[role="radio"].correct').should('have.length', 2);
-      cy.get('.number-input-cell.correct, .number-input-cell.wrong').should(
-        'not.exist',
+      cy.get('.verdict.revealed .verdict-label').should(
+        'have.text',
+        'I told you',
       );
-      cy.get('.box-mark').should('not.exist');
-      cy.get('#points-answer').should('have.text', 'Answer: 2000 ✓');
-      cy.get('#points').should(
-        'have.attr',
-        'aria-describedby',
-        'points-answer',
-      );
-      cy.get('.color-card.purple').should('exist');
+      cy.contains('.color-card.orange h2', 'Answer').should('be.visible');
+      cy.get('[role="tab"]').should('not.exist');
+      cy.get('.quiz-fields').should('not.exist');
+      cy.get('.answer-total').should('have.length', 3);
+      cy.get('.answer-total.correct, .answer-total.wrong').should('not.exist');
     });
 
     it('should not reveal anything once a question is answered', () => {
@@ -916,10 +1096,10 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('button[type="submit"]').click();
 
       cy.get('.missing-note').should('have.length', 2);
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
       cy.get('[role="radio"].correct').should('not.exist');
       cy.get('.real-answer').should('have.text', '');
-      cy.get('.color-card.purple').should('not.exist');
+      cy.get('.answer-key').should('not.exist');
       cy.contains('.badge', 'Correct: 0');
       cy.contains('.badge', 'Wrong: 0');
     });
@@ -982,7 +1162,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         .should('have.attr', 'aria-invalid', 'true')
         .and('have.attr', 'aria-describedby', 'pointsDealer-missing');
       noteIsGone('points');
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
       cy.contains('.badge', 'Wrong: 0');
     });
 
@@ -996,7 +1176,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.focused().should('have.id', 'points');
       cy.get('#points-missing').should('exist');
       noteIsGone('pointsDealer');
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
       cy.contains('.badge', 'Wrong: 0');
     });
 
@@ -1053,7 +1233,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('#points').type('18000');
       check();
       cy.get('#fu-missing').should('exist');
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
     });
 
     it('should ask for fu on a limit hand while the han picked is under the limit', () => {
@@ -1063,7 +1243,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       check();
 
       cy.get('#fu-missing').should('exist');
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
       cy.contains('.field-note', 'No fu on limit hands').should('not.exist');
     });
 
@@ -1105,7 +1285,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '60');
       cy.get('#points').type('2000');
       check();
-      cy.get('.verdict.correct').should('exist');
+      cy.get('.color-card.green').should('exist');
       cy.contains('.badge', 'Correct: 1');
       cy.contains('.badge', 'Wrong: 0');
     });
@@ -1225,7 +1405,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         cy.get('#points').type(typed);
         cy.get('.field-error').should('not.exist');
         cy.get('button[type="submit"]').click();
-        cy.get('.verdict.correct').should('exist');
+        cy.get('.color-card.green').should('exist');
       }
     });
 
@@ -1245,7 +1425,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
 
       cy.get('button[type="submit"]').click();
-      cy.get('.verdict').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
       cy.focused().should('have.id', 'points');
 
       cy.get('#points').type('{backspace}');
@@ -1274,7 +1454,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '60');
       cy.get('#points').type('2000');
       cy.contains('button', 'Check Answer').click();
-      cy.get('.verdict.correct').should('exist');
+      cy.get('.color-card.green').should('exist');
 
       cy.get('button[aria-label="Options"]').click();
       cy.get('[role="dialog"]').should(
@@ -1290,7 +1470,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Close').click();
 
       cy.get('#fu').should('not.exist');
-      cy.get('.verdict.correct').should('exist');
+      cy.get('.color-card.green').should('exist');
       cy.get('form .wrong').should('not.exist');
 
       cy.contains('button', 'New Hand').click();
@@ -1539,6 +1719,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('han', '6');
       cy.get('#points').type('18000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.contains('.badge', 'Correct: 1');
       cy.get('[role="radio"].wrong').should('not.exist');
@@ -1608,6 +1789,9 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('[role="status"]').should('contain', 'Fu: No fu on limit hands');
+      cy.get('.answer-key').should('not.contain', 'Fu:');
+      cy.get('.answer-picked').should('have.text', 'You picked 4 han 70 fu');
+      showYourAnswer();
       cy.get('[aria-labelledby="fu-label"] [role="radio"].wrong').should(
         'contain',
         '70',
@@ -1624,7 +1808,6 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         'aria-describedby',
         'fu-no-answer',
       );
-      cy.get('.answer-key').should('not.contain', 'Fu:');
     });
 
     it('should mark a typed exact fu wrong on a limit hand', () => {
@@ -1638,6 +1821,9 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Check Answer').click();
 
       cy.contains('.badge', 'Wrong: 1');
+      cy.get('.answer-key').should('not.contain', 'Exact fu');
+      cy.get('.answer-picked').should('have.text', 'You picked 4 han 40 fu');
+      showYourAnswer();
       cy.get('.number-input-cell.wrong').should('have.length', 1);
       cy.get('.number-input-cell.wrong #fu').should('exist');
       cy.get('#fu-answer').should('be.empty');
@@ -1650,7 +1836,6 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         'aria-describedby',
         'fu-verdict fu-no-answer',
       );
-      cy.get('.answer-key').should('not.contain', 'Exact fu');
     });
 
     it('should keep the note about a typed exact fu inside a narrow phone', () => {
@@ -1663,6 +1848,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('#fu').type('40');
       cy.get('#points').type('18000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.get('#fu-no-answer').should('be.visible');
       cy.document().then((doc) => {
@@ -1689,6 +1875,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('fu', '40');
       cy.get('#points').type('2000');
       cy.contains('button', 'Check Answer').click();
+      showYourAnswer();
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('[role="radio"].wrong').should('contain', '40');

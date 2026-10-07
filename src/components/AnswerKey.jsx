@@ -1,7 +1,16 @@
 import { Flex, Heading, Text } from '@radix-ui/themes';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { ROUNDING, fuHasNoAnswer, getExactFu } from '../scripts/QuizFields';
+import { MARKS, MARK_NAMES } from '../scripts/Marks';
+import {
+  CORRECT,
+  ROUNDING,
+  WRONG,
+  answerIsCorrect,
+  fuHasNoAnswer,
+  getExactFu,
+  getGradedFields,
+} from '../scripts/QuizFields';
 import { getFuWikiUrl, getYakuWikiUrl } from '../scripts/WikiLinks';
 import * as YakuConversion from '../scripts/YakuConversion';
 import { WikiLink } from './WikiLink';
@@ -37,16 +46,47 @@ const CalculationSteps = ({ steps }) => (
   </div>
 );
 
-const Section = ({ children, title }) => (
+const Total = ({ answers, field, graded, picked, title }) => {
+  const { t } = useTranslation();
+  let result;
+  if (!graded) {
+    result = undefined;
+  } else if (answerIsCorrect(field, answers)) {
+    result = CORRECT;
+  } else {
+    result = WRONG;
+  }
+
+  return (
+    <>
+      <Heading as='h3' className={`answer-total ${result ?? ''}`} size='3'>
+        {title}
+        {result && (
+          <>
+            {' '}
+            <span aria-label={t(MARK_NAMES[result])} role='img'>
+              {MARKS[result]}
+            </span>
+          </>
+        )}
+      </Heading>
+      {result === WRONG && (
+        <Text as='p' className='answer-picked' size='1'>
+          {t('quiz.youPicked')} {picked ?? answers[field.id].trim()}
+        </Text>
+      )}
+    </>
+  );
+};
+
+const Section = ({ children, total }) => (
   <Flex align='center' direction='column' gap='1'>
-    <Heading as='h3' size='3'>
-      {title}
-    </Heading>
+    {total}
     {children}
   </Flex>
 );
 
-function AnswerKey({ agari, options, points }) {
+function AnswerKey({ agari, answers, fields, options, points }) {
   const { currentLanguage, t } = useTranslation();
   const han = t('quiz.han').toLowerCase();
   const fu = t('quiz.fu').toLowerCase();
@@ -84,10 +124,38 @@ function AnswerKey({ agari, options, points }) {
   const breakdownClass =
     currentLanguage === 'en' ? 'breakdown linked' : 'breakdown';
 
+  const gradedFields = getGradedFields(fields, answers);
+  const getTotal = (fieldId, title, picked) => {
+    const field = fields.find((each) => each.id === fieldId);
+
+    return (
+      <Total
+        answers={answers}
+        field={field}
+        graded={gradedFields.includes(field)}
+        picked={picked}
+        title={title}
+      />
+    );
+  };
+
+  const fuField = fields.find((each) => each.id === 'fu');
+  const fuIsGraded = gradedFields.includes(fuField);
+  const pickedHanAndFu =
+    !showFu && fuIsGraded
+      ? `${answers.han} ${han} ${answers.fu.trim()} ${fu}`
+      : undefined;
+
   const hanAndFu = (
     <>
       {options.testHan && (
-        <Section title={`${t('quiz.han')}: ${agari.han}`}>
+        <Section
+          total={getTotal(
+            'han',
+            `${t('quiz.han')}: ${agari.han}`,
+            pickedHanAndFu,
+          )}
+        >
           <div className={breakdownClass}>
             {scoringYaku.map(([yakuId, value]) => (
               <BreakdownLine
@@ -102,7 +170,7 @@ function AnswerKey({ agari, options, points }) {
       )}
 
       {showFu && (
-        <Section title={`${fuTitle}: ${fuAnswer}`}>
+        <Section total={getTotal('fu', `${fuTitle}: ${fuAnswer}`)}>
           <div className={breakdownClass}>
             {fuDetails.map((line, index) => (
               <BreakdownLine
@@ -121,46 +189,38 @@ function AnswerKey({ agari, options, points }) {
     </>
   );
 
-  const pointsSections = (
-    <>
-      <Section title={`${pointsTitle}: ${points.pointValue}`}>
-        <CalculationSteps steps={points.calculationSteps} />
-      </Section>
-
-      {dealerPaysMore && (
-        <Section
-          title={`${t('quiz.pointsFromDealer')}: ${points.pointValueDealer}`}
-        >
-          <CalculationSteps steps={points.calculationStepsDealer} />
-        </Section>
-      )}
-    </>
-  );
-
-  const pointsGetOwnRow = options.testPoints && dealerPaysMore;
+  const pointsSteps = dealerPaysMore
+    ? [
+        ...points.calculationSteps,
+        ...points.calculationStepsDealer.filter(
+          (step) => !points.calculationSteps.includes(step),
+        ),
+      ]
+    : points.calculationSteps;
 
   return (
-    <section className='color-card purple'>
-      <Flex align='center' direction='column' gap='1'>
-        <Heading as='h2' size='4'>
-          {t('quiz.realAnswer')}
-        </Heading>
-        {hasLinks && (
-          <Text as='p' color='gray' size='1'>
-            {t('quiz.linksOpenNewTab')}
-          </Text>
+    <>
+      {hasLinks && (
+        <Text as='p' color='gray' size='1'>
+          {t('quiz.linksOpenNewTab')}
+        </Text>
+      )}
+      <Flex className='answer-key' gapY='3' wrap='wrap'>
+        {hanAndFu}
+        {options.testPoints && (
+          <Section
+            total={getTotal('points', `${pointsTitle}: ${points.pointValue}`)}
+          >
+            {dealerPaysMore
+              && getTotal(
+                'pointsDealer',
+                `${t('quiz.pointsFromDealer')}: ${points.pointValueDealer}`,
+              )}
+            <CalculationSteps steps={pointsSteps} />
+          </Section>
         )}
       </Flex>
-      <Flex className='answer-key' gapY='5' wrap='wrap'>
-        {hanAndFu}
-        {options.testPoints && !pointsGetOwnRow && pointsSections}
-      </Flex>
-      {pointsGetOwnRow && (
-        <Flex className='answer-key' gapY='5' wrap='wrap'>
-          {pointsSections}
-        </Flex>
-      )}
-    </section>
+    </>
   );
 }
 
