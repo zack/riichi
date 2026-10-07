@@ -46,4 +46,17 @@ const waitForScrollToStop = () => {
   );
 };
 
-export { waitForAnimations, waitForScrollToStop };
+const waitForImages = () => {
+  cy.get('img').should((images) => {
+    [...images].forEach((image) => {
+      expect(image.complete && image.naturalWidth > 0, image.alt).to.equal(
+        true,
+      );
+    });
+  });
+  cy.get('img').then((images) =>
+    Promise.all([...images].map((image) => image.decode())),
+  );
+};
+
+export { waitForAnimations, waitForImages, waitForScrollToStop };
