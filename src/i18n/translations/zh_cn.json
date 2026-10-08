@@ -82,6 +82,7 @@
     "ignoreFuOnLimit": "满贯免算符",
     "nextHandNote": "题目的更改从下一手牌开始生效。",
     "unavailableWhileOff": "「{}」关闭时不可用。",
+    "unavailableWhileBothOff": "「{}」和「{}」关闭时不可用。",
     "exactFu": "精确符数（不进位）",
     "language": "语言",
     "showTileNames": "牌名",

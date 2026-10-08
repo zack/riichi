@@ -3,8 +3,6 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-const MAX_PRECACHED_FILE_BYTES = 5 * 1024 * 1024;
-
 export default defineConfig({
   build: {
     sourcemap: true,
@@ -19,8 +17,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{css,html,ico,js,json,png,svg,webp,woff2}'],
-        globIgnores: ['icons/**', 'manifests/**'],
-        maximumFileSizeToCacheInBytes: MAX_PRECACHED_FILE_BYTES,
+        globIgnores: ['*.png', 'icons/**', 'manifests/**'],
       },
     }),
     react(),

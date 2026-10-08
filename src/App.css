@@ -70,6 +70,11 @@ html.dark:not(.high-contrast) .radix-themes {
   transform: translateY(0);
 }
 
+.skip-link:focus-visible {
+  outline: var(--focus-width) solid var(--focus-8);
+  outline-offset: 2px;
+}
+
 #main:focus {
   outline: none;
 }
@@ -676,6 +681,11 @@ html.dark:not(.high-contrast) .radix-themes {
     calc(var(--card-border-width) - var(--card-gutter));
   min-height: var(--target-size);
   padding: 0 var(--space-3);
+}
+
+.bigger-hand-button:focus-visible {
+  outline: var(--focus-width) solid var(--focus-8);
+  outline-offset: -4px;
 }
 
 .bigger-hand {
@@ -1430,6 +1440,10 @@ html.dark:not(.high-contrast) .radix-themes {
   outline-offset: 1px;
 }
 
+.report-hand {
+  color: var(--gray-a11);
+}
+
 .breakdown-label {
   text-align: right;
 }
@@ -1546,6 +1560,13 @@ html.dark:not(.high-contrast) .radix-themes {
   text-align: center;
 }
 
+.segment::after,
+.theme-segment::after {
+  content: '';
+  inset: -4px -3px;
+  position: absolute;
+}
+
 .segment:has(:checked),
 .segment[data-state='active'],
 .theme-segment:has(:checked) {
@@ -1578,6 +1599,8 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .option-row {
+  --gray-a7: var(--gray-9);
+  --gray-a8: var(--gray-10);
   min-height: var(--target-size);
 }
 
@@ -1671,7 +1694,6 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .help-dialog {
   overflow: visible;
-  scroll-margin-top: var(--space-6);
 }
 
 .help-header {
@@ -1741,9 +1763,25 @@ html.dark:not(.high-contrast) .radix-themes {
   outline-offset: 2px;
 }
 
+/* Tabbing to something scrolls it to the top of the window, which is under the
+   sticky header. This keeps it clear of the header. The last term is for
+   Firefox, which won't scroll to a link that's less than 20px out of place. */
+.help-panel,
+.help-panel :is(a, input, [tabindex]) {
+  scroll-margin-top: calc(
+    2 * var(--target-size) + 3 * var(--space-2) + var(--space-3) +
+      var(--space-4)
+  );
+}
+
 .help-header .action-button {
   flex: none;
   white-space: nowrap;
+}
+
+.help-content a:focus-visible {
+  outline: var(--focus-width) solid var(--focus-8);
+  outline-offset: 1px;
 }
 
 .help-title {
@@ -2317,6 +2355,10 @@ html.dark:not(.high-contrast) .radix-themes {
   --name: #707070;
 }
 
+html.dark:not(.high-contrast) .help-content .tone-gray {
+  --ron: #40444a;
+}
+
 .high-contrast.dark .help-content .tone-gray,
 .high-contrast.dark .help-top .tone-gray {
   --name: #696969;
@@ -2619,6 +2661,11 @@ html.high-contrast.dark .radix-themes {
 .high-contrast:not(.dark) .riichi-label,
 .high-contrast:not(.dark) .win-type {
   color: var(--red-12);
+}
+
+.high-contrast .honba-sticks rect,
+.high-contrast .riichi-stick rect {
+  stroke: var(--gray-8);
 }
 
 .high-contrast.dark .honba-sticks,

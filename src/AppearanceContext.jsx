@@ -12,7 +12,7 @@ const NORMAL = 'normal';
 
 const HIGH_CONTRAST = 'high-contrast';
 
-export const ACCENT_COLOR = 'indigo';
+const ACCENT_COLOR = 'indigo';
 
 const STORAGE_KEY = 'mahjong-appearance';
 const CONTRAST_STORAGE_KEY = 'mahjong-contrast';

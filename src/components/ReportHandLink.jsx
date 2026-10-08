@@ -1,6 +1,5 @@
-import { Link, Text } from '@radix-ui/themes';
+import { Text } from '@radix-ui/themes';
 
-import { ACCENT_COLOR } from '../AppearanceContext';
 import { useTranslation } from '../i18n/I18nContext';
 import { HAND_PARAM, getHandId } from '../scripts/Hands';
 
@@ -44,10 +43,9 @@ function ReportHandLink({ handFile }) {
   const { t } = useTranslation();
 
   return (
-    <Text as='p' color='gray' size='2'>
-      <Link
+    <Text as='p' className='report-hand' size='2'>
+      <a
         className='text-link'
-        color={ACCENT_COLOR}
         href={getIssueUrl(getHandId(handFile))}
         rel='noopener noreferrer'
         target='_blank'
@@ -55,7 +53,7 @@ function ReportHandLink({ handFile }) {
         {t('options.reportHand')}
         <NewTabIcon />
         <span className='visually-hidden'> {t('options.opensNewTab')}</span>
-      </Link>{' '}
+      </a>{' '}
       {t('options.onGitHub')}
     </Text>
   );
