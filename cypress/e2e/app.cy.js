@@ -25,6 +25,8 @@ const NO_CALLS_HAND = '2011010100gm-00a9-0000-3f2ec5bf2';
 const FOUR_CALLS_HAND = '2011010109gm-00a9-0000-72a098154';
 const LONG_SUIT_HAND = '2011010100gm-00a9-0000-3f2ec5bf5';
 
+const RED_FIVE_HAND = '2011010100gm-00a9-0000-3f2ec5bf1';
+
 const DORA_HAND = '2011010119gm-00a9-0000-35334fd91';
 
 const CROWDED_INFO_HAND = '2011010102gm-00a9-0000-4c03f0d02';
@@ -467,6 +469,201 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           expect(getComputedStyle(img[0]).display).not.to.equal('none');
         });
       });
+    });
+  });
+
+  describe('Tiles whose drawings fail to load', () => {
+    const failEveryDrawing = () => {
+      cy.intercept('/assets/tiles/**', { statusCode: 404 });
+    };
+
+    const textsShouldBe = (selector, expected) => {
+      cy.get(selector).should((texts) => {
+        expect([...texts].map((text) => text.textContent)).to.eql(expected);
+      });
+    };
+
+    it("should print each tile's name where its drawing would be", () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+
+      textsShouldBe('.hand .tile.failed > .tile-text', [
+        '6s',
+        '7s',
+        '6p',
+        '7p',
+        '8p',
+        '0m',
+        '5m',
+        '8s',
+        '2p',
+        '3p',
+        '4p',
+        'Rd',
+        'Rd',
+        'Rd',
+      ]);
+      textsShouldBe('.info .tile.failed > .tile-text', ['E', 'W', '7m']);
+      cy.get('.tile-text').each((text) => {
+        cy.wrap(text).should('be.visible');
+        cy.wrap(text).should('have.attr', 'aria-hidden', 'true');
+      });
+    });
+
+    it('should leave the full name for a screen reader', () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+
+      cy.get('.hand .tile.failed').should('have.length', 14);
+      cy.get('.hand .tile.failed img[alt="red 5 man"]').should((img) => {
+        expect(getComputedStyle(img[0]).display).not.to.equal('none');
+        expect(getComputedStyle(img[0]).visibility).to.equal('visible');
+      });
+      cy.get('.hand .tile.failed img[alt="2 pin (called)"]').should('exist');
+    });
+
+    it('should print a red five in red and nothing else', () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+
+      cy.contains('.hand .tile-text', '0m').should((text) => {
+        expect(isRed(getComputedStyle(text[0]).color)).to.equal(true);
+      });
+      cy.contains('.hand .tile-text', '5m').then((five) => {
+        const ink = getComputedStyle(five[0]).color;
+        cy.get('.tile-text:not(.red)').each((text) => {
+          cy.wrap(text).should('have.css', 'color', ink);
+        });
+      });
+      cy.get('.tile-text.red').should('have.length', 1);
+    });
+
+    it('should turn the name of a called tile with the tile', () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+
+      cy.get('.hand .tile.called > .tile-text').should('have.length', 2);
+      cy.get('.hand .tile.called > .tile-text').each((text) => {
+        cy.wrap(text).should(
+          'have.css',
+          'transform',
+          'matrix(0, 1, -1, 0, 0, 0)',
+        );
+      });
+      cy.get('.hand .tile:not(.called) > .tile-text').each((text) => {
+        cy.wrap(text).should('have.css', 'transform', 'none');
+      });
+    });
+
+    it('should make a face-down tile green with no name', () => {
+      failEveryDrawing();
+      visitHand(RON_HAND);
+
+      cy.get('.hand .tile.failed > .tile-text:empty').should('have.length', 2);
+      cy.get('.hand .tile.failed:has(> .tile-text:empty)').each((tile) => {
+        cy.wrap(tile).should((faceDown) => {
+          expect(
+            isGreen(getComputedStyle(faceDown[0]).backgroundColor),
+          ).to.equal(true);
+        });
+      });
+      switchToDarkMode();
+      turnOnOptions('High contrast');
+      cy.get('.hand .tile.failed:has(> .tile-text:empty)').each((tile) => {
+        cy.wrap(tile).should((faceDown) => {
+          expect(
+            isGreen(getComputedStyle(faceDown[0]).backgroundColor),
+          ).to.equal(true);
+        });
+      });
+    });
+
+    it("should use each language's own names for the honors", () => {
+      failEveryDrawing();
+      cy.visit(`/?hand=${RED_FIVE_HAND}`, {
+        onBeforeLoad: (win) => {
+          win.localStorage.setItem('mahjong-language', 'ja');
+        },
+      });
+
+      textsShouldBe('.info .tile.failed > .tile-text', ['東', '西', '7m']);
+      cy.get('.hand .tile-group')
+        .last()
+        .find('.tile-text')
+        .first()
+        .should('have.text', '中');
+    });
+
+    it('should not name a tile twice when the names are on', () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+      turnOnOptions('Names on tiles');
+
+      cy.get('.hand-card .tile-label').should('have.length', 17);
+      cy.get('.hand-card .tile-label').each((label) => {
+        cy.wrap(label).should('have.css', 'visibility', 'hidden');
+      });
+    });
+
+    it('should print the names in the bigger view and the help', () => {
+      failEveryDrawing();
+      visitHand(RED_FIVE_HAND);
+
+      cy.get('.bigger-hand-button').click();
+      cy.get('.bigger-hand .tile.failed > .tile-text').should(
+        'have.length',
+        17,
+      );
+      cy.contains('.bigger-hand .tile-text', '0m').should('be.visible');
+      cy.contains('button', 'Close').click();
+
+      openHelp('Yaku');
+      cy.get('.help-content .tile').then((tiles) => {
+        cy.get('.help-content .tile.failed').should(
+          'have.length',
+          tiles.length,
+        );
+      });
+      cy.get('.help-content .tile.failed > .tile-text')
+        .first()
+        .should((text) => {
+          expect(getComputedStyle(text[0]).display).to.equal('flex');
+        });
+    });
+
+    it('should leave a tile whose drawing loaded as it is', () => {
+      const failedAreAllSou = () => {
+        cy.get('.tile img').should((images) => {
+          [...images].forEach((image) => {
+            expect(image.complete, image.alt).to.equal(true);
+            expect(
+              image.closest('.tile').classList.contains('failed'),
+              image.alt,
+            ).to.equal(image.src.includes('/Sou'));
+          });
+        });
+      };
+
+      cy.intercept('/assets/tiles/Sou*', { statusCode: 404 });
+      visitHand(RED_FIVE_HAND);
+      textsShouldBe('.hand .tile-text', ['6s', '7s', '8s']);
+      failedAreAllSou();
+
+      for (let hand = 0; hand < 5; hand++) {
+        cy.contains('button', 'New Hand').click();
+        failedAreAllSou();
+      }
+    });
+
+    it('should hide the names in the help until a drawing fails', () => {
+      visitHand(RON_HAND);
+      openHelp('Yaku');
+
+      cy.get('.help-content .tile-text').should('have.length.at.least', 100);
+      cy.get('.help-content .tile-text').each((text) => {
+        cy.wrap(text).should('have.css', 'display', 'none');
+      });
+      cy.get('.hand .tile-text').should('not.exist');
     });
   });
 

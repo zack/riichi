@@ -1,3 +1,5 @@
+import { RED_FIVE } from './TileText';
+
 const PLAIN_TILES_PATH = '/assets/tiles/';
 const FANCY_TILES_PATH = '/assets/tiles/fancy/';
 
@@ -76,8 +78,7 @@ export function tileToName(tileString, t) {
     return t('tiles.back');
   } else if (suit === 'h') {
     return t('tiles.honors.' + number);
-  } else if (number === '0') {
-    // 0 is the red five
+  } else if (number === RED_FIVE) {
     const five = t('tiles.suits.' + suit).replace('{}', '5');
     return t('tiles.red').replace('{}', five);
   } else {
@@ -93,11 +94,23 @@ export function tileToLabel(tileString, t) {
     return '';
   } else if (suit === 'h') {
     return t('tiles.labels.' + number);
-  } else if (number === '0') {
-    // 0 is the red five
+  } else if (number === RED_FIVE) {
     return '5';
   } else {
     return number;
+  }
+}
+
+export function tileToText(tileString, t) {
+  const number = tileString[0];
+  const suit = tileString[1];
+
+  if (number === 'f') {
+    return '';
+  } else if (suit === 'h') {
+    return t('tiles.labels.' + number);
+  } else {
+    return number + suit;
   }
 }
 

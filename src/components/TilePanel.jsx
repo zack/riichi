@@ -80,6 +80,7 @@ function TilePanel({ agari, fancy, showNames }) {
               key={index}
               label={getLabel(tile)}
               path={TileConversion.tileToPath(tile, fancy)}
+              text={TileConversion.tileToText(tile, t)}
             />
           ))}
         </span>
@@ -97,6 +98,7 @@ function TilePanel({ agari, fancy, showNames }) {
             alt={TileConversion.tileToName(agari.winningTile, t)}
             label={getLabel(agari.winningTile)}
             path={TileConversion.tileToPath(agari.winningTile, fancy)}
+            text={TileConversion.tileToText(agari.winningTile, t)}
             winning
           />
         </span>
