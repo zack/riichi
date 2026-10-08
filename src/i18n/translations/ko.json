@@ -36,6 +36,7 @@
     "pointsFromDealer": "점수 (친이 내는)",
     "yourAnswer": "예측 정답",
     "youPicked": "선택한 답",
+    "youPickedLimit": "만관 이상을 선택했습니다",
     "realAnswer": "실제 정답",
     "noOptionsSelected": "선택되어 있는 연습 옵션이 없습니다. 옵션에서 선택해주세요.",
     "errorPrefix": "오류:",

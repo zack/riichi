@@ -26,6 +26,7 @@ import {
   fuIsIgnored,
   getGradedFields,
   getQuizFields,
+  limitWasWronglyPicked,
 } from './scripts/QuizFields';
 import { useNamesOnTiles } from './scripts/TileNames';
 
@@ -211,7 +212,9 @@ function App() {
     const getRealAnswer = (field) =>
       `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`;
     const getGradedAnswer = (field) => {
-      if (!gradedFields.includes(field)) {
+      if (limitWasWronglyPicked(field)) {
+        return `${getRealAnswer(field)}, ${t('quiz.youPickedLimit')}`;
+      } else if (!gradedFields.includes(field)) {
         return getRealAnswer(field);
       } else if (answerIsCorrect(field, answers)) {
         return `${getRealAnswer(field)}, ${t('quiz.marks.correct')}`;
@@ -317,6 +320,7 @@ function App() {
               agari={agari}
               fancy={options.fancyTiles}
               handLabel={handLabel}
+              showHonba={handOptions.testHonba}
               showNames={options.showTileNames}
             >
               <TilePanel
