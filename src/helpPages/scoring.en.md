@@ -68,7 +68,7 @@ The hand is **30 fu**.
 
 Add steps 2, 3 and 4 together, then **round up to the next 10**.
 
-With **Exact fu, not rounded up** on, the answer is the sum before rounding.
+With **Exact fu** on, the answer is the sum before rounding.
 
 ## 5. Points
 
@@ -125,7 +125,7 @@ Every hand is from a Tenhou game log, and is scored by Tenhou's rules.
 
 Select which skills you'd like to test.
 
-## Exact fu, not rounded up
+## Exact fu
 
 Asks for the exact answer instead of the rounded answer.
 

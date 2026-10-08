@@ -80,23 +80,31 @@ async function copyText(text) {
 function CopyHandLink({ handFile, onCopy }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [said, setSaid] = useState('');
 
+  // A screen reader only announces a status message when it changes, so if we
+  // left it the next copy would be silent. Clear it when the tick goes away,
+  // unless something else has been announced in the meantime.
   useEffect(() => {
-    if (!copied) {
+    if (said === '') {
       return undefined;
     }
 
-    const timeout = setTimeout(() => setCopied(false), COPIED_TIME);
+    const timeout = setTimeout(() => {
+      setCopied(false);
+      setSaid('');
+      onCopy((message) => (message === said ? '' : message));
+    }, COPIED_TIME);
     return () => clearTimeout(timeout);
-  }, [copied]);
+  }, [onCopy, said]);
 
   const handleClick = async () => {
-    if (await copyText(getHandLink(handFile))) {
-      setCopied(true);
-      onCopy(t('handLink.copied'));
-    } else {
-      onCopy(t('handLink.failed'));
-    }
+    const hasCopied = await copyText(getHandLink(handFile));
+    const message = hasCopied ? t('handLink.copied') : t('handLink.failed');
+
+    setCopied(hasCopied);
+    setSaid(message);
+    onCopy(message);
   };
 
   return (

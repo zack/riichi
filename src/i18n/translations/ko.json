@@ -82,6 +82,7 @@
     "ignoreFuOnLimit": "5판 이상 부수 무시",
     "nextHandNote": "문제 설정 변경은 다음 패부터 적용됩니다.",
     "unavailableWhileOff": "「{}」 옵션이 꺼져 있는 동안에는 사용할 수 없습니다.",
+    "unavailableWhileBothOff": "「{}」 및 「{}」 옵션이 꺼져 있는 동안에는 사용할 수 없습니다.",
     "exactFu": "부수 반올림 없음",
     "language": "언어",
     "showTileNames": "패 이름",

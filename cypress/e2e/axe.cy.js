@@ -42,6 +42,19 @@ function getContrast(foreground, background) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function getColorOver(color, behind) {
+  const [red, green, blue, alpha = 1] = color.match(/[\d.]+/g).map(Number);
+  const behindChannels = behind.match(/[\d.]+/g).map(Number);
+  const channels = [red, green, blue].map(
+    (channel, index) => channel * alpha + behindChannels[index] * (1 - alpha),
+  );
+  return `rgb(${channels.join(', ')})`;
+}
+
+function getShadowColor(shadow) {
+  return shadow.match(/^rgba?\([^)]*\)/)[0];
+}
+
 // Same as TABS in src/components/HelpPanel.jsx
 const HELP_TABS = ['steps', 'yaku', 'table', 'site'];
 
@@ -94,6 +107,31 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     waitForAnimations();
     cy.injectAxe();
     cy.checkA11y();
+  });
+
+  // axe doesn't check the contrast of a control's border. WCAG 1.4.11 wants
+  // 3:1. Radix draws both of these borders as a box-shadow (the checkbox's is
+  // on its ::before).
+  it('should give an unticked checkbox and the language select an edge that can be seen', () => {
+    cy.get(`button[aria-label="${strings.options.title}"]`).click();
+    cy.get('[role="dialog"]').should('be.visible');
+    waitForAnimations();
+    cy.get('.options-dialog').then((dialog) => {
+      const panel = getComputedStyle(dialog[0]).backgroundColor;
+      const getEdgeContrast = (shadow) =>
+        getContrast(getColorOver(getShadowColor(shadow), panel), panel);
+
+      cy.get('[role="checkbox"][data-state="unchecked"]')
+        .should('have.length.at.least', 1)
+        .each((box) => {
+          const edge = getComputedStyle(box[0], '::before').boxShadow;
+          expect(getEdgeContrast(edge)).to.be.at.least(3);
+        });
+      cy.get('#language-select').should((select) => {
+        const edge = getComputedStyle(select[0]).boxShadow;
+        expect(getEdgeContrast(edge)).to.be.at.least(3);
+      });
+    });
   });
 
   it('should pass the bigger hand', () => {

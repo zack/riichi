@@ -37,7 +37,7 @@ const visitHand = (handId) => cy.visit(`/?hand=${handId}`);
 const turnOnOptions = (...names) => {
   cy.get('button[aria-label="Options"]').click();
   names.forEach((name) => {
-    cy.contains('label', name).click();
+    cy.get('[role="dialog"]').contains('label', name).click();
   });
   cy.contains('button', 'Close').click();
 };
@@ -160,6 +160,18 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.honba-sticks').should('have.attr', 'aria-label', '2');
       cy.get('.honba-sticks rect').should('have.length', 2);
       cy.get('.honba .tile-label').should('not.exist');
+    });
+
+    it('should give the sticks the edge that the tiles have in high contrast', () => {
+      visitHand(TWO_HONBA_HAND);
+      turnOnOptions('Honba sticks', 'High contrast');
+      cy.get('html').should('have.class', 'high-contrast');
+      cy.get('.info .tile').then((tiles) => {
+        const edge = getComputedStyle(tiles[0]).borderTopColor;
+
+        cy.get('.honba-sticks rect').should('have.css', 'stroke', edge);
+        cy.get('.riichi-stick rect').should('have.css', 'stroke', edge);
+      });
     });
 
     it('should write the count under a pile of more than three', () => {
@@ -1281,7 +1293,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
     it('should ask for a typed exact fu in its own words', () => {
       visitHand(RON_HAND);
-      turnOnOptions('Exact fu, not rounded up');
+      turnOnOptions('Exact fu');
       pick('han', '1');
       cy.get('#points').type('2000');
       check();
@@ -1474,7 +1486,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     it('should remember the options after a reload', () => {
       visitHand(RON_HAND);
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       cy.get('#fu').should('exist');
 
@@ -1485,7 +1497,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     it('should take the fu before rounding when exact fu is on', () => {
       visitHand(RON_HAND);
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
 
       // 20 base + 32 for the kan + 4 + 2 for the pons, before rounding
@@ -1535,13 +1547,13 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       pick('fu', '30');
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       cy.get('#fu').should('have.value', '');
 
       cy.get('#fu').type('58');
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       cy.get('.fu-choices [data-state="checked"]').should('not.exist');
       cy.get('button[type="submit"]').should('have.text', 'Just tell me');
@@ -1565,7 +1577,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         'have.text',
         'Changes to the quiz start with the next hand.',
       );
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
 
       cy.get('#fu').should('not.exist');
@@ -1605,7 +1617,8 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     it('should switch the fu options off, and say why, while fu is not asked', () => {
       const exactFu = () =>
         cy
-          .contains('label', 'Exact fu, not rounded up')
+          .get('[role="dialog"]')
+          .contains('label', 'Exact fu')
           .find('[role="checkbox"]');
 
       visitHand(RON_HAND);
@@ -1667,6 +1680,24 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
             `https://riichi.youngren.io/?hand=${RON_HAND}`,
           );
         });
+    });
+
+    it('should give the report link the same focus ring as a button', () => {
+      const getRingColor = (element) =>
+        getComputedStyle(element[0]).outlineColor;
+
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('button', 'Close').focus();
+      cy.focused().then((close) => {
+        const ringColor = getRingColor(close);
+
+        cy.contains('a', 'Report a problem with this hand').focus();
+        cy.focused().should((link) => {
+          expect(getComputedStyle(link[0]).outlineStyle).to.equal('solid');
+          expect(getRingColor(link)).to.equal(ringColor);
+        });
+      });
     });
 
     it('should say Language in English too when the page is not', () => {
@@ -1779,7 +1810,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     it('should empty a typed exact fu when a limit hand is picked', () => {
       visitHand(RON_HAND);
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       cy.get('#fu').type('40');
       pick('han', '5');
@@ -1836,6 +1867,27 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('button', 'New Hand').click();
       cy.get('[aria-labelledby="fu-label"]').should('exist');
+    });
+
+    it('should name both han and fu while neither is asked', () => {
+      visitHand(LIMIT_HAND);
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('label', /^Han$/).click();
+      cy.contains('label', /^Fu$/).click();
+      cy.get('#ignoreFuOnLimit-note').should(
+        'have.text',
+        'Unavailable while Han and Fu are off.',
+      );
+      cy.get('#exactFu-note').should(
+        'have.text',
+        'Unavailable while Fu is off.',
+      );
+
+      cy.contains('label', /^Han$/).click();
+      cy.get('#ignoreFuOnLimit-note').should(
+        'have.text',
+        'Unavailable while Fu is off.',
+      );
     });
 
     it('should be switched off, and keep its tick, while han is not asked', () => {
@@ -1912,7 +1964,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     it('should mark a typed exact fu wrong on a limit hand', () => {
       visitHand(LIMIT_HAND);
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       pick('han', '4');
       cy.get('#fu').type('40');
@@ -1941,7 +1993,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.viewport(320, 640);
       visitHand(LIMIT_HAND);
       cy.get('button[aria-label="Options"]').click();
-      cy.contains('label', 'Exact fu, not rounded up').click();
+      cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
       cy.contains('button', 'Close').click();
       pick('han', '4');
       cy.get('#fu').type('40');
@@ -2337,6 +2389,21 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
   describe('Help tabs', () => {
     const JAPANESE_SCRIPT = /[\u3040-\u30ff\u3400-\u9fff]/;
 
+    it('should keep what has focus out from under the header', () => {
+      visitHand(RON_HAND);
+      openHelp('Yaku');
+
+      cy.get('.help-content .wiki-link').last().focus();
+      cy.get('.help-content .wiki-link').eq(5).focus();
+      cy.focused().then((link) => {
+        const header = Cypress.$('.help-header')[0].getBoundingClientRect();
+
+        expect(link[0].getBoundingClientRect().top).to.be.at.least(
+          header.bottom,
+        );
+      });
+    });
+
     it('should open on the steps, a card for each', () => {
       visitHand(RON_HAND);
       openHelp();
@@ -2412,6 +2479,42 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.help-table .scoring-table').should('exist');
     });
 
+    it('should show a tab from its top while the help is still opening', () => {
+      cy.viewport(412, 800);
+      visitHand(RON_HAND);
+
+      cy.document().then((doc) => {
+        doc.addEventListener(
+          'animationstart',
+          ({ target }) => {
+            if (target.matches('.help-dialog')) {
+              target.getAnimations().forEach((animation) => {
+                animation.pause();
+                animation.currentTime = 1;
+              });
+            }
+          },
+          true,
+        );
+      });
+      openHelp();
+      cy.get('.help-dialog').should(([dialog]) => {
+        expect(dialog.getAnimations()[0].playState).to.equal('paused');
+      });
+
+      cy.contains('[role="tab"]', 'Yaku').click();
+      cy.get('.help-yaku .yaku-list').should('exist');
+      cy.get('.help-dialog').then(([dialog]) => {
+        dialog.getAnimations().forEach((animation) => animation.finish());
+      });
+
+      cy.get('.help-dialog').should(([dialog]) => {
+        expect(dialog.getBoundingClientRect().top).to.equal(
+          parseFloat(getComputedStyle(dialog.parentElement).paddingTop),
+        );
+      });
+    });
+
     it('should open again on the tab it was left on', () => {
       visitHand(RON_HAND);
       openHelp('Table');
@@ -2473,25 +2576,62 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       openHelp('Yaku');
 
-      const getBadge = (name) =>
-        cy.contains('.yaku-name', name).parents('.yaku').find('.han-badge');
+      const getYaku = (name) =>
+        cy.contains('.yaku-name', name).parents('.yaku');
+      const getBadge = (name) => getYaku(name).find('.han-badge');
+      const getWorth = (name) => getYaku(name).find('.yaku-worth');
 
-      getBadge('Tanyao').should('have.text', '11 han');
+      getBadge('Tanyao').should('have.text', '1');
       getBadge('Tanyao').should('not.have.class', 'closed');
-      getBadge('Pinfu').should('have.text', '11 han, closed hand required');
+      getBadge('Tanyao').should('have.attr', 'aria-hidden', 'true');
+      getWorth('Tanyao').should('have.text', '1 han');
+      getBadge('Pinfu').should('have.text', '1');
       getBadge('Pinfu').should('have.class', 'closed');
-      getBadge('Chinitsu').should(
-        'have.text',
-        '5+5 han, and 1 more when closed',
-      );
-      getBadge('Chinitsu')
-        .find('[aria-hidden="true"]')
-        .should('have.text', '5+');
+      getWorth('Pinfu').should('have.text', '1 han, closed hand required');
+      getBadge('Chinitsu').should('have.text', '5+');
+      getWorth('Chinitsu').should('have.text', '5 han, and 1 more when closed');
+
+      cy.contains('.yaku-name', 'Pinfu')
+        .next()
+        .should('have.class', 'yaku-worth');
 
       cy.get('.yaku-legend').should('have.text', '++1 han when closed');
       cy.get('.yaku-legend .han-badge')
         .should('have.length', 1)
         .and('have.text', '+');
+    });
+
+    it('should keep the gray family readable on a dark page', () => {
+      const getLuminance = (color) => {
+        const [red, green, blue] = color
+          .match(/[\d.]+/g)
+          .slice(0, 3)
+          .map((channel) => {
+            const value = Number(channel) / 255;
+            return value <= 0.04045
+              ? value / 12.92
+              : ((value + 0.055) / 1.055) ** 2.4;
+          });
+        return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+      };
+
+      visitHand(RON_HAND);
+      switchToDarkMode();
+      openHelp('Yaku');
+      cy.contains('.yaku-name', 'Akadora')
+        .parents('.yaku')
+        .then((yaku) => {
+          const fill = getComputedStyle(yaku[0]).backgroundColor;
+          expect(fill).to.match(/^rgb\(/);
+
+          yaku.find('.wiki-link, .yaku-gloss').each((_index, words) => {
+            const [lighter, darker] = [
+              getLuminance(getComputedStyle(words).color),
+              getLuminance(fill),
+            ].sort((first, second) => second - first);
+            expect((lighter + 0.05) / (darker + 0.05)).to.be.at.least(4.5);
+          });
+        });
     });
 
     it('should put what the + means beside the notes where there is room', () => {
@@ -2877,6 +3017,23 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       themeRadio('Dark').should('be.checked');
     });
 
+    it('should take a tap anywhere in the height of the control', () => {
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').click();
+      cy.get('.theme-segments').then((track) => {
+        const trackBox = track[0].getBoundingClientRect();
+        const dark = Cypress.$('.theme-segment:contains("Dark")')[0];
+        const darkBox = dark.getBoundingClientRect();
+        const middle = darkBox.left + darkBox.width / 2;
+
+        [trackBox.top + 0.5, trackBox.bottom - 0.5].forEach((edge) => {
+          expect(track[0].ownerDocument.elementFromPoint(middle, edge)).to.eq(
+            dark,
+          );
+        });
+      });
+    });
+
     it('should go back to following the device', () => {
       visitHand(RON_HAND);
       cy.get('button[aria-label="Options"]').click();
@@ -2935,6 +3092,31 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
   });
 
   describe('Focus and announcements', () => {
+    it('should give every kind of control the same focus ring', () => {
+      const getRing = (element) => {
+        const style = getComputedStyle(element[0]);
+        return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`;
+      };
+
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').focus();
+      cy.focused().then((button) => {
+        const ring = getRing(button);
+        const hasRing = (control) => {
+          expect(getRing(control)).to.equal(ring);
+        };
+
+        expect(ring).to.match(/^solid 2px /);
+        cy.get('.skip-link').focus();
+        cy.focused().should(hasRing);
+        cy.get('.bigger-hand-button').focus();
+        cy.focused().should(hasRing);
+        openHelp('Site');
+        cy.get('.help-content a').first().focus();
+        cy.focused().should(hasRing);
+      });
+    });
+
     it('should move focus to New Hand on a check, then up to the hand', () => {
       visitHand(RON_HAND);
       pick('han', '1');
@@ -3068,6 +3250,32 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         expect(url.searchParams.get('hand')).to.match(/^\d{10}gm-/);
         expect(url.searchParams.get('hand')).not.to.equal(RON_HAND);
       });
+    });
+
+    it('should say that the link was copied every time it is', () => {
+      visitHand(RON_HAND);
+      cy.window().then((win) => {
+        cy.stub(win.navigator.clipboard, 'writeText').resolves();
+      });
+      cy.get('button[aria-label="Copy a link to this hand"]').click();
+      cy.get('[role="status"]').should('have.text', 'Link copied');
+
+      cy.get('[role="status"]').should('have.text', '');
+      cy.get('button[aria-label="Copy a link to this hand"]').click();
+      cy.get('[role="status"]').should('have.text', 'Link copied');
+    });
+
+    it('should leave the result of a check alone when the tick goes', () => {
+      visitHand(RON_HAND);
+      cy.window().then((win) => {
+        cy.stub(win.navigator.clipboard, 'writeText').resolves();
+      });
+      cy.get('button[aria-label="Copy a link to this hand"]').click();
+      cy.get('[role="status"]').should('have.text', 'Link copied');
+      cy.get('button[type="submit"]').click();
+      cy.get('[role="status"]').should('contain', 'Han: 1');
+      cy.get('.hand-link polyline').should('not.exist');
+      cy.get('[role="status"]').should('contain', 'Han: 1');
     });
 
     it('should copy without the clipboard API, on a page that is not secure', () => {
