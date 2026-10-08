@@ -10,6 +10,7 @@ import {
 import * as TileConversion from '../scripts/TileConversion';
 import { useNamesOnTiles } from '../scripts/TileNames';
 import { Meld } from './Meld';
+import { HonbaCount, RiichiStick } from './Sticks';
 import { Tile } from './Tile';
 
 const MagnifierIcon = () => (
@@ -47,12 +48,13 @@ const InfoItem = ({ children, label }) => (
 
 // This is its own component because Radix mounts a dialog's content after the
 // dialog opens, so anything that measures has to be a child
-function BiggerHandTiles({ agari, fancy, handLabel, showNames }) {
+function BiggerHandTiles({ agari, fancy, handLabel, showHonba, showNames }) {
   const { t } = useTranslation();
   const handRef = useRef(null);
   const concealedTiles = getConcealedTiles(agari);
   const melds = getMelds(agari);
   const concealedRows = getRowsBySuit(concealedTiles);
+  const hasHonba = showHonba && agari.honbaSticks > 0;
   const namesOnTiles = useNamesOnTiles(
     handRef,
     showNames,
@@ -64,54 +66,85 @@ function BiggerHandTiles({ agari, fancy, handLabel, showNames }) {
       className={`bigger-hand ${fancy ? 'fancy-tiles' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
       ref={handRef}
     >
-      <dl className='bigger-hand-info'>
-        <InfoItem label={t('info.round')}>
-          <Tile
-            alt={TileConversion.windToName(agari.roundWind, t)}
-            label={
-              showNames
-                ? TileConversion.windToLabel(agari.roundWind, t)
-                : undefined
-            }
-            path={TileConversion.windToPath(agari.roundWind, fancy)}
-          />
-        </InfoItem>
-        <InfoItem label={t('info.seatWind')}>
-          <TileList
-            fancy={fancy}
-            showNames={showNames}
-            tiles={[agari.seatWind]}
-          />
-        </InfoItem>
-        <InfoItem
-          label={
-            agari.doraIndicators.length === 1
-              ? t('info.doraIndicator')
-              : t('info.doraIndicators')
-          }
-        >
-          <TileList
-            fancy={fancy}
-            showNames={showNames}
-            tiles={agari.doraIndicators}
-          />
-        </InfoItem>
-        {agari.uraDoraIndicators.length > 0 && (
+      <div className='bigger-hand-info'>
+        <dl className='bigger-hand-info-group'>
+          <InfoItem label={t('info.round')}>
+            <Tile
+              alt={TileConversion.windToName(agari.roundWind, t)}
+              label={
+                showNames
+                  ? TileConversion.windToLabel(agari.roundWind, t)
+                  : undefined
+              }
+              path={TileConversion.windToPath(agari.roundWind, fancy)}
+            />
+          </InfoItem>
+          <InfoItem label={t('info.seatWind')}>
+            <TileList
+              fancy={fancy}
+              showNames={showNames}
+              tiles={[agari.seatWind]}
+            />
+          </InfoItem>
+        </dl>
+        {(hasHonba || agari.isRiichi) && (
+          <div className='bigger-hand-info-group'>
+            {hasHonba && (
+              <dl>
+                <InfoItem
+                  label={
+                    agari.honbaSticks === 1
+                      ? t('info.honbaStick')
+                      : t('info.honbaSticks')
+                  }
+                >
+                  <HonbaCount count={agari.honbaSticks} showNames={showNames} />
+                </InfoItem>
+              </dl>
+            )}
+            {agari.isRiichi && (
+              <div className='bigger-hand-info-item bigger-hand-riichi'>
+                <Text className='riichi-label' size='2'>
+                  {t('info.riichi')}
+                </Text>
+                <span className='bigger-hand-tiles'>
+                  <RiichiStick />
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        <dl className='bigger-hand-info-group'>
           <InfoItem
             label={
-              agari.uraDoraIndicators.length === 1
-                ? t('info.uraDoraIndicator')
-                : t('info.uraDoraIndicators')
+              agari.doraIndicators.length === 1
+                ? t('info.doraIndicator')
+                : t('info.doraIndicators')
             }
           >
             <TileList
               fancy={fancy}
               showNames={showNames}
-              tiles={agari.uraDoraIndicators}
+              tiles={agari.doraIndicators}
             />
           </InfoItem>
-        )}
-      </dl>
+          {agari.uraDoraIndicators.length > 0 && (
+            <InfoItem
+              label={
+                agari.uraDoraIndicators.length === 1
+                  ? t('info.uraDoraIndicator')
+                  : t('info.uraDoraIndicators')
+              }
+            >
+              <TileList
+                fancy={fancy}
+                showNames={showNames}
+                tiles={agari.uraDoraIndicators}
+              />
+            </InfoItem>
+          )}
+        </dl>
+      </div>
 
       <section>
         <Text asChild className='bigger-hand-heading' color='gray' size='2'>
@@ -172,7 +205,14 @@ function BiggerHandTiles({ agari, fancy, handLabel, showNames }) {
   );
 }
 
-function BiggerHand({ agari, children, fancy, handLabel, showNames }) {
+function BiggerHand({
+  agari,
+  children,
+  fancy,
+  handLabel,
+  showHonba,
+  showNames,
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const contentRef = useRef(null);
@@ -204,6 +244,7 @@ function BiggerHand({ agari, children, fancy, handLabel, showNames }) {
           agari={agari}
           fancy={fancy}
           handLabel={handLabel}
+          showHonba={showHonba}
           showNames={showNames}
         />
 

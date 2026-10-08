@@ -72,7 +72,7 @@ function getYakuHtml(yaku, t, language, getTiles) {
   const tilesHtml = getExampleHtml(yaku.tiles, getTiles);
 
   return (
-    `<div class="yaku${yaku.nested ? ' nested' : ''}">${getBadgeHtml(yaku, t)}`
+    `<div class="yaku">${getBadgeHtml(yaku, t)}`
     + `<div class="yaku-words"><h3 class="yaku-name">${name}${glossHtml}</h3>`
     + `<p class="yaku-description"><span>${description}</span>${tilesHtml}</p></div></div>`
   );

@@ -692,11 +692,31 @@ html.dark:not(.high-contrast) .radix-themes {
   --tile-width: min(52px, var(--seven-to-a-row));
 }
 
-.bigger-hand-info {
+.bigger-hand-info,
+.bigger-hand-info-group {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-4);
   margin: 0;
+}
+
+.bigger-hand-info-group > dl {
+  margin: 0;
+}
+
+.bigger-hand .tile-label.floating {
+  left: auto;
+  position: static;
+  width: 100%;
+}
+
+.bigger-hand-riichi .bigger-hand-tiles {
+  align-items: center;
+  height: calc(
+    (var(--tile-width) - 2 * var(--tile-border)) * var(--tile-ratio) + 2 *
+      var(--tile-border)
+  );
+  width: 64px;
 }
 
 .bigger-hand-info-item {
@@ -1662,7 +1682,7 @@ html.dark:not(.high-contrast) .radix-themes {
   padding-top: var(--space-2);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 
 .help-tabs {
@@ -2292,6 +2312,16 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: var(--gray-a3);
 }
 
+.dark .help-content .tone-gray,
+.dark .help-top .tone-gray {
+  --name: #707070;
+}
+
+.high-contrast.dark .help-content .tone-gray,
+.high-contrast.dark .help-top .tone-gray {
+  --name: #696969;
+}
+
 .help-content .step,
 .help-content .yaku-family {
   --fill: var(--ron, var(--pale));
@@ -2425,13 +2455,6 @@ html.dark:not(.high-contrast) .radix-themes {
   border-top: 0;
 }
 
-.yaku.nested {
-  background: var(--color-panel-solid);
-  border: 1px solid transparent;
-  border-radius: var(--radius-2);
-  margin: 0 var(--space-2) var(--space-2) var(--space-5);
-}
-
 .han-badge {
   align-self: start;
   background: var(--name);
@@ -2508,6 +2531,13 @@ html.dark:not(.high-contrast) .radix-themes {
   align-self: center;
   font-weight: var(--font-weight-bold);
   padding: 0 1px;
+}
+
+@media (max-width: 359px) {
+  .help-yaku .tile-arrow {
+    font-size: 0.7em;
+    padding: 0;
+  }
 }
 
 .help-content {

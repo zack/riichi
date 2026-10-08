@@ -37,6 +37,7 @@
     "pointsFromDealer": "Points (from dealer)",
     "yourAnswer": "Your Answer",
     "youPicked": "You picked",
+    "youPickedLimit": "You picked a limit hand",
     "realAnswer": "Answer",
     "noOptionsSelected": "No test options selected. Select at least one in the Options menu.",
     "errorPrefix": "Error:",
