@@ -31,6 +31,7 @@ function Meld({ fancy, name, showNames, slots }) {
                 showNames ? TileConversion.tileToLabel(tile, t) : undefined
               }
               path={TileConversion.tileToPath(tile, fancy)}
+              text={TileConversion.tileToText(tile, t)}
             />
           ))}
         </span>

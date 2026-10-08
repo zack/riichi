@@ -33,6 +33,7 @@ const TileList = ({ fancy, showNames, tiles }) => {
       key={index}
       label={showNames ? TileConversion.tileToLabel(tile, t) : undefined}
       path={TileConversion.tileToPath(tile, fancy)}
+      text={TileConversion.tileToText(tile, t)}
     />
   ));
 };
@@ -77,6 +78,7 @@ function BiggerHandTiles({ agari, fancy, handLabel, showHonba, showNames }) {
                   : undefined
               }
               path={TileConversion.windToPath(agari.roundWind, fancy)}
+              text={TileConversion.windToLabel(agari.roundWind, t)}
             />
           </InfoItem>
           <InfoItem label={t('info.seatWind')}>
@@ -176,6 +178,7 @@ function BiggerHandTiles({ agari, fancy, handLabel, showHonba, showNames }) {
                 : undefined
             }
             path={TileConversion.tileToPath(agari.winningTile, fancy)}
+            text={TileConversion.tileToText(agari.winningTile, t)}
             winning
           />
         </div>

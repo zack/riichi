@@ -70,6 +70,10 @@ function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
   const hasLinks = helpHtml.includes('<a ');
   const isYakuTab = id === YAKU_TAB;
 
+  const handleImageError = (event) => {
+    event.target.closest('.tile')?.classList.add('failed');
+  };
+
   // This is safe because it's only ever our own help pages, which ship with the
   // app
   return (
@@ -101,6 +105,7 @@ function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
       <div
         className={`help-content help-${id} ${fancyTiles ? 'fancy-tiles' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
         dangerouslySetInnerHTML={{ __html: helpHtml }}
+        onErrorCapture={handleImageError}
         ref={helpRef}
       />
     </>
