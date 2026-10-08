@@ -115,7 +115,7 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
 
   function handleTabChange(newTab) {
     setTab(newTab);
-    contentRef.current?.scrollIntoView();
+    contentRef.current?.parentElement.scrollIntoView();
   }
 
   return (

@@ -15,7 +15,7 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;');
 }
 
-function getBadgeHtml(yaku, t) {
+function getBadge(yaku, t) {
   let className = 'han-badge';
   let drawn = String(yaku.han);
   let said = t('helpYaku.badge.han');
@@ -28,7 +28,10 @@ function getBadgeHtml(yaku, t) {
     said = t('helpYaku.badge.plus');
   }
 
-  return `<span class="${className}"><span aria-hidden="true">${drawn}</span>${hide(said.replace('{}', yaku.han))}</span>`;
+  return {
+    badgeHtml: `<span aria-hidden="true" class="${className}">${drawn}</span>`,
+    saidHtml: `<p class="visually-hidden yaku-worth">${said.replace('{}', yaku.han)}</p>`,
+  };
 }
 
 function getNameHtml(yaku, t, language) {
@@ -70,10 +73,11 @@ function getYakuHtml(yaku, t, language, getTiles) {
     : '';
   const description = escapeHtml(t(`helpYaku.yaku.${yaku.key}.description`));
   const tilesHtml = getExampleHtml(yaku.tiles, getTiles);
+  const { badgeHtml, saidHtml } = getBadge(yaku, t);
 
   return (
-    `<div class="yaku">${getBadgeHtml(yaku, t)}`
-    + `<div class="yaku-words"><h3 class="yaku-name">${name}${glossHtml}</h3>`
+    `<div class="yaku">${badgeHtml}`
+    + `<div class="yaku-words"><h3 class="yaku-name">${name}${glossHtml}</h3>${saidHtml}`
     + `<p class="yaku-description"><span>${description}</span>${tilesHtml}</p></div></div>`
   );
 }

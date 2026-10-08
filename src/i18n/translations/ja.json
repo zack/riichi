@@ -82,6 +82,7 @@
     "ignoreFuOnLimit": "満貫以上で符を無視",
     "nextHandNote": "出題の変更は次の手から反映されます。",
     "unavailableWhileOff": "「{}」がオフの間は使用できません。",
+    "unavailableWhileBothOff": "「{}」と「{}」がオフの間は使用できません。",
     "exactFu": "符の切り上げなし",
     "language": "言語",
     "showTileNames": "牌の名前",

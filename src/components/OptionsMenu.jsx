@@ -48,12 +48,18 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
   const contentRef = useRef(null);
 
   const renderOption = ({ id, indented, needs = [] }) => {
-    const missingOptionId = needs.find((neededId) => !options[neededId]);
+    const [firstMissing, secondMissing] = needs
+      .filter((neededId) => !options[neededId])
+      .map((neededId) => t(`options.${neededId}`));
     let unavailableNote;
-    if (missingOptionId !== undefined) {
+    if (secondMissing !== undefined) {
+      unavailableNote = t('options.unavailableWhileBothOff')
+        .replace('{}', firstMissing)
+        .replace('{}', secondMissing);
+    } else if (firstMissing !== undefined) {
       unavailableNote = t('options.unavailableWhileOff').replace(
         '{}',
-        t(`options.${missingOptionId}`),
+        firstMissing,
       );
     }
 
