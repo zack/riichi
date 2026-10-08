@@ -36,6 +36,10 @@ function fuHasNoAnswer(agari, options) {
   );
 }
 
+function limitWasWronglyPicked(field) {
+  return field.ignored && field.answer !== '';
+}
+
 function getQuizFields(agari, options, points, answers, t) {
   const fields = [];
   const fuIgnored = fuIsIgnored(options, answers);
@@ -163,4 +167,5 @@ export {
   getGradedFields,
   getMissingFields,
   getQuizFields,
+  limitWasWronglyPicked,
 };

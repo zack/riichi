@@ -156,6 +156,12 @@ const checkStates = (appearance) => {
       checkAnswer();
       pageShouldMatch(`${appearance}-riichi-checked`);
     });
+
+    it('should match the bigger hand, with its sticks', () => {
+      cy.viewport(PHONE_WIDTH, DIALOG_HEIGHT);
+      cy.contains('button', 'Tap the tiles to see them bigger').click();
+      dialogShouldMatch(`${appearance}-riichi-bigger-hand`);
+    });
   });
 
   describe('Display options', () => {

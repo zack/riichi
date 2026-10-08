@@ -290,6 +290,43 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         .should('have.length', 2);
     });
 
+    [
+      ['ja', ['ドラ 表示牌', '裏ドラ 表示牌']],
+      ['zh_cn', ['宝牌 指示牌', '里宝牌 指示牌']],
+    ].forEach(([language, labels]) => {
+      it(`should break the ${language} labels between their words`, () => {
+        cy.viewport(360, 740);
+        cy.visit(`/?hand=${TWO_URADORA_HAND}`, {
+          onBeforeLoad: (win) => {
+            win.localStorage.setItem('mahjong-language', language);
+          },
+        });
+
+        labels.forEach((label) => {
+          getInfoLabels().should('include', label);
+        });
+        cy.get('.info-group-end .info-label-line').should((lines) => {
+          expect(lines).to.have.length(4);
+          for (const line of lines) {
+            const lineHeight = parseFloat(getComputedStyle(line).lineHeight);
+            expect(line.getBoundingClientRect().height).to.be.below(
+              lineHeight * 1.5,
+            );
+          }
+        });
+
+        cy.get('.bigger-hand-button').click();
+        cy.get('.bigger-hand-info dt').should((terms) => {
+          for (const term of terms) {
+            const lineHeight = parseFloat(getComputedStyle(term).lineHeight);
+            expect(term.getBoundingClientRect().height).to.be.below(
+              lineHeight * 1.5,
+            );
+          }
+        });
+      });
+    });
+
     it('should leave the uradora out when there are none', () => {
       visitHand(RON_HAND);
       getInfoLabels().then((labels) => {
@@ -1942,6 +1979,22 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('.badge', 'Wrong: 1');
       cy.get('[role="radio"].wrong').should('contain', '40');
     });
+
+    it('should mark fu wrong when a limit hand was picked for a hand under the limit', () => {
+      visitHand(RON_HAND);
+      pick('han', '5');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+
+      cy.contains('.badge', 'Wrong: 1');
+      cy.contains('.answer-total.wrong', 'Fu: 60')
+        .next('.answer-picked')
+        .should('have.text', 'You picked a limit hand');
+      cy.get('[role="status"]').should(
+        'contain',
+        'Fu: 60, You picked a limit hand',
+      );
+    });
   });
 
   describe('Hand parts', () => {
@@ -2007,6 +2060,53 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.bigger-hand-button').click();
 
       concealedRowsShouldBe([7, 6]);
+    });
+
+    it('should show the riichi stick and the honba sticks of a hand that has them', () => {
+      visitHand(TWO_HONBA_HAND);
+      turnOnOptions('Honba sticks');
+      cy.get('.bigger-hand-button').click();
+
+      cy.get('.bigger-hand-info').within(() => {
+        cy.contains('dt', 'Honba sticks');
+        cy.get('.honba-sticks').should('have.attr', 'aria-label', '2');
+        cy.contains('.bigger-hand-riichi', 'Riichi!');
+        cy.get('.riichi-stick').should('be.visible');
+      });
+    });
+
+    it('should leave the sticks out when there are none to show', () => {
+      visitHand(TWO_HONBA_HAND);
+      cy.get('.bigger-hand-button').click();
+      cy.get('.bigger-hand-info .riichi-stick').should('exist');
+      cy.get('.bigger-hand-info .honba-sticks').should('not.exist');
+      cy.get('body').type('{esc}');
+
+      visitHand(RON_HAND);
+      cy.get('.bigger-hand-button').click();
+      cy.get('.bigger-hand-info').should('exist');
+      cy.get('.bigger-hand-info .riichi-stick').should('not.exist');
+    });
+
+    it('should keep the sticks on one row and the indicators on another', () => {
+      cy.viewport(360, 900);
+      visitHand(TWO_HONBA_HAND);
+      turnOnOptions('Honba sticks');
+      cy.get('.bigger-hand-button').click();
+
+      const getTop = (item) => Math.round(item.getBoundingClientRect().top);
+      cy.get('.bigger-hand-info-group').should((groups) => {
+        const [winds, sticks, indicators] = [...groups].map((group) =>
+          [...group.querySelectorAll('.bigger-hand-info-item')].map(getTop),
+        );
+
+        expect(winds).to.have.length(2);
+        expect(sticks).to.have.length(2);
+        expect(sticks[0]).to.equal(sticks[1]);
+        expect(indicators).to.have.length(2);
+        expect(indicators[0]).to.equal(indicators[1]);
+        expect(indicators[0]).to.be.above(sticks[0]);
+      });
     });
 
     it('should open from the tiles, and give focus back on close', () => {
@@ -2115,6 +2215,69 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         cy.wrap(label).should('have.attr', 'aria-hidden', 'true');
       });
       cy.get('.help-content.names-on-tiles').should('exist');
+    });
+  });
+
+  describe('Yaku in the help on a narrow phone', () => {
+    const layOutHelpAsOnAPhone = () => {
+      dropScrollbarRoom();
+      cy.document().then((doc) => {
+        const style = doc.createElement('style');
+        style.textContent = '.rt-BaseDialogScroll { scrollbar-width: none; }';
+        doc.head.append(style);
+      });
+    };
+
+    const shouldKeepItsMargins = () => {
+      cy.get('.help-dialog').should((dialog) => {
+        const scroller = dialog[0].closest('.rt-BaseDialogScroll');
+        const box = dialog[0].getBoundingClientRect();
+
+        expect(scroller.clientWidth).to.equal(320);
+        expect(scroller.scrollWidth).to.equal(scroller.clientWidth);
+        expect(scroller.clientWidth - box.right).to.be.closeTo(box.left, 0.5);
+      });
+    };
+
+    it('should fit the yaku on the narrowest phone', () => {
+      cy.viewport(320, 740);
+      visitHand(RON_HAND);
+      openHelp('Yaku');
+      cy.get('.help-yaku .tile-arrow').should('have.length.at.least', 8);
+
+      layOutHelpAsOnAPhone();
+      shouldKeepItsMargins();
+    });
+
+    it('should fit them with fancy tiles and their names too', () => {
+      cy.viewport(320, 740);
+      visitHand(RON_HAND);
+      turnOnOptions('Fancy tiles', 'Names on tiles');
+      openHelp('Yaku');
+      cy.get('.help-yaku.fancy-tiles .tile-arrow').should(
+        'have.length.at.least',
+        8,
+      );
+
+      layOutHelpAsOnAPhone();
+      shouldKeepItsMargins();
+    });
+
+    it('should keep the names on the tiles under the header', () => {
+      visitHand(RON_HAND);
+      turnOnOptions('Names on tiles');
+      openHelp('Yaku');
+      cy.get('.help-content.names-on-tiles').should('exist');
+
+      cy.get('.help-header').then((header) => {
+        cy.get('.help-content .tile-label')
+          .first()
+          .should((label) => {
+            expect(Number(getComputedStyle(header[0]).zIndex)).to.be.above(
+              Number(getComputedStyle(label[0]).zIndex),
+            );
+          });
+      });
     });
   });
 

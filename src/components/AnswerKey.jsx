@@ -10,6 +10,7 @@ import {
   fuHasNoAnswer,
   getExactFu,
   getGradedFields,
+  limitWasWronglyPicked,
 } from '../scripts/QuizFields';
 import { getFuWikiUrl, getYakuWikiUrl } from '../scripts/WikiLinks';
 import * as YakuConversion from '../scripts/YakuConversion';
@@ -49,7 +50,9 @@ const CalculationSteps = ({ steps }) => (
 const Total = ({ answers, field, graded, picked, title }) => {
   const { t } = useTranslation();
   let result;
-  if (!graded) {
+  if (limitWasWronglyPicked(field)) {
+    result = WRONG;
+  } else if (!graded) {
     result = undefined;
   } else if (answerIsCorrect(field, answers)) {
     result = CORRECT;
@@ -72,7 +75,9 @@ const Total = ({ answers, field, graded, picked, title }) => {
       </Heading>
       {result === WRONG && (
         <Text as='p' className='answer-picked' size='1'>
-          {t('quiz.youPicked')} {picked ?? answers[field.id].trim()}
+          {limitWasWronglyPicked(field)
+            ? t('quiz.youPickedLimit')
+            : `${t('quiz.youPicked')} ${picked ?? answers[field.id].trim()}`}
         </Text>
       )}
     </>
