@@ -57,6 +57,7 @@ function InfoPanel({ agari, options }) {
                 : undefined
             }
             path={TileConversion.windToPath(agari.roundWind, fancy)}
+            text={TileConversion.windToLabel(agari.roundWind, t)}
           />
         </InfoItem>
         <InfoItem label={t('info.seatWind')} stacked>
@@ -68,6 +69,7 @@ function InfoPanel({ agari, options }) {
                 : undefined
             }
             path={TileConversion.tileToPath(agari.seatWind, fancy)}
+            text={TileConversion.tileToText(agari.seatWind, t)}
           />
         </InfoItem>
         {options.testHonba && agari.honbaSticks > 0 && (
@@ -108,6 +110,7 @@ function InfoPanel({ agari, options }) {
                 showNames ? TileConversion.tileToLabel(tile, t) : undefined
               }
               path={TileConversion.tileToPath(tile, fancy)}
+              text={TileConversion.tileToText(tile, t)}
             />
           ))}
         </InfoItem>
@@ -128,6 +131,7 @@ function InfoPanel({ agari, options }) {
                   showNames ? TileConversion.tileToLabel(tile, t) : undefined
                 }
                 path={TileConversion.tileToPath(tile, fancy)}
+                text={TileConversion.tileToText(tile, t)}
               />
             ))}
           </InfoItem>

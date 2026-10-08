@@ -4,12 +4,12 @@ A web app for practicing scoring in riichi mahjong. It deals you a winning hand,
 
 <table>
   <tr>
-    <th valign="middle">Light mode, before showing the answer</th>
+    <th valign="middle">Light mode, before checking the answer</th>
     <th valign="middle">Dark mode, with more options turned on,<br />showing the answer</th>
   </tr>
   <tr>
     <td align="center" valign="top"><img src="screenshot-light.png" alt="The trainer in light mode, showing a hand with a concealed kan and a han and fu picked but not checked yet" width="380" /></td>
-    <td align="center" valign="top"><img src="screenshot-dark.png" alt="The trainer in dark mode with the fancy tiles and the tile names, showing a riichi hand won by tsumo with a concealed kan, uradora, and honba, and the answer box with the points from the dealer and from the others" width="380" /></td>
+    <td align="center" valign="top"><img src="screenshot-dark.png" alt="The trainer in dark mode with the fancy tiles and the tile names, showing a riichi hand won by tsumo with a concealed kan, uradora, and honba. The answer was right, and the Answer tab lists each yaku and the steps to the points from the dealer and from the others" width="380" /></td>
   </tr>
 </table>
 
@@ -19,9 +19,21 @@ A web app for practicing scoring in riichi mahjong. It deals you a winning hand,
 
 This is a fork of [Varantha/Mahjong-ScoringTrainer](https://github.com/Varantha/Mahjong-ScoringTrainer). The hands and the scoring logic are Varantha's work and the work of the people who contributed there.
 
+## Why a fork?
+
+Mostly UI/UX improvements, especially around mobile use. An incomplete list of new features:
+
+- Updated UI design with light and dark themes, a high contrast option, and optional fancy tiles
+- Significantly improved accessibility
+- A "Just tell me" feature
+- Hand ID in the URL
+- Remade the help and scoring pages based on [Arenlyde's](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/).
+- Implement as a progressive web app, so it works offline.
+- Significantly improved test coverage.
+
 ## Where do the hands come from?
 
-All hands are taken directly from the [original repository](https://github.com/Varantha/Mahjong-ScoringTrainer), which themselves came from Tenhou logs.
+All 1,963 hands, with some minor fixes, are taken directly from the [original repository](https://github.com/Varantha/Mahjong-ScoringTrainer), which themselves came from Tenhou logs. If something looks wrong, use "Report a problem with this hand" in the options menu.
 
 ## What languages does it support?
 
@@ -30,6 +42,8 @@ English, Japanese (日本語), Korean (한국어), and Chinese (Simplified) (中
 All of the non-english text is computer generated. If you'd like to provide translation support, please reach out, or check out the [Translation Guide](TRANSLATION_GUIDE.md).
 
 # Running it locally
+
+You'll need the version of Node in `.nvmrc`.
 
 1. Clone the repo
    ```sh
@@ -52,9 +66,11 @@ All of the non-english text is computer generated. If you'd like to provide tran
 
 The service worker that makes it work offline only runs in a production build.
 
+To open one particular hand, copy its link in the app, or put its name on the end of the address yourself: `?hand=2011010101gm-00a9-0000-370cfc0a2`. The names are the file names in `src/data`, without the `.json`.
+
 # Testing
 
-There are Cypress tests for the scoring, for accessibility, and for how it looks. They run in Chrome against the production build on port 5173.
+There are Cypress tests for the quiz and the scoring, for accessibility, and for how it looks. They run in Chrome against the production build on port 5173.
 
 1. Build and serve the app
    ```sh
@@ -71,6 +87,16 @@ The visual tests compare screenshots against the ones in `cypress/snapshots/base
 ```sh
 npm run cypress:update-snapshots
 ```
+
+Three more checks run on every pull request, along with the tests. The first two also run on the files you commit.
+
+```sh
+npm run lint
+npm run format:check
+npm run check:hands
+```
+
+`check:hands` makes sure every hand's han and fu is one of the choices the quiz offers.
 
 # Special Thanks
 

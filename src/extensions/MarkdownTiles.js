@@ -1,4 +1,5 @@
 import * as TileConversion from '../scripts/TileConversion';
+import { getTileTextClass } from '../scripts/TileText';
 
 function escapeAttribute(value) {
   return value
@@ -18,7 +19,10 @@ function getTileHtml(tile, t, fancy, showNames) {
     ? `<span aria-hidden="true" class="tile-label">${escapeAttribute(TileConversion.tileToLabel(tile, t))}</span>`
     : '';
 
-  return `<span class="tile-cell"><span class="tile"><img alt="${alt}" src="${src}" /></span>${label}</span>`;
+  const tileText = TileConversion.tileToText(tile, t);
+  const text = `<span aria-hidden="true" class="${getTileTextClass(tileText)}">${escapeAttribute(tileText)}</span>`;
+
+  return `<span class="tile-cell"><span class="tile"><img alt="${alt}" src="${src}" />${text}</span>${label}</span>`;
 }
 
 export function getTilesHtml(tileString, t, fancy, showNames) {
