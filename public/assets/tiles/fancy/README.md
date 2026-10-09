@@ -5,7 +5,8 @@ These are the tiles from the "Full set" table on Wikipedia's [Mahjong tiles](htt
 What's different from the originals:
 
 - The files are renamed to match the plain tiles one folder up, and run through [SVGO](https://svgo.dev/) to make them smaller.
+- The three red fives (`Man0.svg`, `Pin0.svg` and `Sou0.svg`) each have a dot added to the face, the way the plain tiles one folder up mark theirs. Without it only the color of the ink tells a red five from a plain five.
 - `Back.svg` isn't one of theirs. It's the blank white dragon with the face turned green and the sides turned cream, for the face-down tiles of a concealed kan.
 - The app's icons are made from `Pin7.svg`. That's `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, and the four `icon*.png` files in `public/`. Some of them sit the tile on a dark background, and none of them change the tile itself.
 
-`Back.svg` and the icons are under CC BY-SA 4.0 too, the same as the tiles they're made from.
+`Back.svg`, the red fives with their dots and the icons are under CC BY-SA 4.0 too, the same as the tiles they're made from.

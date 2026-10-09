@@ -1143,6 +1143,10 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('han', '1');
       pick('fu', '60');
       cy.get('#points').type('2000');
+      cy.get('#answers-locked').should('not.exist');
+      cy.get('[role="radiogroup"]')
+        .should('have.length', 2)
+        .and('not.have.attr', 'aria-describedby');
       cy.contains('button', 'Check Answer').click();
       showYourAnswer();
 
@@ -1152,6 +1156,13 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         'aria-readonly',
         'true',
       );
+      cy.get('[role="radiogroup"]')
+        .should('have.length', 2)
+        .and('have.attr', 'aria-describedby', 'answers-locked');
+      cy.get('#answers-locked')
+        .should('have.length', 1)
+        .and('have.class', 'visually-hidden')
+        .and('have.text', "This hand is checked. Answers can't be changed.");
       pick('han', '2');
       cy.get('[aria-labelledby="han-label"] [data-state="checked"]').should(
         'have.text',
@@ -1669,6 +1680,63 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       noteIsGone('points');
       cy.get('.quiz-form.checked').should('not.exist');
       cy.contains('.badge', 'Wrong: 0');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should say the note when the focus is already on an empty box', () => {
+      visitHand(RON_HAND);
+      pick('han', '2');
+      pick('fu', '60');
+      cy.get('#points').focus();
+      cy.get('#points').type('{enter}');
+
+      cy.focused().should('have.id', 'points');
+      cy.get('#points-missing').should('have.text', 'Error: Enter the points.');
+      cy.get('[role="status"]').should('have.text', 'Error: Enter the points.');
+
+      cy.get('#points').type('2');
+      noteIsGone('points');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should say the note when the box in focus is not a number', () => {
+      visitHand(RON_HAND);
+      pick('han', '1');
+      pick('fu', '60');
+      cy.get('#points').type('2k');
+      cy.get('[role="status"]').should('have.text', '');
+      cy.get('#points').type('{enter}');
+
+      cy.focused().should('have.id', 'points');
+      cy.get('[role="status"]').should('have.text', 'Error: Enter a number.');
+      cy.get('#points').type('{backspace}');
+      cy.get('#points-error').should('not.exist');
+      cy.get('[role="status"]').should('have.text', '');
+
+      cy.get('#points').type('000{enter}');
+      cy.get('[role="status"]').should(
+        'have.text',
+        'Correct. Han: 1, Fu: 60, Points: 2000',
+      );
+    });
+
+    it('should stop saying a note once the focus moves to another', () => {
+      visitHand(TSUMO_HAND);
+      pick('han', '4');
+      cy.get('#pointsDealer').type('3900');
+      cy.get('#points').focus();
+      cy.get('#points').type('{enter}');
+      cy.focused().should('have.attr', 'role', 'radio');
+      cy.get('[role="status"]').should('have.text', '');
+
+      pick('fu', '30');
+      cy.get('#points').focus();
+      cy.get('#points').type('{enter}');
+      cy.get('[role="status"]').should('have.text', 'Error: Enter the points.');
+
+      check();
+      cy.focused().should('have.id', 'points');
+      cy.get('[role="status"]').should('have.text', '');
     });
 
     it('should go on to the next box on enter, with nothing marked', () => {
@@ -2186,6 +2254,22 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
       cy.contains('[role="dialog"] button', 'Close').click();
       cy.get('[role="dialog"]').should('not.exist');
+    });
+
+    it('should scroll to the last control when Shift+Tab wraps to it', () => {
+      cy.viewport(1280, 720);
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').click();
+      cy.get('.options-dialog').should('be.focused');
+      cy.press(Cypress.Keyboard.Keys.TAB);
+      cy.focused().should('have.text', 'Close');
+      cy.focused().trigger('keydown', { key: 'Tab', shiftKey: true });
+      cy.focused().should('contain', 'Report a problem with this hand');
+      cy.focused().should((link) => {
+        const { bottom, top } = link[0].getBoundingClientRect();
+        expect(Math.round(top)).to.be.at.least(0);
+        expect(Math.round(bottom)).to.be.at.most(720);
+      });
     });
 
     const getReportBody = () =>
@@ -2759,7 +2843,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('[aria-labelledby="fu-label"]').should(
         'have.attr',
         'aria-describedby',
-        'fu-no-answer',
+        'fu-no-answer answers-locked',
       );
     });
 
@@ -3376,6 +3460,23 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('.yaku-name', 'Iipeikou')
         .find('.yaku-gloss')
         .should('have.text', 'Pure double sequence');
+      cy.get('.yaku-gloss').should('have.length', 18);
+      cy.get('.yaku-gloss[lang]').should('not.exist');
+    });
+
+    it('should mark the glosses as Japanese where the page is Korean', () => {
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad: (win) => {
+          win.localStorage.setItem('mahjong-language', 'ko');
+        },
+      });
+      cy.get('.icon-button').last().click();
+      cy.get('.help-tabs [role="tab"]').eq(1).click();
+      cy.get('.yaku-gloss').should('have.length', 18);
+      cy.get('.yaku-gloss').each((gloss) => {
+        expect(gloss).to.have.attr('lang', 'ja');
+        expect(gloss.text()).to.match(JAPANESE_SCRIPT);
+      });
     });
 
     it('should say what a yaku is worth on its badge', () => {

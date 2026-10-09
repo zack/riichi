@@ -147,7 +147,7 @@
 
 本站是 Varantha 的 [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) 的分支。牌例和算分逻辑均来自原项目。
 
-立体牌由 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 绘制，其中一部分是根据 Jerry Crimson Mann 和 Dewclouds 的原作重新制作的。这些牌收录于[维基共享资源](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)，以 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 许可发布。本站压缩了文件大小，背面朝上的牌和应用图标也是以这些牌为基础制作的。
+立体牌由 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 绘制，其中一部分是根据 Jerry Crimson Mann 和 Dewclouds 的原作重新制作的。这些牌收录于[维基共享资源](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)，以 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 许可发布。本站压缩了文件大小，并在每张红5上加了一个圆点，背面朝上的牌和应用图标也是以这些牌为基础制作的。
 
 本帮助的大部分内容来自 [Aranlyde 制作的速查表](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/)，该速查表以 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 发布。
 

@@ -371,10 +371,14 @@ html.dark:not(.high-contrast) .radix-themes {
   border-radius: var(--radius-2);
   display: inline-flex;
   font-size: var(--font-size-1);
-  height: var(--space-5);
+  min-height: max(var(--space-5), 2em);
   padding: 0 var(--space-2);
   position: relative;
   white-space: nowrap;
+}
+
+.win-rate {
+  flex-wrap: wrap;
 }
 
 .badge.correct {
@@ -452,7 +456,7 @@ html.dark:not(.high-contrast) .radix-themes {
   font-family: inherit;
   justify-content: center;
   padding: 0;
-  width: var(--space-5);
+  width: max(var(--space-5), 2em);
 }
 
 .hand-link::before {
@@ -843,6 +847,7 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .bigger-hand-button {
+  --line-leeway: 2px;
   --room-below: calc(var(--card-gutter) - var(--card-border-width));
   --slack: calc(var(--target-size) - var(--line-height-1));
   align-items: center;
@@ -859,7 +864,8 @@ html.dark:not(.high-contrast) .radix-themes {
   margin: calc(6px + var(--room-below) - var(--space-3) - var(--slack)) auto
     calc(-1 * var(--room-below));
   min-height: var(--target-size);
-  padding: calc(var(--slack) - 2 * var(--room-below)) var(--space-3) 0;
+  padding: calc(var(--slack) - var(--room-below) - var(--line-leeway))
+    var(--space-3) calc(var(--room-below) - var(--line-leeway));
 }
 
 .bigger-hand-button:focus-visible {
@@ -1108,6 +1114,7 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .quiz-form {
   align-items: center;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -1358,8 +1365,8 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .han-choices {
-  --choice-row-gap: 14px;
-  margin-top: 6px;
+  --choice-row-gap: 0.875em;
+  margin-top: 0.375em;
 }
 
 .choice-row {
@@ -1403,7 +1410,7 @@ html.dark:not(.high-contrast) .radix-themes {
   font-family: inherit;
   font-size: var(--font-size-3);
   justify-content: center;
-  min-height: var(--choice-height);
+  min-height: max(var(--choice-height), 2.5em);
   padding: 0;
   position: relative;
 }
@@ -1585,6 +1592,49 @@ html.dark:not(.high-contrast) .radix-themes {
 .answer-caption,
 .answer-number {
   color: var(--correct-color);
+}
+
+@container (width < 16em) {
+  .quiz-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .quiz-fields label {
+    margin-bottom: calc(var(--space-1) - var(--space-4));
+    text-align: center;
+  }
+
+  .number-input-cell {
+    justify-self: center;
+    max-width: 100%;
+    width: 6rem;
+  }
+
+  .choice-field + label + .number-input-cell,
+  .choice-field + label + .number-input-cell + .real-answer,
+  .real-answer + label + .number-input-cell,
+  .real-answer + label + .number-input-cell + .real-answer {
+    margin-top: 0;
+  }
+
+  .real-answer {
+    text-align: center;
+  }
+
+  .real-answer:empty {
+    display: none;
+  }
+
+  .choice-group.baiman,
+  .choice-group.haneman,
+  .choice-group.mangan {
+    min-width: max(calc(var(--choice-count) * var(--target-size)), 4em);
+  }
+
+  .quiz-actions > .action-button {
+    padding-inline: var(--space-2);
+    white-space: normal;
+  }
 }
 
 /* ANSWER KEY */

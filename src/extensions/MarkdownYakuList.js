@@ -68,8 +68,10 @@ function getExampleHtml(tiles, getTiles) {
 function getYakuHtml(yaku, t, language, getTiles) {
   const name = getNameHtml(yaku, t, language);
   const gloss = t(`helpYaku.yaku.${yaku.key}.gloss`, '');
+  const glossLanguage = t('helpYaku.glossLanguage', '');
+  const langAttribute = glossLanguage ? ` lang="${glossLanguage}"` : '';
   const glossHtml = gloss
-    ? `<span class="yaku-gloss">${escapeHtml(gloss)}</span>`
+    ? `<span class="yaku-gloss"${langAttribute}>${escapeHtml(gloss)}</span>`
     : '';
   const description = escapeHtml(t(`helpYaku.yaku.${yaku.key}.description`));
   const tilesHtml = getExampleHtml(yaku.tiles, getTiles);

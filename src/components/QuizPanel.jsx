@@ -40,6 +40,8 @@ const PRESSING_KEYS = [ENTER_KEY, ' '];
 const ANSWER_TAB = 'answer';
 const YOUR_ANSWER_TAB = 'your-answer';
 
+const LOCKED_NOTE_ID = 'answers-locked';
+
 function getChoiceResult(answers, checked, choice, field) {
   if (!checked) {
     return undefined;
@@ -213,6 +215,7 @@ const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
   const describedBy = [
     field.ignored && `${field.id}-note`,
     noAnswer && `${field.id}-no-answer`,
+    checked && LOCKED_NOTE_ID,
   ]
     .filter(Boolean)
     .join(' ');
@@ -327,6 +330,7 @@ function QuizPanel({
   onChangeAnswer,
   onCheck,
   onNewHand,
+  onStatus,
   result,
 }) {
   const { t } = useTranslation();
@@ -344,16 +348,25 @@ function QuizPanel({
   const fieldIsFlagged = (field) =>
     !checked && flaggedIds.includes(field.id) && missingFields.includes(field);
 
-  const focusField = (field) => {
+  const getFocusTarget = (field) => {
     if (field.choiceRows) {
       const choices = [
         ...document.querySelectorAll(`.${field.id}-choices [role='radio']`),
       ];
       const tabStop = choices.find((choice) => choice.tabIndex === 0);
-      (tabStop ?? choices[0])?.focus();
+      return tabStop ?? choices[0];
     } else {
-      document.getElementById(field.id)?.focus();
+      return document.getElementById(field.id);
     }
+  };
+  const focusField = (field) => getFocusTarget(field)?.focus();
+
+  const getProblemNote = (field) =>
+    `${t('quiz.errorPrefix')} ${missingFields.includes(field) ? field.missing : t('quiz.notANumber')}`;
+
+  const handleChangeAnswer = (fieldId, value) => {
+    onStatus('');
+    onChangeAnswer(fieldId, value);
   };
 
   const problemFields = fields.filter(
@@ -411,7 +424,11 @@ function QuizPanel({
     }
 
     if (gradedFields.length > 0 && problemFields.length > 0) {
+      const alreadyThere =
+        document.activeElement === getFocusTarget(problemFields[0]);
+
       setFlaggedIds(missingFields.map((field) => field.id));
+      onStatus(alreadyThere ? getProblemNote(problemFields[0]) : '');
       focusField(problemFields[0]);
       return;
     }
@@ -421,6 +438,7 @@ function QuizPanel({
   };
 
   const [beforeGear, afterGear] = t('quiz.noOptionsSelected').split('{}');
+  const hasChoices = fields.some((field) => field.choiceRows);
   const questions =
     fields.length > 0 ? (
       <div className='quiz-fields'>
@@ -435,11 +453,16 @@ function QuizPanel({
               key={field.id}
               missing={fieldIsFlagged(field)}
               onBoxKeyDown={handleBoxKeyDown}
-              onChangeAnswer={onChangeAnswer}
+              onChangeAnswer={handleChangeAnswer}
               opensNextBox={getEmptyBoxesAfter(field).length > 0}
             />
           );
         })}
+        {checked && hasChoices && (
+          <span className='visually-hidden' id={LOCKED_NOTE_ID}>
+            {t('quiz.answersLocked')}
+          </span>
+        )}
       </div>
     ) : (
       <Text as='p' size='3'>

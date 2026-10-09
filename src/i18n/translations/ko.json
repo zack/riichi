@@ -42,6 +42,7 @@
     "yourAnswer": "예측 정답",
     "youPicked": "선택한 답",
     "youPickedLimit": "만관 이상을 선택했습니다",
+    "answersLocked": "이 패는 확인이 끝났습니다. 답은 바꿀 수 없습니다.",
     "realAnswer": "실제 정답",
     "noOptionsSelected": "출제할 항목이 없습니다. {}옵션에서 판수, 부수, 점수 중 하나를 켜 주세요.",
     "errorPrefix": "오류:",
@@ -296,6 +297,7 @@
       "triplets": "커쯔와 깡쯔",
       "value": "역패"
     },
+    "glossLanguage": "ja",
     "legend": {
       "plus": "멘젠이면 +1판"
     },
