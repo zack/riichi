@@ -18,6 +18,10 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{css,html,ico,js,json,png,svg,webp,woff2}'],
         globIgnores: ['*.png', 'icons/**', 'manifests/**'],
+        // Files in public/ don't get a hash in their filename, so only skip the
+        // revision for names that do end in one. Otherwise an installed app
+        // would keep an old tile drawing forever.
+        dontCacheBustURLsMatching: /-[\w-]{8}\.(css|js|woff2)$/,
       },
     }),
     react(),

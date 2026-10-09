@@ -39,9 +39,22 @@ function getStoredOptions() {
   return options;
 }
 
+// Only options that aren't at their default get stored. That way if a default
+// ever changes, an untouched option follows it instead of holding on to a
+// stored copy of the old default.
 function storeOptions(options) {
+  const changedOptions = Object.fromEntries(
+    Object.entries(options).filter(
+      ([optionId, value]) => value !== DEFAULT_OPTIONS[optionId],
+    ),
+  );
+
   try {
-    localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(options));
+    if (Object.keys(changedOptions).length > 0) {
+      localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(changedOptions));
+    } else {
+      localStorage.removeItem(OPTIONS_STORAGE_KEY);
+    }
   } catch {
     // localStorage is blocked. The options still last until the page is closed.
   }

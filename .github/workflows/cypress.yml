@@ -24,10 +24,9 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v6.8.0
-        timeout-minutes: 10
+        timeout-minutes: 15
         with:
           browser: chrome
-          video: false
           build: npm run build
           start: npm run preview -- --port 5173 --strictPort
           wait-on: 'http://localhost:5173'

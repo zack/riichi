@@ -22,34 +22,42 @@ const translations = {
   zh_cn: zh_cnTranslations,
 };
 
+const LANGUAGE_STORAGE_KEY = 'mahjong-language';
+const DEFAULT_LANGUAGE = 'en';
+
+// This is at module level instead of in the provider because the React Compiler
+// skips any component with a condition inside of a try
+function getStartingLanguage() {
+  let saved;
+
+  // Reading localStorage throws when the browser blocks it for the site. This
+  // runs before the first render, so it would take the whole page down.
+  try {
+    saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  } catch {
+    saved = null;
+  }
+
+  return saved && LANGUAGES[saved] ? saved : DEFAULT_LANGUAGE;
+}
+
 export function I18nProvider({ children }) {
-  // Try to load saved language preference, default to English
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    // Reading localStorage throws when the browser blocks it for the site. This
-    // runs before the first render, so it would take the whole page down.
-    try {
-      const saved = localStorage.getItem('mahjong-language');
-      return saved && LANGUAGES[saved] ? saved : 'en';
-    } catch {
-      return 'en';
-    }
-  });
+  const [currentLanguage, setCurrentLanguage] = useState(getStartingLanguage);
 
-  // Save language preference when it changes
   useEffect(() => {
-    try {
-      localStorage.setItem('mahjong-language', currentLanguage);
-    } catch {
-      // localStorage is blocked. The language still lasts until the page is
-      // closed.
-    }
-
     document.documentElement.lang = currentLanguage.replace('_', '-');
   }, [currentLanguage]);
 
   const changeLanguage = (languageCode) => {
     if (LANGUAGES[languageCode]) {
       setCurrentLanguage(languageCode);
+
+      try {
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
+      } catch {
+        // localStorage is blocked. The language still lasts until the page is
+        // closed.
+      }
     }
   };
 

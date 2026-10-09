@@ -674,6 +674,241 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     });
   });
 
+  describe('Tiles whose drawings are slow to load', () => {
+    const DRAWING_COUNT = 76;
+    const TILE_SET_SIZE = DRAWING_COUNT / 2;
+
+    const SLOW_DRAWING_DELAY = 3500;
+
+    // Longer than SLOW_AFTER in src/components/Tile.jsx
+    const NAME_WAIT = 400;
+
+    // For some reason Firefox requests some drawings twice when it's run
+    // through Cypress
+    const COUNTS_REQUESTS = { browser: '!firefox' };
+
+    const listDrawingRequests = () => {
+      const paths = [];
+      cy.intercept('/assets/tiles/**', (request) => {
+        paths.push(new URL(request.url).pathname);
+      });
+      return paths;
+    };
+
+    const drawingsShouldAllBeLoaded = () => {
+      cy.get('.hand-card .tile img').should((images) => {
+        [...images].forEach((image) => {
+          expect(image.complete, image.alt).to.equal(true);
+          expect(image.naturalWidth, image.alt).to.be.greaterThan(0);
+        });
+      });
+    };
+
+    it("should print each tile's name until its drawing arrives", () => {
+      // cy.visit doesn't resolve until the hand's drawings have loaded, so the
+      // slow ones are the fancy tiles, which the hand switches to afterwards
+      let letGoAt;
+      cy.intercept('/assets/tiles/fancy/**', (request) => {
+        letGoAt ??= Date.now() + SLOW_DRAWING_DELAY;
+        request.on('response', (response) => {
+          response.setDelay(Math.max(0, letGoAt - Date.now()));
+        });
+      });
+      visitHand(RED_FIVE_HAND);
+      turnOnOptions('Fancy tiles');
+
+      cy.get('.hand .tile.slow > .tile-text').should((texts) => {
+        expect([...texts].map((text) => text.textContent)).to.eql([
+          '6s',
+          '7s',
+          '6p',
+          '7p',
+          '8p',
+          '0m',
+          '5m',
+          '8s',
+          '2p',
+          '3p',
+          '4p',
+          'Rd',
+          'Rd',
+          'Rd',
+        ]);
+      });
+      cy.contains('.hand .tile.slow > .tile-text', '0m').should('be.visible');
+      cy.get('.hand .tile.slow img[alt="red 5 man"]').should('exist');
+      cy.get('.tile.failed').should('not.exist');
+
+      drawingsShouldAllBeLoaded();
+      cy.get('.tile.slow').should('not.exist');
+      cy.get('.hand-card .tile-text').should('not.exist');
+      cy.get('.hand .tile img[alt="red 5 man"]').should(
+        'have.css',
+        'opacity',
+        '1',
+      );
+    });
+
+    it('should never give an image on the page another drawing', () => {
+      visitHand(RED_FIVE_HAND);
+      drawingsShouldAllBeLoaded();
+
+      cy.get('.hand-card .tile img').then((images) => {
+        const before = [...images].map((image) => ({
+          image,
+          src: image.getAttribute('src'),
+        }));
+
+        cy.window().then((win) => {
+          win.history.pushState({}, '', `/?hand=${RON_HAND}`);
+          win.dispatchEvent(new win.PopStateEvent('popstate'));
+        });
+        cy.get('.hand-card .tile img').should(
+          'have.length',
+          RON_HAND_TILE_COUNT,
+        );
+
+        cy.get('.hand-card .tile img').should((after) => {
+          const kept = before.filter(({ image }) => image.isConnected);
+          kept.forEach(({ image, src }) => {
+            expect(image.getAttribute('src'), image.alt).to.equal(src);
+          });
+          expect(kept.length).to.be.lessThan(before.length / 2);
+          expect([...after].map((image) => image.alt)).to.include('1 sou');
+        });
+      });
+    });
+
+    it('should not print the name of a tile whose drawing is here', () => {
+      const paths = listDrawingRequests();
+      visitHand(RED_FIVE_HAND);
+      cy.wrap(paths).should('have.length', DRAWING_COUNT);
+      drawingsShouldAllBeLoaded();
+
+      cy.get('.hand-card').then((card) => {
+        const names = [];
+        new MutationObserver((records) => {
+          records.forEach((record) => {
+            record.addedNodes.forEach((node) => {
+              if (node.classList?.contains('tile-text')) {
+                names.push(node.textContent);
+              }
+            });
+          });
+        }).observe(card[0], { childList: true, subtree: true });
+
+        for (let hand = 0; hand < 10; hand++) {
+          cy.contains('button', 'New Hand').click();
+          cy.get('.hand-card .tile img').then((images) => {
+            [...images].forEach((image) => {
+              expect(image.complete, image.alt).to.equal(true);
+            });
+          });
+        }
+        cy.wait(NAME_WAIT);
+        cy.wrap(names).should('be.empty');
+      });
+    });
+
+    it('should fetch the other drawings once the hand has its own', () => {
+      const paths = [];
+      const arrivedBefore = [];
+      let arrived = 0;
+      cy.intercept('/assets/tiles/**', (request) => {
+        paths.push(new URL(request.url).pathname);
+        arrivedBefore.push(arrived);
+        request.on('response', (response) => {
+          response.setDelay(200);
+        });
+        request.on('after:response', () => {
+          arrived += 1;
+        });
+      });
+      visitHand(RED_FIVE_HAND);
+
+      cy.wrap(paths, { timeout: 15000 }).should('have.length', DRAWING_COUNT);
+      cy.get('.hand-card .tile img').should((images) => {
+        const onScreen = new Set(
+          [...images].map((image) => image.getAttribute('src')),
+        );
+
+        expect(paths.slice(0, onScreen.size).sort()).to.eql(
+          [...onScreen].sort(),
+        );
+        arrivedBefore.slice(onScreen.size).forEach((count) => {
+          expect(count).to.be.at.least(onScreen.size);
+        });
+      });
+
+      cy.wrap(paths).should((asked) => {
+        expect(new Set(asked).size).to.equal(DRAWING_COUNT);
+        asked.forEach((path, index) => {
+          expect(path.includes('/fancy/'), path).to.equal(
+            index >= TILE_SET_SIZE,
+          );
+        });
+      });
+    });
+
+    it(
+      'should fetch each drawing once however the game goes on',
+      COUNTS_REQUESTS,
+      () => {
+        const paths = listDrawingRequests();
+        visitHand(RED_FIVE_HAND);
+        cy.wrap(paths).should('have.length', DRAWING_COUNT);
+
+        for (let hand = 0; hand < 5; hand++) {
+          cy.contains('button', 'New Hand').click();
+        }
+        turnOnOptions('Fancy tiles');
+        cy.get('.hand-card.fancy-tiles').should('exist');
+        for (let hand = 0; hand < 5; hand++) {
+          cy.contains('button', 'New Hand').click();
+        }
+        drawingsShouldAllBeLoaded();
+        cy.get('.hand-card .tile img').each((image) => {
+          expect(image.attr('src')).to.include('/fancy/');
+        });
+
+        cy.wait(NAME_WAIT);
+        cy.wrap(paths).should((asked) => {
+          const askedTwice = asked.filter(
+            (path, index) => asked.indexOf(path) !== index,
+          );
+          expect(askedTwice).to.eql([]);
+          expect(asked.length).to.equal(DRAWING_COUNT);
+        });
+      },
+    );
+
+    it(
+      'should fetch the fancy drawings first when they are in use',
+      COUNTS_REQUESTS,
+      () => {
+        const paths = listDrawingRequests();
+        cy.visit(`/?hand=${RED_FIVE_HAND}`, {
+          onBeforeLoad: (win) => {
+            win.localStorage.setItem(
+              'mahjong-options',
+              JSON.stringify({ fancyTiles: true }),
+            );
+          },
+        });
+        cy.get('.hand-card.fancy-tiles').should('exist');
+
+        cy.wrap(paths).should('have.length', DRAWING_COUNT);
+        cy.wrap(paths).should((asked) => {
+          asked.forEach((path, index) => {
+            expect(path.includes('/fancy/'), path).to.equal(
+              index < TILE_SET_SIZE,
+            );
+          });
+        });
+      },
+    );
+  });
+
   describe('Hand number', () => {
     it('should stay one width until the number has three digits', () => {
       visitHand(RON_HAND);
@@ -4090,6 +4325,9 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('html').should('have.attr', 'lang', 'ja');
       cy.contains('button', '閉じる').click();
       cy.get('button[type="submit"]').should('have.text', '答えを見る');
+      cy.window().then((win) => {
+        expect(win.localStorage.getItem('mahjong-language')).to.equal('ja');
+      });
 
       cy.reload();
       cy.get('html').should('have.attr', 'lang', 'ja');
@@ -4138,6 +4376,105 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.reload();
       cy.get('#han-label').should('exist');
       cy.get('#fu-label').should('not.exist');
+    });
+
+    const expectStored = (key, value) =>
+      cy.window().should((win) => {
+        expect(win.localStorage.getItem(key)).to.equal(value);
+      });
+    const expectStoredOptions = (options) =>
+      cy.window().should((win) => {
+        expect(
+          JSON.parse(win.localStorage.getItem('mahjong-options')),
+        ).to.deep.equal(options);
+      });
+
+    it('should store no options and no language on a first visit', () => {
+      visitHand(RON_HAND);
+
+      cy.window()
+        .its('sessionStorage')
+        .invoke('getItem', 'mahjong-session')
+        .should('not.equal', null);
+      cy.get('html').should('have.attr', 'lang', 'en');
+      expectStored('mahjong-options', null);
+      expectStored('mahjong-language', null);
+
+      turnOnOptions();
+      expectStored('mahjong-options', null);
+      expectStored('mahjong-language', null);
+    });
+
+    it('should store only the options that are not at their default', () => {
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').click();
+
+      cy.contains('label', 'Honba sticks').click();
+      expectStoredOptions({ testHonba: true });
+
+      cy.contains('label', 'Skip fu on limit hands').click();
+      expectStoredOptions({
+        ignoreFuOnLimit: false,
+        testHonba: true,
+      });
+
+      cy.contains('label', 'Honba sticks').click();
+      expectStoredOptions({ ignoreFuOnLimit: false });
+      cy.contains('label', 'Skip fu on limit hands').click();
+      expectStored('mahjong-options', null);
+      expectStored('mahjong-language', null);
+    });
+
+    it('should keep the choices of a browser that has every option stored', () => {
+      const everyOption = {
+        exactFu: false,
+        fancyTiles: false,
+        ignoreFuOnLimit: true,
+        kiriageMangan: true,
+        showTileNames: false,
+        testFu: true,
+        testHan: true,
+        testHonba: false,
+        testPoints: false,
+      };
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad(win) {
+          win.sessionStorage.removeItem('mahjong-session');
+          win.localStorage.setItem(
+            'mahjong-options',
+            JSON.stringify(everyOption),
+          );
+        },
+      });
+
+      cy.get('#han-label').should('exist');
+      cy.get('#fu-label').should('exist');
+      cy.get('#points').should('not.exist');
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('label', 'Kiriage mangan')
+        .find('[role="checkbox"]')
+        .should('have.attr', 'aria-checked', 'true');
+      cy.contains('label', 'Points')
+        .find('[role="checkbox"]')
+        .should('have.attr', 'aria-checked', 'false');
+
+      expectStoredOptions(everyOption);
+      cy.contains('label', 'Honba sticks').click();
+      expectStoredOptions({
+        kiriageMangan: true,
+        testHonba: true,
+        testPoints: false,
+      });
+
+      cy.reload();
+      cy.get('#points').should('not.exist');
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('label', 'Honba sticks')
+        .find('[role="checkbox"]')
+        .should('have.attr', 'aria-checked', 'true');
+      cy.contains('label', 'Kiriage mangan')
+        .find('[role="checkbox"]')
+        .should('have.attr', 'aria-checked', 'true');
     });
   });
 
@@ -4617,6 +4954,146 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       showsRonHand();
       visitHand(`${RON_HAND.toUpperCase()}.JSON`);
       showsRonHand();
+    });
+  });
+
+  describe('A hand that cannot be shown', () => {
+    const NOT_SHOWN = "This hand couldn't be shown.";
+
+    const breakQuiz = (win) => {
+      const normalize = win.String.prototype.normalize;
+
+      win.failHand = true;
+      win.String.prototype.normalize = function (...args) {
+        if (win.failHand && String(this) !== '') {
+          throw new Error('planted in the quiz');
+        }
+        return normalize.apply(this, args);
+      };
+    };
+    const breakHandCard = (win) => {
+      const replace = win.String.prototype.replace;
+
+      win.failHand = true;
+      win.String.prototype.replace = function (...args) {
+        if (win.failHand && args[0] === '{}' && typeof args[1] === 'number') {
+          throw new Error('planted in the hand card');
+        }
+        return replace.apply(this, args);
+      };
+    };
+    const mendHand = () => {
+      cy.window().then((win) => {
+        win.failHand = false;
+      });
+    };
+
+    const showsFallback = (handId) => {
+      cy.get('.hand-error [role="alert"]').should(
+        'have.text',
+        `Hand #1${NOT_SHOWN}`,
+      );
+      cy.get('.hand-error h2').should('have.text', 'Hand #1');
+      cy.get('.hand-error')
+        .contains('a', 'Report a problem with this hand')
+        .should('have.attr', 'href')
+        .and('match', new RegExp(`title=Hand\\+${handId}&`));
+      cy.get('.hand-card').should('not.exist');
+      cy.get('.quiz-form').should('not.exist');
+      cy.get('.app-title').should('be.visible');
+      cy.get('button[aria-label="Options"]').should('be.visible');
+      cy.get('.hand-count > span').first().should('contain.text', '#1');
+    };
+
+    const showsWorkingHand = () => {
+      cy.get('.hand-error').should('not.exist');
+      cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+      cy.focused().should('have.class', 'hand-card');
+      cy.contains('button', 'Just tell me').click();
+      cy.get('.answer-key').should('exist');
+      cy.focused().should('have.text', 'New Hand');
+    };
+
+    it('should say so when the quiz throws, and not empty the page', () => {
+      visitHand(RON_HAND);
+      cy.window().then(breakQuiz);
+      cy.get('#points').type('2');
+      showsFallback(RON_HAND);
+      cy.focused().should('have.text', 'New Hand');
+    });
+
+    it('should show a working hand on New Hand after the quiz threw', () => {
+      visitHand(RON_HAND);
+      cy.window().then(breakQuiz);
+      cy.get('#points').type('2');
+      cy.get('.hand-error').should('exist');
+      mendHand();
+      cy.focused().click();
+      showsWorkingHand();
+      cy.go('back');
+      cy.get('.hand .tile').should('have.length', 15);
+      cy.location('search').should('eq', `?hand=${RON_HAND}`);
+    });
+
+    it('should say so when the hand card throws as the page loads', () => {
+      cy.visit(`/?hand=${ADDED_KAN_HAND}`, {
+        onBeforeLoad(win) {
+          win.sessionStorage.removeItem('mahjong-session');
+          breakHandCard(win);
+        },
+      });
+      showsFallback(ADDED_KAN_HAND);
+      cy.focused().should('not.exist');
+
+      mendHand();
+      cy.contains('.hand-error button', 'New Hand').click();
+      showsWorkingHand();
+    });
+
+    it('should leave focus in the options when an option makes it throw', () => {
+      visitHand(ADDED_KAN_HAND);
+      cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.window().then(breakHandCard);
+      cy.get('button[aria-label="Options"]').click();
+      cy.get('[role="dialog"]').contains('label', 'Fancy tiles').click();
+      cy.get('.hand-error').should('exist');
+      cy.focused().parents('[role="dialog"]').should('exist');
+    });
+
+    it('should stay the same hand until there is a new one', () => {
+      visitHand(RON_HAND);
+      cy.window().then(breakQuiz);
+      cy.get('#points').type('2');
+      cy.get('.hand-error').should('exist');
+      mendHand();
+      turnOnOptions('Fancy tiles');
+      cy.get('.hand-error').should('exist');
+    });
+
+    it('should fit a phone in every language', () => {
+      cy.viewport(320, 740);
+      ['en', 'ja', 'ko', 'zh_cn'].forEach((language) => {
+        cy.visit(`/?hand=${ADDED_KAN_HAND}`, {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('mahjong-language', language);
+            breakHandCard(win);
+          },
+        });
+        cy.get('.hand-error').should('be.visible');
+        cy.get('.hand-error > *').should((parts) => {
+          const card = parts[0].parentElement.getBoundingClientRect();
+
+          parts.each((_index, part) => {
+            const box = part.getBoundingClientRect();
+            expect(box.left).to.be.at.least(card.left);
+            expect(box.right).to.be.at.most(card.right);
+          });
+        });
+        cy.document().should((doc) => {
+          expect(doc.documentElement.scrollWidth).to.be.at.most(320);
+        });
+      });
     });
   });
 
