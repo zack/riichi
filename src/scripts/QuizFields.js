@@ -161,6 +161,33 @@ function getMissingFields(fields, answers) {
   );
 }
 
+function getStatusMessage(fields, answers, result, t) {
+  const gradedFields = getGradedFields(fields, answers);
+  const getRealAnswer = (field) =>
+    `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`;
+  const getGradedAnswer = (field) => {
+    if (limitWasWronglyPicked(field)) {
+      return `${getRealAnswer(field)}, ${t('quiz.youPickedLimit')}`;
+    } else if (!gradedFields.includes(field)) {
+      return getRealAnswer(field);
+    } else if (answerIsCorrect(field, answers)) {
+      return `${getRealAnswer(field)}, ${t('quiz.marks.correct')}`;
+    } else {
+      return `${getRealAnswer(field)}, ${t('quiz.youPicked')} ${answers[field.id].trim()}`;
+    }
+  };
+  const realAnswers = fields.map(getRealAnswer).join(', ');
+
+  switch (result) {
+    case REVEALED:
+      return realAnswers;
+    case CORRECT:
+      return `${t('winRate.correct')}. ${realAnswers}`;
+    default:
+      return `${t('winRate.wrong')}. ${fields.map(getGradedAnswer).join('. ')}`;
+  }
+}
+
 export {
   CORRECT,
   REVEALED,
@@ -174,5 +201,6 @@ export {
   getGradedFields,
   getMissingFields,
   getQuizFields,
+  getStatusMessage,
   limitWasWronglyPicked,
 };

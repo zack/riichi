@@ -13,6 +13,7 @@ import scoringKo from '../helpPages/scoring.ko.md?raw';
 import scoringZhCn from '../helpPages/scoring.zh_cn.md?raw';
 import { useTranslation } from '../i18n/I18nContext';
 import { useCloseWatcher } from '../scripts/CloseWatcher';
+import { escapeAttribute } from '../scripts/Escape';
 import { scrollFocusIntoView } from '../scripts/FocusScroll';
 import { useNamesOnTiles } from '../scripts/TileNames';
 
@@ -42,6 +43,17 @@ function getTabs(page) {
     });
 }
 
+// This is out here instead of in the component because the React Compiler skips
+// any component with a `this` in it
+const LINKS_IN_NEW_TAB = {
+  renderer: {
+    link({ href, tokens }) {
+      const text = this.parser.parseInline(tokens);
+      return `<a href="${escapeAttribute(href)}" rel="noopener noreferrer" target="_blank">${text}</a>`;
+    },
+  },
+};
+
 // This is its own component because Radix mounts a dialog's content after the
 // dialog opens, so anything that measures has to be a child
 function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
@@ -58,14 +70,7 @@ function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
     getMarkdownYakuList(t, currentLanguage, fancyTiles, showNames),
     getMarkdownScoringTable(t, kiriageMangan),
     id === STEPS_TAB ? getMarkdownSteps() : {},
-    {
-      renderer: {
-        link({ href, tokens }) {
-          const text = this.parser.parseInline(tokens);
-          return `<a href="${href}" rel="noopener noreferrer" target="_blank">${text}</a>`;
-        },
-      },
-    },
+    LINKS_IN_NEW_TAB,
   );
   const helpHtml = markdown.parse(text.replaceAll(YEAR_MARKER, CURRENT_YEAR));
 

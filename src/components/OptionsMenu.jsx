@@ -41,8 +41,10 @@ function OptionsMenu({
   const [open, setOpen] = useState(false);
   useCloseWatcher(open, setOpen);
 
-  const renderOption = ({ id, indented, needs = [] }) => {
-    const [firstMissing, secondMissing] = needs
+  // needs has no default in the parameter list because the React Compiler skips
+  // any component with a default inside of a destructured parameter
+  const renderOption = ({ id, indented, needs }) => {
+    const [firstMissing, secondMissing] = (needs ?? [])
       .filter((neededId) => !options[neededId])
       .map((neededId) => t(`options.${neededId}`));
     let unavailableNote;

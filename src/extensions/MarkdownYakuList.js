@@ -1,3 +1,4 @@
+import { escapeHtml } from '../scripts/Escape';
 import { HELP_YAKU } from '../scripts/HelpYaku';
 import { getYakuWikiUrl } from '../scripts/WikiLinks';
 import { getTilesHtml } from './MarkdownTiles';
@@ -7,13 +8,6 @@ const MARKER = '%%yaku-list%%';
 const CLOSED_CLASSES = 'closed tone-sanbaiman';
 
 const hide = (text) => `<span class="visually-hidden">${text}</span>`;
-
-function escapeHtml(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-}
 
 function getBadge(yaku, t) {
   let className = 'han-badge';
