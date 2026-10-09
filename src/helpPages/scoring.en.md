@@ -4,6 +4,8 @@
 
 Add up every yaku in the hand. The Yaku tab lists them.
 
+If the hand can be read more than one way, use the reading worth the most points. If two are worth the same, use the one with more han, then more fu.
+
 **+1 han** for each dora and each red five.
 
 Dora order: ^^9m>1m 1h>2h>3h>4h>1h 5h>6h>7h>5h^^
@@ -31,7 +33,7 @@ The hand is **25 fu**, and nothing is added to it. Go to step 5.
 **2 fu** ^^888p^^
 
 - ×2 if it wasn't called. A triplet finished by ron counts as called.
-- ×2 if it's 1s, 9s or honors
+- ×2 if it's a 1, a 9 or an honor
 - ×4 if it's a kan
 
 ## 3. Wait and pair fu
@@ -64,7 +66,7 @@ Every hand starts at **20 fu**.
 
 ### Open, with nothing from steps 2 and 3?
 
-The hand is **30 fu**.
+**+2 fu**, so the hand comes to 30 after rounding.
 
 Add steps 2, 3 and 4 together, then **round up to the next 10**.
 
@@ -98,8 +100,9 @@ The trainer asks for this only with **Honba sticks** on.
 - **+2** tsumo, unless the hand is pinfu
 - **+2** dragon, round wind or seat wind pair. 4 if it's both winds.
 - **+2** middle, edge or pair wait
-- **+2** each triplet. ×2 if not called, ×2 for 1s, 9s or honors, ×4 for a kan.
-- **=** rounded up to the next 10. An open hand with nothing added is 30.
+- **+2** each triplet. ×2 if not called, ×2 for a 1, a 9 or an honor, ×4 for a kan.
+- **+2** open hand with nothing else added (30 after rounding)
+- **=** rounded up to the next 10
 
 # Yaku
 
@@ -109,7 +112,7 @@ The trainer asks for this only with **Honba sticks** on.
 
 %%scoring-table%%
 
-**More than 70 fu?** At 1 or 2 han, add the figures for two smaller fu, one of them 50: 80 fu is 50 and 30, 90 fu is 50 and 40, and 100 fu is 50 and 50.
+**More than 70 fu?** At 1 or 2 han, add the figures for the two smaller fu, starting with 50. So for 80 fu, add 50 and 30. For 90 fu, add 50 and 40, etc.
 
 ## Honba
 
