@@ -1,13 +1,6 @@
+import { escapeAttribute } from '../scripts/Escape';
 import * as TileConversion from '../scripts/TileConversion';
 import { getTileTextClass } from '../scripts/TileText';
-
-function escapeAttribute(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('"', '&quot;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-}
 
 const ORDER_MARK = '>';
 

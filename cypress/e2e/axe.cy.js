@@ -366,6 +366,30 @@ describe('aXe Tests', () => {
     });
   });
 
+  describe('Tiles whose drawings are slow to load', () => {
+    const SLOW_DRAWING_DELAY = 15000;
+
+    it('should pass with each name printed until its drawing arrives', () => {
+      // cy.visit doesn't resolve until the hand's drawings have loaded, so we
+      // delay the fancy tiles instead, which the hand switches to afterwards
+      cy.intercept('**/assets/tiles/fancy/**', (request) => {
+        request.on('response', (response) => {
+          response.setDelay(SLOW_DRAWING_DELAY);
+        });
+      });
+      cy.visit(RON_HAND_PAGE);
+      cy.injectAxe();
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('label', 'Fancy tiles').click();
+      cy.contains('button', 'Close').click();
+      cy.get('[role="dialog"]').should('not.exist');
+      cy.get('.tile.slow').should('have.length', RON_HAND_TILE_COUNT);
+      cy.get('.tile.slow > .tile-text').should('exist');
+      cy.checkA11y();
+      cy.get('.tile.slow').should('have.length', RON_HAND_TILE_COUNT);
+    });
+  });
+
   describe('Other hands', () => {
     it('should pass a tsumo with two payments to fill in', () => {
       cy.visit(TSUMO_HAND_PAGE);
@@ -428,6 +452,41 @@ describe('aXe Tests', () => {
 
     it('should pass in dark mode', () => {
       switchToDarkMode();
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+  });
+
+  describe('A hand that cannot be shown', () => {
+    beforeEach(() => {
+      cy.visit(RON_HAND_PAGE);
+      cy.window().then((win) => {
+        const normalize = win.String.prototype.normalize;
+
+        win.String.prototype.normalize = function (...args) {
+          if (String(this) !== '') {
+            throw new Error('planted');
+          }
+          return normalize.apply(this, args);
+        };
+      });
+      cy.get('#points').type('2');
+      cy.get('.hand-error').should('be.visible');
+    });
+
+    it('should pass in light mode', () => {
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass in dark mode', () => {
+      switchToDarkMode();
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass in high contrast', () => {
+      turnOnHighContrast();
       cy.injectAxe();
       cy.checkA11y();
     });

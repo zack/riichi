@@ -7,6 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnswerKey } from './components/AnswerKey';
 import { BiggerHand } from './components/BiggerHand';
 import { CopyHandLink } from './components/CopyHandLink';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { HelpPanel } from './components/HelpPanel';
 import { InfoPanel } from './components/InfoPanel';
 import { OptionsMenu } from './components/OptionsMenu';
@@ -32,9 +33,10 @@ import {
   fuIsIgnored,
   getGradedFields,
   getQuizFields,
-  limitWasWronglyPicked,
+  getStatusMessage,
 } from './scripts/QuizFields';
 import { getStoredSession, isCount, storeSession } from './scripts/Session';
+import { fetchEveryTileDrawing } from './scripts/TileDrawings';
 import { useNamesOnTiles } from './scripts/TileNames';
 
 const HANDS = import.meta.glob('./data/*.json', {
@@ -117,7 +119,7 @@ function countMeetsWinType(hand) {
 }
 
 function App() {
-  const { t } = useTranslation();
+  const { currentLanguage, t } = useTranslation();
 
   const [start] = useState(getStartingSession);
   const [handFile, setHandFile] = useState(start.handFile);
@@ -155,8 +157,10 @@ function App() {
   }, [handChanges]);
 
   useEffect(() => {
-    storeOptions(options);
-  }, [options]);
+    if (handRef.current) {
+      fetchEveryTileDrawing(handRef.current);
+    }
+  }, [handChanges]);
 
   useEffect(() => {
     window.history.replaceState(
@@ -168,7 +172,7 @@ function App() {
 
   useLayoutEffect(() => {
     setCountIsCrowded(countMeetsWinType(handRef.current));
-  }, [handFile, options, t]);
+  }, [currentLanguage, handFile, options]);
 
   useEffect(() => {
     const hand = handRef.current;
@@ -177,16 +181,18 @@ function App() {
     };
     const resizeObserver = new ResizeObserver(handleChange);
 
-    resizeObserver.observe(hand);
+    if (hand) {
+      resizeObserver.observe(hand);
+    }
     document.fonts.addEventListener('loadingdone', handleChange);
     return () => {
       resizeObserver.disconnect();
       document.fonts.removeEventListener('loadingdone', handleChange);
     };
-  }, []);
+  }, [handChanges]);
 
   useLayoutEffect(() => {
-    if (result !== undefined) {
+    if (result !== undefined && handRef.current && quizRef.current) {
       showHandWithAnswer(
         handRef.current,
         quizRef.current,
@@ -214,7 +220,7 @@ function App() {
   const namesOnTiles = useNamesOnTiles(
     handRef,
     options.showTileNames,
-    `${handFile} ${options.fancyTiles} ${t('info.ron')}`,
+    `${handFile} ${options.fancyTiles} ${currentLanguage}`,
   );
 
   useEffect(() => {
@@ -256,12 +262,12 @@ function App() {
   };
 
   const handleChangeOption = (optionId, value) => {
-    setOptions((current) => ({ ...current, [optionId]: value }));
+    const nextOptions = { ...options, [optionId]: value };
 
-    const switchesFuOff = fuIsIgnored(
-      { ...options, [optionId]: value },
-      answers,
-    );
+    setOptions(nextOptions);
+    storeOptions(nextOptions);
+
+    const switchesFuOff = fuIsIgnored(nextOptions, answers);
     if ((optionId === EXACT_FU || switchesFuOff) && !checked) {
       setAnswers((current) => ({ ...current, fu: '' }));
     }
@@ -274,38 +280,19 @@ function App() {
     quizHeightBeforeCheck.current =
       quizRef.current.getBoundingClientRect().height;
 
-    const isCorrect = gradedFields.every((field) =>
-      answerIsCorrect(field, answers),
-    );
-
-    const getRealAnswer = (field) =>
-      `${field.label}: ${field.answer === '' ? t('quiz.noFuOnLimit') : field.answer}`;
-    const getGradedAnswer = (field) => {
-      if (limitWasWronglyPicked(field)) {
-        return `${getRealAnswer(field)}, ${t('quiz.youPickedLimit')}`;
-      } else if (!gradedFields.includes(field)) {
-        return getRealAnswer(field);
-      } else if (answerIsCorrect(field, answers)) {
-        return `${getRealAnswer(field)}, ${t('quiz.marks.correct')}`;
-      } else {
-        return `${getRealAnswer(field)}, ${t('quiz.youPicked')} ${answers[field.id].trim()}`;
-      }
-    };
-    const realAnswers = fields.map(getRealAnswer).join(', ');
-    const gradedAnswers = fields.map(getGradedAnswer).join('. ');
-
+    let nextResult;
     if (gradedFields.length === 0) {
-      setResult(REVEALED);
-      setStatusMessage(realAnswers);
-    } else if (isCorrect) {
-      setResult(CORRECT);
+      nextResult = REVEALED;
+    } else if (gradedFields.every((field) => answerIsCorrect(field, answers))) {
+      nextResult = CORRECT;
       setCorrectAnswers(correctAnswers + 1);
-      setStatusMessage(`${t('winRate.correct')}. ${realAnswers}`);
     } else {
-      setResult(WRONG);
+      nextResult = WRONG;
       setWrongAnswers(wrongAnswers + 1);
-      setStatusMessage(`${t('winRate.wrong')}. ${gradedAnswers}`);
     }
+
+    setResult(nextResult);
+    setStatusMessage(getStatusMessage(fields, answers, nextResult, t));
   };
 
   const handleNewHand = () => {
@@ -385,54 +372,62 @@ function App() {
             </Text>
           )}
 
-          <section
-            aria-labelledby='hand-heading'
-            className={`color-card hand-card jade ${options.fancyTiles ? 'fancy-tiles' : ''} ${countIsCrowded ? 'count-crowded' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
-            ref={handRef}
+          <ErrorBoundary
+            handFile={handFile}
+            handLabel={handLabel}
+            onNewHand={handleNewHand}
+            options={handOptions}
+            resetKey={handChanges}
           >
-            <h2 className='visually-hidden' id='hand-heading'>
-              {handLabel}
-            </h2>
-            <InfoPanel agari={agari} options={handOptions} />
-            <BiggerHand
-              agari={agari}
-              fancy={options.fancyTiles}
-              handLabel={handLabel}
-              showHonba={handOptions.testHonba}
-              showNames={options.showTileNames}
+            <section
+              aria-labelledby='hand-heading'
+              className={`color-card hand-card jade ${options.fancyTiles ? 'fancy-tiles' : ''} ${countIsCrowded ? 'count-crowded' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
+              ref={handRef}
             >
-              <TilePanel
+              <h2 className='visually-hidden' id='hand-heading'>
+                {handLabel}
+              </h2>
+              <InfoPanel agari={agari} options={handOptions} />
+              <BiggerHand
                 agari={agari}
                 fancy={options.fancyTiles}
+                handLabel={handLabel}
+                showHonba={handOptions.testHonba}
                 showNames={options.showTileNames}
-              />
-            </BiggerHand>
-          </section>
-
-          <QuizPanel
-            answerKey={
-              checked && (
-                <AnswerKey
+              >
+                <TilePanel
                   agari={agari}
-                  answers={shownAnswers}
-                  fields={fields}
-                  options={handOptions}
-                  points={points}
+                  fancy={options.fancyTiles}
+                  showNames={options.showTileNames}
                 />
-              )
-            }
-            answers={shownAnswers}
-            cardColor={CARD_COLORS[result] ?? UNANSWERED_CARD_COLOR}
-            cardRef={quizRef}
-            checked={checked}
-            fields={fields}
-            key={handChanges}
-            onChangeAnswer={handleChangeAnswer}
-            onCheck={handleCheck}
-            onNewHand={handleNewHand}
-            onStatus={setStatusMessage}
-            result={result}
-          />
+              </BiggerHand>
+            </section>
+
+            <QuizPanel
+              answerKey={
+                checked && (
+                  <AnswerKey
+                    agari={agari}
+                    answers={shownAnswers}
+                    fields={fields}
+                    options={handOptions}
+                    points={points}
+                  />
+                )
+              }
+              answers={shownAnswers}
+              cardColor={CARD_COLORS[result] ?? UNANSWERED_CARD_COLOR}
+              cardRef={quizRef}
+              checked={checked}
+              fields={fields}
+              key={handChanges}
+              onChangeAnswer={handleChangeAnswer}
+              onCheck={handleCheck}
+              onNewHand={handleNewHand}
+              onStatus={setStatusMessage}
+              result={result}
+            />
+          </ErrorBoundary>
 
           <div aria-atomic='true' className='visually-hidden' role='status'>
             {statusMessage}

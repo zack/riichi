@@ -33,7 +33,7 @@ The hand is **25 fu**, and nothing is added to it. Go to step 5.
 **2 fu** ^^888p^^
 
 - ×2 if it wasn't called. A triplet finished by ron counts as called.
-- ×2 if it's a 1, a 9 or an honor
+- ×2 if it's a 1, a 9, or an honor
 - ×4 if it's a kan
 
 ## 3. Wait and pair fu

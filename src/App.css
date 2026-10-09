@@ -656,20 +656,20 @@ html.dark:not(.high-contrast) .radix-themes {
   display: none;
 }
 
-.tile.failed {
+.tile:is(.failed, .slow) {
   --failed-face: var(--tile-cream);
   background: var(--failed-face);
 }
 
-.dark .tile.failed {
+.dark .tile:is(.failed, .slow) {
   --failed-face: var(--tile-cream-dimmed);
 }
 
-.tile.failed img {
+.tile:is(.failed, .slow) img {
   opacity: 0;
 }
 
-.tile.failed > .tile-text {
+.tile:is(.failed, .slow) > .tile-text {
   align-items: center;
   color: var(--tile-ink);
   display: flex;
@@ -682,36 +682,36 @@ html.dark:not(.high-contrast) .radix-themes {
   position: absolute;
 }
 
-.tile.failed > .tile-text.single {
+.tile:is(.failed, .slow) > .tile-text.single {
   font-size: calc(var(--tile-width) * 0.62);
 }
 
-.tile.failed > .tile-text.red {
+.tile:is(.failed, .slow) > .tile-text.red {
   color: var(--tile-red);
 }
 
-.tile.called.failed > .tile-text {
+.tile.called:is(.failed, .slow) > .tile-text {
   transform: rotate(90deg);
 }
 
-.tile.failed:has(> .tile-text:empty) {
+.tile:is(.failed, .slow):has(> .tile-text:empty) {
   background: var(--tile-back);
 }
 
-.fancy-tiles .tile.failed {
+.fancy-tiles .tile:is(.failed, .slow) {
   border: 1px solid var(--gray-8);
   border-radius: calc(var(--tile-width) * 40 / 300) /
     calc(var(--tile-width) * 0.12);
   overflow: hidden;
 }
 
-.fancy-tiles .tile.failed.winning {
+.fancy-tiles .tile:is(.failed, .slow).winning {
   border-color: var(--red-9);
   box-shadow: 0 0 5px 2px var(--red-a8);
   outline: 1px solid var(--red-9);
 }
 
-.tile-cell:has(> .tile.failed) > .tile-label {
+.tile-cell:has(> .tile:is(.failed, .slow)) > .tile-label {
   visibility: hidden;
 }
 
@@ -786,6 +786,21 @@ html.dark:not(.high-contrast) .radix-themes {
   overflow-wrap: anywhere;
   text-wrap: balance;
   word-break: keep-all;
+}
+
+.hand-error {
+  padding-block: calc(var(--space-5) - var(--card-border-width));
+}
+
+.hand-error-words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.hand-error .report-hand {
+  text-wrap: balance;
 }
 
 .hand-card .info {
@@ -3000,7 +3015,7 @@ html.high-contrast.dark .radix-themes {
   background: var(--tile-cream);
 }
 
-.high-contrast.dark .tile.failed {
+.high-contrast.dark .tile:is(.failed, .slow) {
   --failed-face: var(--tile-cream);
 }
 

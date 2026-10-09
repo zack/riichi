@@ -143,6 +143,9 @@
     "link": "这手牌的链接",
     "notFound": "找不到链接中的那手牌。这是随机的一手牌。"
   },
+  "handError": {
+    "message": "这手牌无法显示。"
+  },
   "fuDetails": {
     "base": "底符",
     "closed_kan": "中张暗杠",

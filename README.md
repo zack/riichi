@@ -91,13 +91,16 @@ The visual tests compare screenshots against the ones in `cypress/snapshots/base
 npm run cypress:update-snapshots
 ```
 
-Three more checks run on every pull request, along with the tests. The first two also run on the files you commit.
+Four more checks run on every pull request, along with the tests. The first two also run on the files you commit.
 
 ```sh
 npm run lint
 npm run format:check
+npm run check:compiler
 npm run check:hands
 ```
+
+`check:compiler` makes sure the React Compiler compiled every component and hook. The app has no `useMemo`, and the build doesn't say when the compiler skips one.
 
 `check:hands` makes sure every hand's han and fu is one of the choices the quiz offers.
 

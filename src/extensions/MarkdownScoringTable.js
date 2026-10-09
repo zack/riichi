@@ -1,3 +1,4 @@
+import { escapeAttribute, escapeHtml } from '../scripts/Escape';
 import {
   TABLE_FU,
   TABLE_HAN,
@@ -17,27 +18,27 @@ const hide = (text) => `<span class="visually-hidden">${text}</span>`;
 
 function getWords(t) {
   return {
-    dealer: t('scoringTable.dealer'),
-    fromEachNonDealer: t('scoringTable.fromEachNonDealer'),
-    fromEachPlayer: t('scoringTable.fromEachPlayer'),
-    fromTheDealer: t('scoringTable.fromTheDealer'),
-    fu: t('pointCalculations.fu'),
-    han: t('pointCalculations.han'),
-    limitHan: t('scoringTable.limitHan'),
-    mangan: t('quiz.limits.mangan'),
-    nonDealer: t('scoringTable.nonDealer'),
-    ron: t('scoringTable.ron'),
-    seat: t('scoringTable.seat'),
-    tsumo: t('scoringTable.tsumo'),
+    dealer: escapeHtml(t('scoringTable.dealer')),
+    fromEachNonDealer: escapeHtml(t('scoringTable.fromEachNonDealer')),
+    fromEachPlayer: escapeHtml(t('scoringTable.fromEachPlayer')),
+    fromTheDealer: escapeHtml(t('scoringTable.fromTheDealer')),
+    fu: escapeHtml(t('pointCalculations.fu')),
+    han: escapeHtml(t('pointCalculations.han')),
+    limitHan: escapeHtml(t('scoringTable.limitHan')),
+    mangan: escapeHtml(t('quiz.limits.mangan')),
+    nonDealer: escapeHtml(t('scoringTable.nonDealer')),
+    ron: escapeHtml(t('scoringTable.ron')),
+    seat: escapeAttribute(t('scoringTable.seat')),
+    tsumo: escapeHtml(t('scoringTable.tsumo')),
   };
 }
 
 function getOtherWinHtml(t, canWinByRon) {
-  return `<span class="why">${t(canWinByRon ? 'scoringTable.ronOnly' : 'scoringTable.tsumoOnly')}</span>`;
+  return `<span class="why">${escapeHtml(t(canWinByRon ? 'scoringTable.ronOnly' : 'scoringTable.tsumoOnly'))}</span>`;
 }
 
 function getNoHandHtml(t, fu) {
-  return `<span class="why">${t(fu === 20 ? 'scoringTable.pinfuTsumoOnly' : 'scoringTable.sevenPairsOnly')}</span>`;
+  return `<span class="why">${escapeHtml(t(fu === 20 ? 'scoringTable.pinfuTsumoOnly' : 'scoringTable.sevenPairsOnly'))}</span>`;
 }
 
 function getTsumoHtml(basicPoints, isDealer, words, pairBreak) {
@@ -116,11 +117,11 @@ function getFullTableHtml(kiriageMangan, t, words, describedBy) {
   const limitRows = TABLE_LIMITS.map(
     (limit) =>
       `<tr><td class="limit ${limit.id}" colspan="${TABLE_FU.length}" headers="st-d st-${limit.id}">${getLimitFigureHtml(limit, true, words)}</td>`
-      + `<th class="name ${limit.id}" id="st-${limit.id}" scope="row">${limit.han} ${words.limitHan}<br>${t(`quiz.limits.${limit.id}`)}</th>`
+      + `<th class="name ${limit.id}" id="st-${limit.id}" scope="row">${limit.han} ${words.limitHan}<br>${escapeHtml(t(`quiz.limits.${limit.id}`))}</th>`
       + `<td class="limit ${limit.id}" colspan="${TABLE_FU.length}" headers="st-n st-${limit.id}">${getLimitFigureHtml(limit, false, words)}</td></tr>`,
   ).join('');
 
-  return `<table class="score-table full"${describedBy}><caption class="visually-hidden">${t('scoringTable.caption')}</caption>${columns}<thead>${head}</thead><tbody>${hanRows}${limitRows}</tbody></table>`;
+  return `<table class="score-table full"${describedBy}><caption class="visually-hidden">${escapeHtml(t('scoringTable.caption'))}</caption>${columns}<thead>${head}</thead><tbody>${hanRows}${limitRows}</tbody></table>`;
 }
 
 // THE LIST
@@ -158,7 +159,9 @@ function getListTableHtml(isDealer, kiriageMangan, t, words, describedBy) {
       const range =
         first === last
           ? `${first} ${words.fu}`
-          : t('scoringTable.fuRange').replace('{}', first).replace('{}', last);
+          : escapeHtml(t('scoringTable.fuRange'))
+              .replace('{}', first)
+              .replace('{}', last);
 
       rows.push(
         `<th class="fu range ${fuClass}" id="${id}-h${han}-cap" scope="row">${range}</th>`
@@ -178,14 +181,16 @@ function getListTableHtml(isDealer, kiriageMangan, t, words, describedBy) {
     const basicPoints = getLimitBasicPoints(limit.mangans);
 
     return (
-      `<tr><th class="name ${limit.id}" colspan="2" id="${id}-${limit.id}" scope="row">${limit.han} ${words.limitHan}<br>${t(`quiz.limits.${limit.id}`)}</th>`
+      `<tr><th class="name ${limit.id}" colspan="2" id="${id}-${limit.id}" scope="row">${limit.han} ${words.limitHan}<br>${escapeHtml(t(`quiz.limits.${limit.id}`))}</th>`
       + `<td class="limit ${limit.id}" headers="${id}-ron ${id}-${limit.id}">${getRonPoints(basicPoints, isDealer)}</td>`
       + `<td class="limit ${limit.id}" headers="${id}-tsumo ${id}-${limit.id}">${getTsumoHtml(basicPoints, isDealer, words, '')}</td></tr>`
     );
   }).join('');
 
-  const caption = t(
-    isDealer ? 'scoringTable.captionDealer' : 'scoringTable.captionNonDealer',
+  const caption = escapeHtml(
+    t(
+      isDealer ? 'scoringTable.captionDealer' : 'scoringTable.captionNonDealer',
+    ),
   );
 
   return `<table class="score-table listed ${isDealer ? 'for-dealer' : 'for-non-dealer'}"${describedBy}><caption class="visually-hidden">${caption}</caption><colgroup><col class="for-han"><col class="for-fu"><col class="for-ron"><col class="for-tsumo"></colgroup><thead>${head}</thead><tbody>${hanGroups}${limitRows}</tbody></table>`;
@@ -201,11 +206,11 @@ function getSeatChoiceHtml(words) {
 function getScoringTableHtml(t, kiriageMangan) {
   const words = getWords(t);
   const note = kiriageMangan
-    ? `<p class="score-note" id="st-note">${t('scoringTable.kiriageNote')}</p>`
+    ? `<p class="score-note" id="st-note">${escapeHtml(t('scoringTable.kiriageNote'))}</p>`
     : '';
   const describedBy = kiriageMangan ? ' aria-describedby="st-note"' : '';
 
-  return `<div class="scoring-table">${note}${getFullTableHtml(kiriageMangan, t, words, describedBy)}<div aria-label="${t('scoringTable.name')}" class="score-lists" role="region" tabindex="0">${getSeatChoiceHtml(words)}${getListTableHtml(true, kiriageMangan, t, words, describedBy)}${getListTableHtml(false, kiriageMangan, t, words, describedBy)}</div></div>`;
+  return `<div class="scoring-table">${note}${getFullTableHtml(kiriageMangan, t, words, describedBy)}<div aria-label="${escapeAttribute(t('scoringTable.name'))}" class="score-lists" role="region" tabindex="0">${getSeatChoiceHtml(words)}${getListTableHtml(true, kiriageMangan, t, words, describedBy)}${getListTableHtml(false, kiriageMangan, t, words, describedBy)}</div></div>`;
 }
 
 export function getMarkdownScoringTable(t, kiriageMangan) {

@@ -143,6 +143,9 @@
     "link": "이 패의 링크",
     "notFound": "링크의 패를 찾을 수 없습니다. 무작위로 고른 패입니다."
   },
+  "handError": {
+    "message": "이 패를 표시하지 못했습니다."
+  },
   "fuDetails": {
     "base": "부저",
     "closed_kan": "안깡",

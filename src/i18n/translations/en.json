@@ -144,6 +144,9 @@
     "link": "Link to this hand",
     "notFound": "That link's hand isn't here. This is a random one."
   },
+  "handError": {
+    "message": "This hand couldn't be shown."
+  },
   "fuDetails": {
     "base": "Base",
     "closed_kan": "Closed Kan",
