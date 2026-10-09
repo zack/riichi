@@ -13,6 +13,7 @@ import scoringKo from '../helpPages/scoring.ko.md?raw';
 import scoringZhCn from '../helpPages/scoring.zh_cn.md?raw';
 import { useTranslation } from '../i18n/I18nContext';
 import { useCloseWatcher } from '../scripts/CloseWatcher';
+import { scrollFocusIntoView } from '../scripts/FocusScroll';
 import { useNamesOnTiles } from '../scripts/TileNames';
 
 const HELP_PAGES = {
@@ -143,6 +144,7 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
         aria-describedby={undefined}
         className='help-dialog'
         maxWidth='800px'
+        onFocus={scrollFocusIntoView}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           contentRef.current?.focus({ preventScroll: true });

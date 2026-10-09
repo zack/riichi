@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { useAppearance } from '../AppearanceContext';
 import { useTranslation } from '../i18n/I18nContext';
 import { useCloseWatcher } from '../scripts/CloseWatcher';
+import { scrollFocusIntoView } from '../scripts/FocusScroll';
 import { EXACT_FU, TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
 import { GearIcon } from './GearIcon';
 import { HomeScreenIconPicker } from './HomeScreenIconPicker';
@@ -85,6 +86,7 @@ function OptionsMenu({
         aria-describedby={handIsChecked ? 'next-hand-note' : undefined}
         className='options-dialog'
         maxWidth='400px'
+        onFocus={scrollFocusIntoView}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           contentRef.current?.focus({ preventScroll: true });

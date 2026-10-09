@@ -1,10 +1,28 @@
 import 'cypress-axe';
 import en from '../../src/i18n/translations/en.json';
 import ja from '../../src/i18n/translations/ja.json';
+import ko from '../../src/i18n/translations/ko.json';
+import zhCn from '../../src/i18n/translations/zh_cn.json';
 import { switchToDarkMode } from '../support/options';
 import { waitForAnimations } from '../support/wait';
 
 const RON_HAND_PAGE = '/?hand=2011010101gm-00a9-0000-370cfc0a2';
+
+const RON_HAND_TILE_COUNT = 19;
+
+const TSUMO_HAND_PAGE = '/?hand=2011010100gm-00a9-0000-73f384767';
+
+const RIICHI_HAND_PAGE = '/?hand=2011010102gm-00a9-0000-4c03f0d02';
+
+const LIMIT_HAND_PAGE = '/?hand=2011010100gm-00b9-0000-fc334cbf2';
+
+const PHONE_WIDTH = 360;
+const PHONE_HEIGHT = 740;
+
+const HOME_PAGE_LANGUAGES = [
+  { code: 'ko', lang: 'ko', name: 'Korean', strings: ko },
+  { code: 'zh_cn', lang: 'zh-cn', name: 'Chinese', strings: zhCn },
+];
 
 const EVERY_OPTION = {
   exactFu: true,
@@ -296,6 +314,105 @@ describe('aXe Tests', () => {
     });
 
     checkPages({ strings: ja });
+  });
+
+  describe('Phone width', () => {
+    beforeEach(() => {
+      cy.viewport(PHONE_WIDTH, PHONE_HEIGHT);
+      cy.visit(RON_HAND_PAGE);
+    });
+
+    checkPages();
+  });
+
+  describe('Korean and Chinese', () => {
+    HOME_PAGE_LANGUAGES.forEach(({ code, lang, name, strings }) => {
+      it(`should pass the homepage in ${name}`, () => {
+        cy.visit(RON_HAND_PAGE, {
+          onBeforeLoad: (win) => {
+            win.localStorage.setItem('mahjong-language', code);
+          },
+        });
+        cy.get('html').should('have.attr', 'lang', lang);
+        cy.contains('button[type="submit"]', strings.buttons.justTellMe);
+        cy.injectAxe();
+        cy.checkA11y();
+      });
+    });
+  });
+
+  describe('The open language list', () => {
+    it('should pass with the list open', () => {
+      cy.visit(RON_HAND_PAGE);
+      cy.get('button[aria-label="Options"]').click();
+      cy.get('#language-select').click();
+      cy.get('[role="listbox"]').should('be.visible');
+      waitForAnimations();
+      cy.injectAxe();
+      // Radix portals the select's list to the end of the body, outside of
+      // every landmark, which is all the region rule looks at
+      cy.checkA11y(null, { rules: { region: { enabled: false } } });
+    });
+  });
+
+  describe('Tiles whose drawings fail to load', () => {
+    it('should pass with each name printed where its drawing would be', () => {
+      cy.intercept('**/assets/tiles/**', { statusCode: 404 });
+      cy.visit(RON_HAND_PAGE);
+      cy.get('.tile.failed').should('have.length', RON_HAND_TILE_COUNT);
+      cy.get('.tile.failed > .tile-text').should('exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+  });
+
+  describe('Other hands', () => {
+    it('should pass a tsumo with two payments to fill in', () => {
+      cy.visit(TSUMO_HAND_PAGE);
+      cy.get('#points').should('exist');
+      cy.get('#pointsDealer').should('exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass a correct answer', () => {
+      cy.visit(TSUMO_HAND_PAGE);
+      cy.contains('[role="radio"]', /^4$/).click();
+      cy.contains('[role="radio"]', /^30$/).click();
+      cy.get('#points').type('2000');
+      cy.get('#pointsDealer').type('3900');
+      cy.get('button[type="submit"]').click();
+      cy.contains('.badge', 'Correct: 1');
+      cy.get('.answer-key').should('exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass a hand won on a riichi', () => {
+      cy.visit(RIICHI_HAND_PAGE);
+      cy.get('.riichi-stick').should('be.visible');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass fu switched off by a limit han', () => {
+      cy.visit(LIMIT_HAND_PAGE);
+      cy.contains('[role="radio"]', /^6$/).click();
+      cy.get('#fu-note').should('exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass the checked answer of a limit hand', () => {
+      cy.visit(LIMIT_HAND_PAGE);
+      cy.contains('[role="radio"]', /^6$/).click();
+      cy.get('#points').type('18000');
+      cy.get('button[type="submit"]').click();
+      cy.contains('.badge', 'Correct: 1');
+      cy.get('.answer-key').should('exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
   });
 
   describe('A link to a hand that is not here', () => {

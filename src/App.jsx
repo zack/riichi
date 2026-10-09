@@ -430,6 +430,7 @@ function App() {
             onChangeAnswer={handleChangeAnswer}
             onCheck={handleCheck}
             onNewHand={handleNewHand}
+            onStatus={setStatusMessage}
             result={result}
           />
 

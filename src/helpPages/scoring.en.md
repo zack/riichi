@@ -145,7 +145,7 @@ Include honba sticks in the quiz.
 
 This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) by Varantha. The hands and the scoring logic come from the original.
 
-The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6), some of them remade from originals by Jerry Crimson Mann and Dewclouds. They're on [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The files here have been made smaller, and the face-down tile and the app's icon are made from them.
+The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6), some of them remade from originals by Jerry Crimson Mann and Dewclouds. They're on [Wikimedia Commons](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles) under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The files here have been made smaller, each red 5 has a dot added to it, and the face-down tile and the app's icon are made from them.
 
 The steps, the list of yaku and the scoring table are laid out after a reference sheet by Aranlyde, updated by hyperistic, which is under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The explanations of the yaku are the sheet's words. The colors and the numbers are this site's own.
 

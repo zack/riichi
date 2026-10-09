@@ -147,7 +147,7 @@
 
 이 사이트는 Varantha 님의 [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer)를 포크한 것입니다. 패와 점수 계산 로직은 원본에서 가져온 것입니다.
 
-입체 패는 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 님의 작품이며, 일부는 Jerry Crimson Mann 님과 Dewclouds 님의 원작을 다시 만든 것입니다. [위키미디어 공용](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)에 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)으로 공개되어 있습니다. 이 사이트에서는 파일 크기를 줄였으며, 뒷면 패와 앱 아이콘은 이 패들을 바탕으로 만들었습니다.
+입체 패는 [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 님의 작품이며, 일부는 Jerry Crimson Mann 님과 Dewclouds 님의 원작을 다시 만든 것입니다. [위키미디어 공용](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)에 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)으로 공개되어 있습니다. 이 사이트에서는 파일 크기를 줄이고 붉은 5에는 점을 하나 더했습니다. 뒷면 패와 앱 아이콘은 이 패들을 바탕으로 만들었습니다.
 
 계산 순서, 역 목록, 점수표의 배치는 Aranlyde 님이 만들고 hyperistic 님이 갱신한 참고표를 따랐습니다. 이 참고표는 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)으로 공개되어 있습니다. 역의 설명은 참고표의 문구를 번역한 것입니다. 색과 숫자는 이 사이트에서 만든 것입니다.
 

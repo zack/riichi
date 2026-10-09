@@ -147,7 +147,7 @@
 
 このサイトは、Varantha 氏の [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) をフォークしたものです。手牌と点数計算のロジックは、元のサイトのものです。
 
-立体的な牌は [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 氏の作品で、一部は Jerry Crimson Mann 氏と Dewclouds 氏の原作を作り直したものです。[ウィキメディア・コモンズ](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)で [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) のもとに公開されています。このサイトではファイルサイズを小さくしており、裏向きの牌とアプリのアイコンはこれらの牌をもとに作ったものです。
+立体的な牌は [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangjie6) 氏の作品で、一部は Jerry Crimson Mann 氏と Dewclouds 氏の原作を作り直したものです。[ウィキメディア・コモンズ](https://commons.wikimedia.org/wiki/Category:SVG_Oblique_illustrations_of_Mahjong_tiles)で [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) のもとに公開されています。このサイトではファイルサイズを小さくし、赤い5には点を加えています。裏向きの牌とアプリのアイコンはこれらの牌をもとに作ったものです。
 
 手順、役の一覧、点数表のレイアウトは、Aranlyde 氏が作成し hyperistic 氏が更新した早見表を参考にしています。この早見表は [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) で公開されています。役の説明は早見表の文章を翻訳したものです。配色と数値はこのサイト独自のものです。
 
