@@ -3318,7 +3318,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         expect(headings[5].textContent).to.equal('6. Honba');
       });
       cy.get('.help-steps .step').first().should('contain', 'red five');
-      cy.get('.help-steps .step.sums li').should('have.length', 7);
+      cy.get('.help-steps .step.sums li').should('have.length', 8);
     });
 
     it('should shorten a name where the tabs have no room for it', () => {
