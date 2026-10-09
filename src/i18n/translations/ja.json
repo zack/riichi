@@ -1,8 +1,13 @@
 {
   "common": {
     "close": "閉じる",
-    "help": "点数計算ヘルプ",
+    "help": "ヘルプ",
     "skipToMain": "メインコンテンツへスキップ"
+  },
+  "welcome": {
+    "title": "この手の点数は？",
+    "body": "どの手も実戦の和了です。翻と符を選び、点数を入力して「回答を確認」を押してください。点数計算の説明は上の「?」から見られます。",
+    "start": "始める"
   },
   "buttons": {
     "checkAnswer": "回答を確認",
@@ -38,7 +43,7 @@
     "youPicked": "あなたの選択",
     "youPickedLimit": "満貫以上を選びました",
     "realAnswer": "正解",
-    "noOptionsSelected": "テストオプションが選択されていません。オプションメニューで少なくとも一つ選択してください。",
+    "noOptionsSelected": "出題する項目がありません。{}オプションで翻・符・点数のいずれかをオンにしてください。",
     "errorPrefix": "エラー：",
     "notANumber": "数字で入力",
     "missing": {
@@ -90,6 +95,7 @@
     "highContrast": "ハイコントラスト",
     "homeScreenIcon": "ホーム画面のアイコン",
     "installApp": "アプリをインストール",
+    "installAsked": "ブラウザがすでに確認しました。あとでインストールするには、ブラウザのメニューを使います。",
     "installFromShareSheet": "アプリをインストールするには、「共有」をタップしてから「ホーム画面に追加」をタップします。",
     "installFromMenu": "アプリをインストールするには、メニューを開いて「インストール」をタップします。",
     "iconColors": {
@@ -107,7 +113,7 @@
       "red": "赤"
     },
     "groups": {
-      "questions": "出題する項目",
+      "questions": "クイズのオプション",
       "rules": "ルール",
       "display": "表示"
     },
@@ -126,12 +132,15 @@
     "hand": "手牌",
     "handShort": "手牌",
     "wrong": "不正解",
-    "rate": "正解率"
+    "rate": "正解率",
+    "noRate": "まだなし"
   },
   "handLink": {
     "copy": "この問題へのリンクをコピー",
     "copied": "リンクをコピーしました",
-    "failed": "リンクをコピーできませんでした"
+    "failed": "リンクをコピーできませんでした",
+    "link": "この問題へのリンク",
+    "notFound": "リンク先の問題が見つかりません。別の問題をランダムに出しています。"
   },
   "fuDetails": {
     "base": "副底",

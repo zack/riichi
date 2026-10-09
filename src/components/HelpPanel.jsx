@@ -12,6 +12,7 @@ import scoringJa from '../helpPages/scoring.ja.md?raw';
 import scoringKo from '../helpPages/scoring.ko.md?raw';
 import scoringZhCn from '../helpPages/scoring.zh_cn.md?raw';
 import { useTranslation } from '../i18n/I18nContext';
+import { useCloseWatcher } from '../scripts/CloseWatcher';
 import { useNamesOnTiles } from '../scripts/TileNames';
 
 const HELP_PAGES = {
@@ -115,6 +116,8 @@ function HelpContent({ fancyTiles, id, kiriageMangan, showNames, text }) {
 function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
   const { currentLanguage, t } = useTranslation();
   const contentRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  useCloseWatcher(open, setOpen);
   const [tab, setTab] = useState(STEPS_TAB);
   const tabs = getTabs(HELP_PAGES[currentLanguage] ?? HELP_PAGES.en);
 
@@ -124,7 +127,7 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
   }
 
   return (
-    <Dialog.Root>
+    <Dialog.Root onOpenChange={setOpen} open={open}>
       <Dialog.Trigger>
         <button
           aria-label={t('common.help')}
@@ -150,7 +153,7 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
           <div className='help-header'>
             <Flex align='center' gap='3' justify='between'>
               <DialogPrimitive.Title asChild>
-                <h1 className='help-title'>{t('common.help')}</h1>
+                <h1 className='dialog-title'>{t('common.help')}</h1>
               </DialogPrimitive.Title>
               <Dialog.Close>
                 <button className='action-button' type='button'>

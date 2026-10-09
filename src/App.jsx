@@ -1,6 +1,6 @@
 import './App.css';
 import './celebration.css';
-import { Container, Flex } from '@radix-ui/themes';
+import { Container, Flex, Text } from '@radix-ui/themes';
 import { Analytics } from '@vercel/analytics/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -12,9 +12,15 @@ import { InfoPanel } from './components/InfoPanel';
 import { OptionsMenu } from './components/OptionsMenu';
 import { QuizPanel } from './components/QuizPanel';
 import { TilePanel } from './components/TilePanel';
+import { WelcomeDialog } from './components/WelcomeDialog';
 import { WinRate } from './components/WinRate';
 import { useTranslation } from './i18n/I18nContext';
-import { HAND_FILE_EXTENSION, HAND_PARAM, getHandId } from './scripts/Hands';
+import {
+  HAND_FILE_EXTENSION,
+  HAND_PARAM,
+  getHandId,
+  getHandUrl,
+} from './scripts/Hands';
 import { showHandWithAnswer } from './scripts/HandWithAnswer';
 import { EXACT_FU, getStoredOptions, storeOptions } from './scripts/Options';
 import { calculatePoints } from './scripts/PointCalculation';
@@ -28,6 +34,7 @@ import {
   getQuizFields,
   limitWasWronglyPicked,
 } from './scripts/QuizFields';
+import { getStoredSession, isCount, storeSession } from './scripts/Session';
 import { useNamesOnTiles } from './scripts/TileNames';
 
 const HANDS = import.meta.glob('./data/*.json', {
@@ -53,25 +60,44 @@ function getRandomHandFile() {
   return HAND_FILES[Math.floor(Math.random() * HAND_FILES.length)];
 }
 
-function getStartingHandFile() {
+function getLinkedHandFile() {
   const params = new URLSearchParams(window.location.search);
-  const handId = getHandId(params.get(HAND_PARAM) ?? '');
-  const handFile = handId + HAND_FILE_EXTENSION;
-
-  if (HAND_FILES.includes(handFile)) {
-    return handFile;
-  } else {
-    return getRandomHandFile();
-  }
+  return getHandId(params.get(HAND_PARAM) ?? '') + HAND_FILE_EXTENSION;
 }
 
-function clearHandParam() {
-  const url = new URL(window.location.href);
+function getHandNumberInHistory() {
+  const handNumber = window.history.state?.handNumber;
+  return isCount(handNumber) ? handNumber : undefined;
+}
 
-  if (url.searchParams.has(HAND_PARAM)) {
-    url.searchParams.delete(HAND_PARAM);
-    window.history.replaceState(null, '', url);
+function getStartingSession() {
+  const linkedFile = getLinkedHandFile();
+  const stored = getStoredSession();
+  const hasLink = linkedFile !== HAND_FILE_EXTENSION;
+  const linkIsBroken = hasLink && !HAND_FILES.includes(linkedFile);
+
+  let handFile;
+  let isStoredHand;
+  if (hasLink && !linkIsBroken) {
+    handFile = linkedFile;
+    isStoredHand = linkedFile === stored.handFile;
+  } else if (!hasLink && HAND_FILES.includes(stored.handFile)) {
+    handFile = stored.handFile;
+    isStoredHand = true;
+  } else {
+    handFile = getRandomHandFile();
+    isStoredHand = false;
   }
+
+  return {
+    ...stored,
+    answers: isStoredHand ? stored.answers : {},
+    handFile,
+    handNumber: isStoredHand
+      ? stored.handNumber
+      : (getHandNumberInHistory() ?? 0),
+    linkIsBroken,
+  };
 }
 
 function countMeetsWinType(hand) {
@@ -93,15 +119,20 @@ function countMeetsWinType(hand) {
 function App() {
   const { t } = useTranslation();
 
-  const [handFile, setHandFile] = useState(getStartingHandFile);
-  const [handNumber, setHandNumber] = useState(0);
+  const [start] = useState(getStartingSession);
+  const [handFile, setHandFile] = useState(start.handFile);
+  const [handNumber, setHandNumber] = useState(start.handNumber);
+  const [handChanges, setHandChanges] = useState(0);
+  const [linkIsBroken, setLinkIsBroken] = useState(start.linkIsBroken);
   const [options, setOptions] = useState(getStoredOptions);
   const [checkedOptions, setCheckedOptions] = useState(undefined);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(start.answers);
   const [result, setResult] = useState(undefined);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [wrongAnswers, setWrongAnswers] = useState(0);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [correctAnswers, setCorrectAnswers] = useState(start.correctAnswers);
+  const [wrongAnswers, setWrongAnswers] = useState(start.wrongAnswers);
+  const [statusMessage, setStatusMessage] = useState(
+    start.linkIsBroken ? t('handLink.notFound') : '',
+  );
   const [countIsCrowded, setCountIsCrowded] = useState(false);
   const handRef = useRef(null);
   const quizRef = useRef(null);
@@ -112,7 +143,7 @@ function App() {
   useEffect(() => {
     const hand = handRef.current;
 
-    if (handNumber > 0 && hand) {
+    if (handChanges > 0 && hand) {
       // Only focusable while it has focus. If the tabindex is left on, some
       // screen readers announce the whole section as a control.
       hand.tabIndex = -1;
@@ -121,11 +152,19 @@ function App() {
       });
       hand.focus();
     }
-  }, [handNumber]);
+  }, [handChanges]);
 
   useEffect(() => {
     storeOptions(options);
   }, [options]);
+
+  useEffect(() => {
+    window.history.replaceState(
+      { handNumber: start.handNumber },
+      '',
+      getHandUrl(start.handFile),
+    );
+  }, [start]);
 
   useLayoutEffect(() => {
     setCountIsCrowded(countMeetsWinType(handRef.current));
@@ -168,22 +207,52 @@ function App() {
   const points = calculatePoints(agari, handOptions, t);
   const fields = getQuizFields(agari, handOptions, points, answers, t);
   const handLabel = `${t('winRate.hand')} #${handNumber + 1}`;
+
+  const shownAnswers = fuIsIgnored(handOptions, answers)
+    ? { ...answers, fu: '' }
+    : answers;
   const namesOnTiles = useNamesOnTiles(
     handRef,
     options.showTileNames,
     `${handFile} ${options.fancyTiles} ${t('info.ron')}`,
   );
 
-  const handleChangeAnswer = (fieldId, value) => {
-    setAnswers((current) => {
-      const next = { ...current, [fieldId]: value };
-
-      if (fieldId === 'han' && fuIsIgnored(options, next)) {
-        next.fu = '';
-      }
-
-      return next;
+  useEffect(() => {
+    storeSession({
+      answers: checked ? {} : answers,
+      correctAnswers,
+      handFile,
+      handNumber,
+      wrongAnswers,
     });
+  }, [answers, checked, correctAnswers, handFile, handNumber, wrongAnswers]);
+
+  const showHand = (nextHandFile, nextHandNumber) => {
+    setAnswers({});
+    setCheckedOptions(undefined);
+    setHandChanges((current) => current + 1);
+    setHandFile(nextHandFile);
+    setHandNumber(nextHandNumber);
+    setLinkIsBroken(false);
+    setResult(undefined);
+    setStatusMessage('');
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const linkedFile = getLinkedHandFile();
+
+      if (linkedFile !== handFile && HAND_FILES.includes(linkedFile)) {
+        showHand(linkedFile, getHandNumberInHistory() ?? handNumber);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [handFile, handNumber]);
+
+  const handleChangeAnswer = (fieldId, value) => {
+    setAnswers((current) => ({ ...current, [fieldId]: value }));
   };
 
   const handleChangeOption = (optionId, value) => {
@@ -240,13 +309,15 @@ function App() {
   };
 
   const handleNewHand = () => {
-    clearHandParam();
-    setAnswers({});
-    setCheckedOptions(undefined);
-    setHandFile(getRandomHandFile());
-    setHandNumber(handNumber + 1);
-    setResult(undefined);
-    setStatusMessage('');
+    const nextHandFile = getRandomHandFile();
+    const nextHandNumber = handNumber + 1;
+
+    window.history.pushState(
+      { handNumber: nextHandNumber },
+      '',
+      getHandUrl(nextHandFile),
+    );
+    showHand(nextHandFile, nextHandNumber);
   };
 
   return (
@@ -264,6 +335,7 @@ function App() {
               <OptionsMenu
                 handFile={handFile}
                 handIsChecked={checked}
+                handOptions={handOptions}
                 onChangeOption={handleChangeOption}
                 options={options}
               />
@@ -307,6 +379,12 @@ function App() {
             </Flex>
           </Flex>
 
+          {linkIsBroken && (
+            <Text as='p' className='link-note' color='gray' size='2'>
+              {t('handLink.notFound')}
+            </Text>
+          )}
+
           <section
             aria-labelledby='hand-heading'
             className={`color-card hand-card jade ${options.fancyTiles ? 'fancy-tiles' : ''} ${countIsCrowded ? 'count-crowded' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
@@ -336,19 +414,19 @@ function App() {
               checked && (
                 <AnswerKey
                   agari={agari}
-                  answers={answers}
+                  answers={shownAnswers}
                   fields={fields}
                   options={handOptions}
                   points={points}
                 />
               )
             }
-            answers={answers}
+            answers={shownAnswers}
             cardColor={CARD_COLORS[result] ?? UNANSWERED_CARD_COLOR}
             cardRef={quizRef}
             checked={checked}
             fields={fields}
-            key={handNumber}
+            key={handChanges}
             onChangeAnswer={handleChangeAnswer}
             onCheck={handleCheck}
             onNewHand={handleNewHand}
@@ -360,6 +438,7 @@ function App() {
           </div>
         </main>
       </Container>
+      <WelcomeDialog />
     </div>
   );
 }

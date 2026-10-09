@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react';
+import { Popover, Text, TextArea } from '@radix-ui/themes';
+import { Popover as PopoverPrimitive } from 'radix-ui';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
 import { HAND_PARAM, getHandId } from '../scripts/Hands';
 
 const COPIED_TIME = 2000;
+
+const LINK_ROWS = 3;
+
+const FAILED_HEADING = 'hand-link-failed';
+const LINK_BOX = 'hand-link-text';
 
 // The link and the tick are Feather's (https://feathericons.com, MIT)
 const LinkIcon = () => (
@@ -81,6 +88,10 @@ function CopyHandLink({ handFile, onCopy }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [said, setSaid] = useState('');
+  const [uncopied, setUncopied] = useState(null);
+  const buttonRef = useRef(null);
+  const linkRef = useRef(null);
+  const showsLink = uncopied?.handFile === handFile;
 
   // A screen reader only announces a status message when it changes, so if we
   // left it the next copy would be silent. Clear it when the tick goes away,
@@ -99,23 +110,83 @@ function CopyHandLink({ handFile, onCopy }) {
   }, [onCopy, said]);
 
   const handleClick = async () => {
-    const hasCopied = await copyText(getHandLink(handFile));
+    const link = getHandLink(handFile);
+    const hasCopied = await copyText(link);
     const message = hasCopied ? t('handLink.copied') : t('handLink.failed');
 
     setCopied(hasCopied);
     setSaid(message);
+    setUncopied(hasCopied ? null : { handFile, link });
     onCopy(message);
   };
 
+  const handleCloseFromInside = () => {
+    setUncopied(null);
+    buttonRef.current?.focus();
+  };
+
   return (
-    <button
-      aria-label={t('handLink.copy')}
-      className='badge hand-number hand-link'
-      onClick={handleClick}
-      type='button'
+    <Popover.Root
+      onOpenChange={(open) => {
+        if (!open) {
+          setUncopied(null);
+        }
+      }}
+      open={showsLink}
     >
-      {copied ? <CheckIcon /> : <LinkIcon />}
-    </button>
+      {/* Anchor instead of Trigger, because the button copies and only a failed
+          copy opens the popover. This is Radix's primitive because the Themes
+          version of Anchor throws away its children. */}
+      <PopoverPrimitive.Anchor asChild>
+        <button
+          aria-label={t('handLink.copy')}
+          className='badge hand-number hand-link'
+          onClick={handleClick}
+          ref={buttonRef}
+          type='button'
+        >
+          {copied ? <CheckIcon /> : <LinkIcon />}
+        </button>
+      </PopoverPrimitive.Anchor>
+
+      <Popover.Content
+        align='end'
+        aria-labelledby={FAILED_HEADING}
+        className='hand-link-box'
+        onCloseAutoFocus={(event) => event.preventDefault()}
+        onEscapeKeyDown={handleCloseFromInside}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          linkRef.current?.focus({ preventScroll: true });
+          linkRef.current?.select();
+        }}
+        size='1'
+      >
+        <Text as='p' id={FAILED_HEADING} size='3' weight='bold'>
+          {t('handLink.failed')}
+        </Text>
+        <Text as='label' color='gray' htmlFor={LINK_BOX} size='2'>
+          {t('handLink.link')}
+        </Text>
+        <TextArea
+          className='hand-link-text'
+          id={LINK_BOX}
+          readOnly
+          ref={linkRef}
+          resize='none'
+          rows={LINK_ROWS}
+          size='3'
+          value={uncopied?.link ?? ''}
+        />
+        <button
+          className='action-button'
+          onClick={handleCloseFromInside}
+          type='button'
+        >
+          {t('common.close')}
+        </button>
+      </Popover.Content>
+    </Popover.Root>
   );
 }
 

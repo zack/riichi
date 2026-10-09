@@ -1,8 +1,13 @@
 {
   "common": {
     "close": "닫기",
-    "help": "점수 관련 도움",
+    "help": "도움말",
     "skipToMain": "본문으로 건너뛰기"
+  },
+  "welcome": {
+    "title": "이 손패의 점수는?",
+    "body": "모든 손패는 실제 대국에서 화료한 패입니다. 판수와 부수를 고르고 점수를 입력한 다음 「정답 확인」을 누르세요. 점수 계산 방법은 위쪽의 「?」에서 볼 수 있습니다.",
+    "start": "시작"
   },
   "buttons": {
     "checkAnswer": "정답 확인",
@@ -38,7 +43,7 @@
     "youPicked": "선택한 답",
     "youPickedLimit": "만관 이상을 선택했습니다",
     "realAnswer": "실제 정답",
-    "noOptionsSelected": "선택되어 있는 연습 옵션이 없습니다. 옵션에서 선택해주세요.",
+    "noOptionsSelected": "출제할 항목이 없습니다. {}옵션에서 판수, 부수, 점수 중 하나를 켜 주세요.",
     "errorPrefix": "오류:",
     "notANumber": "숫자로 입력하세요",
     "missing": {
@@ -90,6 +95,7 @@
     "highContrast": "고대비",
     "homeScreenIcon": "홈 화면 아이콘",
     "installApp": "앱 설치",
+    "installAsked": "브라우저가 이미 설치 여부를 물었습니다. 나중에 설치하려면 브라우저 메뉴를 사용하세요.",
     "installFromShareSheet": "앱을 설치하려면 \"공유\"를 누른 다음 \"홈 화면에 추가\"를 누르세요.",
     "installFromMenu": "앱을 설치하려면 메뉴를 열고 \"설치\"를 누르세요.",
     "iconColors": {
@@ -107,7 +113,7 @@
       "red": "빨강"
     },
     "groups": {
-      "questions": "출제 항목",
+      "questions": "퀴즈 옵션",
       "rules": "룰",
       "display": "화면"
     },
@@ -126,12 +132,15 @@
     "hand": "패",
     "handShort": "패",
     "wrong": "오답",
-    "rate": "정답률"
+    "rate": "정답률",
+    "noRate": "아직 없음"
   },
   "handLink": {
     "copy": "이 패의 링크 복사",
     "copied": "링크를 복사했습니다",
-    "failed": "링크를 복사하지 못했습니다"
+    "failed": "링크를 복사하지 못했습니다",
+    "link": "이 패의 링크",
+    "notFound": "링크의 패를 찾을 수 없습니다. 무작위로 고른 패입니다."
   },
   "fuDetails": {
     "base": "부저",

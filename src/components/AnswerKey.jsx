@@ -1,7 +1,7 @@
 import { Flex, Heading, Text } from '@radix-ui/themes';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { MARKS, MARK_NAMES } from '../scripts/Marks';
+import { MARK_NAMES } from '../scripts/Marks';
 import {
   CORRECT,
   ROUNDING,
@@ -14,6 +14,7 @@ import {
 } from '../scripts/QuizFields';
 import { getFuWikiUrl, getYakuWikiUrl } from '../scripts/WikiLinks';
 import * as YakuConversion from '../scripts/YakuConversion';
+import { Mark } from './Mark';
 import { WikiLink } from './WikiLink';
 
 function capitalizeFirstLetter(string) {
@@ -62,14 +63,16 @@ const Total = ({ answers, field, graded, picked, title }) => {
 
   return (
     <>
-      <Heading as='h3' className={`answer-total ${result ?? ''}`} size='3'>
+      <Heading
+        as='h3'
+        className={`answer-total ${result === CORRECT ? CORRECT : ''}`}
+        size='3'
+      >
         {title}
-        {result && (
+        {result === CORRECT && (
           <>
             {' '}
-            <span aria-label={t(MARK_NAMES[result])} role='img'>
-              {MARKS[result]}
-            </span>
+            <Mark name={t(MARK_NAMES[CORRECT])} result={CORRECT} />
           </>
         )}
       </Heading>
@@ -77,7 +80,8 @@ const Total = ({ answers, field, graded, picked, title }) => {
         <Text as='p' className='answer-picked' size='1'>
           {limitWasWronglyPicked(field)
             ? t('quiz.youPickedLimit')
-            : `${t('quiz.youPicked')} ${picked ?? answers[field.id].trim()}`}
+            : `${t('quiz.youPicked')} ${picked ?? answers[field.id].trim()}`}{' '}
+          <Mark name={t(MARK_NAMES[WRONG])} result={WRONG} />
         </Text>
       )}
     </>
