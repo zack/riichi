@@ -10,9 +10,17 @@ html {
   scrollbar-gutter: stable;
 }
 
+html:has(body[data-scroll-locked]) {
+  scrollbar-gutter: auto;
+}
+
 @supports (scrollbar-gutter: stable) {
   #root {
     margin-right: calc(-1 * var(--removed-body-scroll-bar-size, 0px));
+  }
+
+  html:has(body[data-scroll-locked]) #root {
+    padding-right: var(--scrollbar-gutter-width, 0px);
   }
 }
 

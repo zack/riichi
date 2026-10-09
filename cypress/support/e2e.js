@@ -25,6 +25,32 @@ Cypress.on('window:before:load', (win) => {
   }
 });
 
+// Every test starts as someone who has already seen the welcome dialog, except
+// the ones that use visitAsNewPlayer
+const WELCOME_SEEN_KEY = 'mahjong-welcome-seen';
+let isNewPlayer = false;
+
+beforeEach(() => {
+  isNewPlayer = false;
+});
+
+Cypress.on('window:before:load', (win) => {
+  if (!isNewPlayer) {
+    win.localStorage.setItem(WELCOME_SEEN_KEY, 'true');
+  }
+});
+
+Cypress.Commands.add('visitAsNewPlayer', (url, options = {}) => {
+  isNewPlayer = true;
+  cy.visit(url, {
+    ...options,
+    onBeforeLoad(win) {
+      win.localStorage.removeItem(WELCOME_SEEN_KEY);
+      options.onBeforeLoad?.(win);
+    },
+  });
+});
+
 before(() => {
   cy.visit('/');
   cy.window().then(async (win) => {

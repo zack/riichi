@@ -2,18 +2,14 @@
   font-display: swap;
   font-family: 'Exo';
   font-weight: 400;
-  src:
-    local('Exo'),
-    url('./fonts/Exo-Regular.woff2') format('woff2');
+  src: url('./fonts/Exo-Regular.woff2') format('woff2');
 }
 
 @font-face {
   font-display: swap;
   font-family: 'Exo';
   font-weight: 700;
-  src:
-    local('Exo-Bold'),
-    url('./fonts/Exo-Bold.woff2') format('woff2');
+  src: url('./fonts/Exo-Bold.woff2') format('woff2');
 }
 
 .radix-themes {

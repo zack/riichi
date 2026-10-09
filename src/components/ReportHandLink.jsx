@@ -2,6 +2,7 @@ import { Text } from '@radix-ui/themes';
 
 import { useTranslation } from '../i18n/I18nContext';
 import { HAND_PARAM, getHandId } from '../scripts/Hands';
+import { EXACT_FU, TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
 
 const NEW_ISSUE_URL = 'https://github.com/zack/riichi/issues/new';
 
@@ -29,24 +30,39 @@ const NewTabIcon = () => (
   </svg>
 );
 
-function getIssueUrl(handId) {
+const REPORTED_OPTIONS = [
+  { id: TEST_HAN, name: 'han' },
+  { id: TEST_FU, name: 'fu' },
+  { id: EXACT_FU, name: 'exact fu' },
+  { id: 'ignoreFuOnLimit', name: 'skip fu on limit hands' },
+  { id: TEST_POINTS, name: 'points' },
+  { id: 'kiriageMangan', name: 'kiriage mangan' },
+  { id: 'testHonba', name: 'honba' },
+];
+
+function getIssueUrl(handId, options, language) {
   const handUrl = new URL(APP_URL);
   handUrl.searchParams.set(HAND_PARAM, handId);
 
+  const reportedOptions = REPORTED_OPTIONS.map(
+    ({ id, name }) => `${name} ${options[id] ? 'on' : 'off'}`,
+  ).join(', ');
+  const body = `${handUrl.href}\n\nOptions: ${reportedOptions}. Language: ${language}.\n\n`;
+
   const issueUrl = new URL(NEW_ISSUE_URL);
   issueUrl.searchParams.set('title', `Hand ${handId}`);
-  issueUrl.searchParams.set('body', `${handUrl.href}\n\n`);
+  issueUrl.searchParams.set('body', body);
   return issueUrl.href;
 }
 
-function ReportHandLink({ handFile }) {
-  const { t } = useTranslation();
+function ReportHandLink({ handFile, options }) {
+  const { currentLanguage, t } = useTranslation();
 
   return (
     <Text as='p' className='report-hand' size='2'>
       <a
         className='text-link'
-        href={getIssueUrl(getHandId(handFile))}
+        href={getIssueUrl(getHandId(handFile), options, currentLanguage)}
         rel='noopener noreferrer'
         target='_blank'
       >

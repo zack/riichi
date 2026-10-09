@@ -101,6 +101,18 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     cy.checkA11y();
   });
 
+  it('should pass the link that could not be copied', () => {
+    cy.window().then((win) => {
+      cy.stub(win.navigator.clipboard, 'writeText').rejects(new Error());
+      cy.stub(win.document, 'execCommand').returns(false);
+    });
+    cy.get(`button[aria-label="${strings.handLink.copy}"]`).click();
+    cy.get('.hand-link-box textarea').should('be.focused');
+    waitForAnimations();
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
   it('should pass the options dialog', () => {
     cy.get(`button[aria-label="${strings.options.title}"]`).click();
     cy.get('[role="dialog"]').should('be.visible');
@@ -145,7 +157,7 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
   HELP_TABS.forEach((tab, index) => {
     it(`should pass the help dialog's ${tab} tab`, () => {
       cy.get(`button[aria-label="${strings.common.help}"]`).click();
-      cy.get('.help-title').should('be.visible');
+      cy.get('.help-dialog .dialog-title').should('be.visible');
       cy.get('.help-tabs [role="tab"]').eq(index).click();
       cy.get(`.help-${tab}`).should('exist');
       waitForAnimations();
@@ -228,6 +240,51 @@ describe('aXe Tests', () => {
     });
   });
 
+  describe('Welcome', () => {
+    const checkWelcome = () => {
+      cy.get('.welcome-dialog').should('have.focus');
+      waitForAnimations();
+      cy.injectAxe();
+      cy.checkA11y();
+    };
+
+    it('should pass the dialog of a first visit', () => {
+      cy.visitAsNewPlayer(RON_HAND_PAGE);
+      checkWelcome();
+    });
+
+    it('should pass the dialog of a first visit in dark mode', () => {
+      cy.visitAsNewPlayer(RON_HAND_PAGE, {
+        onBeforeLoad(win) {
+          win.localStorage.setItem('mahjong-appearance', 'dark');
+        },
+      });
+      cy.get('html').should('have.class', 'dark');
+      checkWelcome();
+    });
+  });
+
+  describe('Nothing to ask', () => {
+    it('should pass the page with every question switched off', () => {
+      cy.visit(RON_HAND_PAGE, {
+        onBeforeLoad: (win) => {
+          win.localStorage.setItem(
+            'mahjong-options',
+            JSON.stringify({
+              testFu: false,
+              testHan: false,
+              testPoints: false,
+            }),
+          );
+        },
+      });
+      cy.get('.quiz-form p').should('exist');
+      cy.get('button[type="submit"]').should('not.exist');
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+  });
+
   describe('Japanese', () => {
     beforeEach(() => {
       cy.visit(RON_HAND_PAGE, {
@@ -239,5 +296,23 @@ describe('aXe Tests', () => {
     });
 
     checkPages({ strings: ja });
+  });
+
+  describe('A link to a hand that is not here', () => {
+    beforeEach(() => {
+      cy.visit('/?hand=not-a-hand');
+      cy.get('.link-note').should('exist');
+    });
+
+    it('should pass in light mode', () => {
+      cy.injectAxe();
+      cy.checkA11y();
+    });
+
+    it('should pass in dark mode', () => {
+      switchToDarkMode();
+      cy.injectAxe();
+      cy.checkA11y();
+    });
   });
 });

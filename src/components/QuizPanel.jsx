@@ -3,7 +3,7 @@ import { RadioGroup, Tabs } from 'radix-ui';
 import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
-import { CHECK_MARK, MARKS, MARK_NAMES } from '../scripts/Marks';
+import { MARK_NAMES } from '../scripts/Marks';
 import {
   CORRECT,
   REVEALED,
@@ -13,6 +13,8 @@ import {
   getGradedFields,
   getMissingFields,
 } from '../scripts/QuizFields';
+import { GearIcon } from './GearIcon';
+import { Mark } from './Mark';
 
 const BUTTON_LABELS = [
   'buttons.checkAnswer',
@@ -26,6 +28,14 @@ const RESULT_LABELS = {
   [REVEALED]: 'quiz.toldYou',
   [WRONG]: 'quiz.incorrect',
 };
+
+const MAX_BOX_LENGTH = 8;
+
+const ENTER_GOES_ON = 'next';
+const ENTER_CHECKS = 'done';
+
+const ENTER_KEY = 'Enter';
+const PRESSING_KEYS = [ENTER_KEY, ' '];
 
 const ANSWER_TAB = 'answer';
 const YOUR_ANSWER_TAB = 'your-answer';
@@ -62,7 +72,7 @@ const RealAnswer = ({ field }) => {
         <span className='visually-hidden'>: </span>
       </span>
       <Text className='answer-number' weight='bold'>
-        {field.answer} <span aria-hidden='true'>{CHECK_MARK}</span>
+        {field.answer} <Mark result={CORRECT} />
       </Text>
     </span>
   );
@@ -132,7 +142,9 @@ const NumberField = ({
   field,
   graded,
   missing,
+  onBoxKeyDown,
   onChangeAnswer,
+  opensNextBox,
 }) => {
   const { t } = useTranslation();
   const notANumber =
@@ -160,18 +172,22 @@ const NumberField = ({
         <input
           aria-describedby={describedBy || undefined}
           aria-invalid={notANumber || missing || undefined}
+          autoComplete='off'
           className='number-input'
           disabled={field.ignored}
+          enterKeyHint={opensNextBox ? ENTER_GOES_ON : ENTER_CHECKS}
           id={field.id}
           inputMode='numeric'
+          maxLength={MAX_BOX_LENGTH}
           onChange={(event) => onChangeAnswer(field.id, event.target.value)}
+          onKeyDown={(event) => onBoxKeyDown(event, field)}
           readOnly={checked}
           type='text'
           value={answers[field.id] ?? ''}
         />
         {result && (
-          <span aria-hidden='true' className='box-mark'>
-            {MARKS[result]}
+          <span className='box-mark'>
+            <Mark result={result} />
           </span>
         )}
         {result && (
@@ -266,9 +282,7 @@ const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
                       <span className='choice-value'>
                         {choice}
                         {result && (
-                          <span aria-label={t(MARK_NAMES[result])} role='img'>
-                            {MARKS[result]}
-                          </span>
+                          <Mark name={t(MARK_NAMES[result])} result={result} />
                         )}
                       </span>
                     </RadioGroup.Item>
@@ -342,6 +356,51 @@ function QuizPanel({
     }
   };
 
+  const problemFields = fields.filter(
+    (field) =>
+      missingFields.includes(field)
+      || (!field.choiceRows
+        && !field.ignored
+        && !answerIsNumber(field, answers)),
+  );
+
+  const getEmptyBoxesAfter = (field) =>
+    missingFields.filter(
+      (missingField) =>
+        !missingField.choiceRows
+        && fields.indexOf(missingField) > fields.indexOf(field),
+    );
+
+  // Enter in an input checks the hand, like in any form. But when the only
+  // thing left to do is fill in the inputs after this one, Enter goes to the
+  // next one instead and nothing gets checked
+  const handleBoxKeyDown = (event, field) => {
+    const emptyBoxesAfter = getEmptyBoxesAfter(field);
+    const onlyLaterBoxesAreLeft =
+      problemFields.length > 0
+      && problemFields.every((problemField) =>
+        emptyBoxesAfter.includes(problemField),
+      );
+
+    if (
+      event.key === ENTER_KEY
+      && !event.nativeEvent.isComposing
+      && !checked
+      && onlyLaterBoxesAreLeft
+    ) {
+      event.preventDefault();
+      focusField(emptyBoxesAfter[0]);
+    }
+  };
+
+  // Ignore key repeat. Holding Enter on Check Answer would otherwise deal the
+  // next hand before the answer could be read.
+  const handleNewHandKeyDown = (event) => {
+    if (event.repeat && PRESSING_KEYS.includes(event.key)) {
+      event.preventDefault();
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -351,13 +410,6 @@ function QuizPanel({
       return;
     }
 
-    const problemFields = fields.filter(
-      (field) =>
-        missingFields.includes(field)
-        || (!field.choiceRows
-          && !field.ignored
-          && !answerIsNumber(field, answers)),
-    );
     if (gradedFields.length > 0 && problemFields.length > 0) {
       setFlaggedIds(missingFields.map((field) => field.id));
       focusField(problemFields[0]);
@@ -368,6 +420,7 @@ function QuizPanel({
     newHandRef.current?.focus({ preventScroll: true });
   };
 
+  const [beforeGear, afterGear] = t('quiz.noOptionsSelected').split('{}');
   const questions =
     fields.length > 0 ? (
       <div className='quiz-fields'>
@@ -381,14 +434,20 @@ function QuizPanel({
               graded={gradedFields.includes(field)}
               key={field.id}
               missing={fieldIsFlagged(field)}
+              onBoxKeyDown={handleBoxKeyDown}
               onChangeAnswer={onChangeAnswer}
+              opensNextBox={getEmptyBoxesAfter(field).length > 0}
             />
           );
         })}
       </div>
     ) : (
       <Text as='p' size='3'>
-        {t('quiz.noOptionsSelected')}
+        {beforeGear}
+        <span className='inline-icon'>
+          <GearIcon />
+        </span>
+        {afterGear}
       </Text>
     );
 
@@ -438,22 +497,20 @@ function QuizPanel({
 
         <div className='quiz-actions'>
           <ActionSizer />
-          {resultLabel ? (
+          {resultLabel && (
             <span className={`verdict ${result}`}>
               <span className='verdict-label'>{t(resultLabel)}</span>
             </span>
-          ) : (
-            <button
-              className='action-button'
-              disabled={fields.length === 0}
-              type='submit'
-            >
+          )}
+          {!resultLabel && fields.length > 0 && (
+            <button className='action-button primary' type='submit'>
               {checkLabel}
             </button>
           )}
           <button
-            className='action-button new-hand-button'
+            className={`action-button new-hand-button ${checked ? 'primary' : ''}`}
             onClick={onNewHand}
+            onKeyDown={handleNewHandKeyDown}
             ref={newHandRef}
             type='button'
           >

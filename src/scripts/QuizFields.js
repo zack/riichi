@@ -9,6 +9,11 @@ const MAX_NON_LIMIT_HAN = 4;
 
 const ROUNDING = 'rounding';
 
+// Things that can be typed in a number without changing it: a . or ' that
+// groups thousands (only when exactly three digits follow it), and 点 at the end
+const GROUPING_MARK_BETWEEN_DIGITS = /(\d)[.'](?=\d{3}(?!\d))/g;
+const POINTS_WORD_AFTER_DIGIT = /(\d)点$/;
+
 function getExactFu(agari) {
   let exactFu = 0;
   agari.fu_details.forEach((detail) => {
@@ -121,7 +126,9 @@ function getQuizFields(agari, options, points, answers, t) {
 function readAnswer(field, answers) {
   const answer = (answers[field.id] ?? '')
     .normalize('NFKC')
-    .replace(/[\s,]/g, '');
+    .replace(/[\s,]/g, '')
+    .replace(POINTS_WORD_AFTER_DIGIT, '$1')
+    .replace(GROUPING_MARK_BETWEEN_DIGITS, '$1');
 
   if (/^\d+$/.test(answer)) {
     return String(Number(answer));

@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+/* Two rules in here depend on Radix internals and need checking when Radix
+   Themes is upgraded: the .rt-BaseDialog* classes under HELP, and --gray-a7 and
+   --gray-a8 on .option-row. */
+
 .radix-themes {
   --cursor-button: pointer;
   --cursor-checkbox: pointer;
@@ -20,6 +24,14 @@
   --target-size: 44px;
 
   --choice-height: 48px;
+
+  --option-name-indent: calc(var(--space-4) * 1.25 + var(--space-2));
+
+  --tile-label-biggest: 16px;
+  --tile-label-gap: 3px;
+  --tile-label-line: 1.3;
+  --tile-label-share: 0.34;
+  --tile-label-smallest: 8px;
 }
 
 html.dark .radix-themes {
@@ -93,7 +105,6 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .app-title {
-  font-family: var(--heading-font-family);
   font-size: clamp(var(--font-size-4), 5.6vw, var(--font-size-7));
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--letter-spacing-6);
@@ -188,14 +199,50 @@ html.dark:not(.high-contrast) .radix-themes {
   cursor: var(--cursor-disabled);
 }
 
-.action-button:hover:not(:disabled) {
-  background-color: var(--accent-a3);
-  box-shadow: 3px 3px 3px var(--black-a4);
-  outline: solid 1px var(--accent-9);
+/* Phones leave :hover stuck on whatever was last tapped, so every hover style
+   in this file is behind (hover: hover) */
+@media (hover: hover) {
+  .action-button:hover:not(:disabled) {
+    background-color: var(--accent-a3);
+    box-shadow: 3px 3px 3px var(--black-a4);
+    outline: solid 1px var(--accent-9);
+  }
+
+  .dark .action-button:hover:not(:disabled) {
+    background-color: var(--accent-a4);
+  }
 }
 
-.dark .action-button:hover:not(:disabled) {
-  background-color: var(--accent-a4);
+.action-button:active:not(:disabled) {
+  background-color: var(--accent-a5);
+}
+
+.dark .action-button:active:not(:disabled) {
+  background-color: var(--accent-a6);
+}
+
+.action-button.primary:not(:disabled) {
+  background: var(--accent-9);
+  border-color: var(--accent-9);
+  color: var(--accent-contrast);
+}
+
+@media (hover: hover) {
+  .action-button.primary:hover:not(:disabled) {
+    background-color: var(--accent-10);
+  }
+
+  .dark .action-button.primary:hover:not(:disabled) {
+    background-color: var(--accent-8);
+  }
+}
+
+.action-button.primary:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--accent-10), var(--accent-12));
+}
+
+.dark .action-button.primary:active:not(:disabled) {
+  background-color: var(--accent-7);
 }
 
 .action-button:focus-visible:not(:disabled),
@@ -215,7 +262,6 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .verdict,
 .quiz-action-sizer > .verdict-words {
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
 }
 
@@ -240,7 +286,6 @@ html.dark:not(.high-contrast) .radix-themes {
   gap: var(--space-3);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   max-width: 100%;
-  padding-bottom: calc(var(--space-1) + var(--line-height-1));
   width: fit-content;
 }
 
@@ -253,6 +298,17 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .quiz-action-sizer + * + * {
+  grid-column: 2;
+}
+
+.inline-icon svg {
+  height: 1em;
+  margin-right: 0.25em;
+  vertical-align: -0.125em;
+  width: 1em;
+}
+
+.quiz-actions > .new-hand-button {
   grid-column: 2;
 }
 
@@ -292,8 +348,14 @@ html.dark:not(.high-contrast) .radix-themes {
   width: var(--target-size);
 }
 
-.icon-button:hover {
-  background: var(--accent-a4);
+@media (hover: hover) {
+  .icon-button:hover {
+    background: var(--accent-a4);
+  }
+}
+
+.icon-button:active {
+  background: var(--accent-a6);
 }
 
 .icon-button:focus-visible {
@@ -343,6 +405,19 @@ html.dark:not(.high-contrast) .radix-themes {
   color: var(--gray-a11);
 }
 
+.no-rate {
+  display: inline-grid;
+  justify-items: center;
+}
+
+.no-rate > span {
+  grid-area: 1 / 1;
+}
+
+.no-rate-sizer {
+  visibility: hidden;
+}
+
 .badge.wrong {
   --badge-tint: var(--red-a3);
   color: var(--wrong-color);
@@ -386,13 +461,30 @@ html.dark:not(.high-contrast) .radix-themes {
   position: absolute;
 }
 
-.hand-link:hover {
-  --badge-tint: var(--accent-a4);
+@media (hover: hover) {
+  .hand-link:hover {
+    --badge-tint: var(--accent-a4);
+  }
 }
 
 .hand-link:focus-visible {
   outline: var(--focus-width) solid var(--focus-8);
   outline-offset: 2px;
+}
+
+.hand-link-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(20rem, var(--radix-popover-content-available-width));
+}
+
+.hand-link-box > .action-button {
+  align-self: flex-end;
+}
+
+.hand-link-text textarea {
+  word-break: break-all;
 }
 
 /* TILES */
@@ -407,13 +499,16 @@ html.dark:not(.high-contrast) .radix-themes {
 .tile-label {
   color: var(--gray-11);
   display: flex;
-  font-family: var(--heading-font-family);
-  font-size: clamp(8px, calc(var(--tile-width) * 0.34), 16px);
+  font-size: clamp(
+    var(--tile-label-smallest),
+    calc(var(--tile-width) * var(--tile-label-share)),
+    var(--tile-label-biggest)
+  );
   font-weight: var(--font-weight-bold);
   justify-content: center;
-  line-height: 1.3;
-  margin-top: 3px;
-  min-height: 1.3em;
+  line-height: var(--tile-label-line);
+  margin-top: var(--tile-label-gap);
+  min-height: calc(1em * var(--tile-label-line));
   white-space: nowrap;
   width: 0;
 }
@@ -499,6 +594,10 @@ html.dark:not(.high-contrast) .radix-themes {
   top: 100%;
 }
 
+.names-on-tiles .tile-cell.honba > .tile-label:empty {
+  display: none;
+}
+
 .count-crowded .info {
   padding-bottom: 7px;
 }
@@ -511,6 +610,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --tile-border: 0px;
 }
 
+.bigger-hand-riichi .bigger-hand-tiles,
 .honba-sticks,
 .info-number,
 .tile {
@@ -569,7 +669,6 @@ html.dark:not(.high-contrast) .radix-themes {
   align-items: center;
   color: var(--tile-ink);
   display: flex;
-  font-family: var(--heading-font-family);
   font-size: calc(var(--tile-width) * 0.5);
   font-weight: var(--font-weight-bold);
   inset: 0;
@@ -678,6 +777,13 @@ html.dark:not(.high-contrast) .radix-themes {
   padding: calc(var(--card-gutter) - var(--card-border-width));
 }
 
+.link-note {
+  margin: var(--card-spacing) 0 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+  word-break: keep-all;
+}
+
 .hand-card .info {
   margin-top: -3px;
 }
@@ -708,7 +814,12 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .hand-card:not(.names-on-tiles) .hand.named {
   --row-name-height: calc(
-    3px + 1.3 * clamp(8px, var(--row-tile-width) * 0.34, 16px)
+    var(--tile-label-gap) + var(--tile-label-line) *
+      clamp(
+        var(--tile-label-smallest),
+        var(--row-tile-width) * var(--tile-label-share),
+        var(--tile-label-biggest)
+      )
   );
 }
 
@@ -732,6 +843,8 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .bigger-hand-button {
+  --room-below: calc(var(--card-gutter) - var(--card-border-width));
+  --slack: calc(var(--target-size) - var(--line-height-1));
   align-items: center;
   background: none;
   border: 0;
@@ -743,10 +856,10 @@ html.dark:not(.high-contrast) .radix-themes {
   font-size: var(--font-size-1);
   gap: 4px;
   justify-content: center;
-  margin: calc(-1 * var(--space-3) - 8px) auto
-    calc(var(--card-border-width) - var(--card-gutter));
+  margin: calc(6px + var(--room-below) - var(--space-3) - var(--slack)) auto
+    calc(-1 * var(--room-below));
   min-height: var(--target-size);
-  padding: 0 var(--space-3);
+  padding: calc(var(--slack) - 2 * var(--room-below)) var(--space-3) 0;
 }
 
 .bigger-hand-button:focus-visible {
@@ -788,10 +901,7 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .bigger-hand-riichi .bigger-hand-tiles {
   align-items: center;
-  height: calc(
-    (var(--tile-width) - 2 * var(--tile-border)) * var(--tile-ratio) + 2 *
-      var(--tile-border)
-  );
+  height: var(--tile-height);
   width: 64px;
 }
 
@@ -812,7 +922,6 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .bigger-hand-win {
   color: var(--red-11);
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
 }
 
@@ -837,10 +946,21 @@ html.dark:not(.high-contrast) .radix-themes {
   gap: var(--space-3) var(--space-4);
 }
 
-.bigger-hand-close {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--space-5);
+.bigger-hand-dialog {
+  overflow: visible;
+}
+
+.bigger-hand-header {
+  background: var(--color-panel-solid);
+  padding-bottom: var(--space-3);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.bigger-hand-header .action-button {
+  flex: none;
+  white-space: nowrap;
 }
 
 .tile-group {
@@ -859,7 +979,6 @@ html.dark:not(.high-contrast) .radix-themes {
 .win-type {
   bottom: 100%;
   color: var(--red-11);
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
   left: 50%;
   margin-bottom: var(--win-type-gap);
@@ -924,7 +1043,6 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .riichi-label {
   color: var(--red-11);
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
 }
 
@@ -965,7 +1083,6 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .info-label {
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
 }
 
@@ -1043,10 +1160,13 @@ html.dark:not(.high-contrast) .radix-themes {
   width: 100%;
 }
 
+/* Japanese has no spaces, so without keep-all the browser breaks a label in the
+   middle of a word */
 .quiz-fields label {
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
+  overflow-wrap: normal;
   text-align: right;
+  word-break: keep-all;
 }
 
 .number-input {
@@ -1084,7 +1204,6 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .choice-label {
-  font-family: var(--heading-font-family);
   font-weight: var(--font-weight-bold);
 }
 
@@ -1170,10 +1289,28 @@ html.dark:not(.high-contrast) .radix-themes {
   outline-offset: 2px;
 }
 
+.mark {
+  flex: none;
+  height: 0.84em;
+  stroke-width: 2.5;
+  vertical-align: -0.07em;
+  width: 0.84em;
+}
+
+.answer-number .mark,
+.answer-total .mark,
+.box-mark .mark {
+  stroke-width: 3.5;
+}
+
+.box-mark .mark,
+.choice-value .mark {
+  translate: 0 -0.05em;
+}
+
 .box-mark {
+  display: flex;
   font-size: var(--font-size-3);
-  font-weight: bold;
-  line-height: 1;
   pointer-events: none;
   position: absolute;
   right: var(--space-2);
@@ -1257,7 +1394,7 @@ html.dark:not(.high-contrast) .radix-themes {
   align-items: center;
   background-color: var(--color-surface);
   border: 1px solid var(--choice-border-color, var(--gray-9));
-  border-radius: var(--radius-4);
+  border-radius: var(--radius-3);
   color: var(--gray-12);
   cursor: var(--cursor-radio);
   display: flex;
@@ -1328,8 +1465,6 @@ html.dark:not(.high-contrast) .radix-themes {
   border-color: var(--gray-8);
 }
 
-/* Phones leave :hover stuck on whatever was last tapped, so every hover style
-   in this file is behind (hover: hover) */
 @media (hover: hover) {
   .choices:not([aria-readonly='true']) .choice:hover:not(:disabled) {
     background-image: linear-gradient(var(--gray-a3), var(--gray-a3));
@@ -1339,6 +1474,10 @@ html.dark:not(.high-contrast) .radix-themes {
     .choice:hover:not(:disabled, [data-state='checked']) {
     border-color: var(--choice-border-color, var(--gray-11));
   }
+}
+
+.choices:not([aria-readonly='true']) .choice:active:not(:disabled) {
+  background-image: linear-gradient(var(--gray-a5), var(--gray-a5));
 }
 
 .choice:focus-visible {
@@ -1416,7 +1555,6 @@ html.dark:not(.high-contrast) .radix-themes {
   background: var(--color-background);
   border: 1px solid var(--gray-a7);
   border-radius: var(--radius-full);
-  font-family: var(--heading-font-family);
   font-size: var(--font-size-1);
   font-weight: var(--font-weight-bold);
   left: 50%;
@@ -1467,9 +1605,12 @@ html.dark:not(.high-contrast) .radix-themes {
   color: var(--correct-color);
 }
 
-.answer-total.wrong,
 .answer-picked {
   color: var(--wrong-color);
+}
+
+.answer-picked + .answer-total {
+  margin-top: var(--space-2);
 }
 
 .breakdown {
@@ -1495,9 +1636,11 @@ html.dark:not(.high-contrast) .radix-themes {
   text-underline-offset: 0.18em;
 }
 
-.text-link:hover,
-.wiki-link:hover {
-  text-decoration-thickness: 2px;
+@media (hover: hover) {
+  .text-link:hover,
+  .wiki-link:hover {
+    text-decoration-thickness: 2px;
+  }
 }
 
 .text-link:focus-visible,
@@ -1545,8 +1688,7 @@ html.dark:not(.high-contrast) .radix-themes {
   white-space: nowrap;
 }
 
-.options-title {
-  font-family: var(--heading-font-family);
+.dialog-title {
   font-size: var(--font-size-6);
   font-weight: var(--font-weight-bold);
   line-height: 1.25;
@@ -1592,7 +1734,7 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .option-indented {
-  padding-left: calc(var(--space-4) * 1.25 + var(--space-2));
+  padding-left: var(--option-name-indent);
 }
 
 .theme-choice {
@@ -1600,6 +1742,7 @@ html.dark:not(.high-contrast) .radix-themes {
   flex-direction: column;
   gap: var(--space-1);
   margin-bottom: var(--space-2);
+  padding-top: calc((var(--target-size) - var(--line-height-3)) / 2);
 }
 
 .segments,
@@ -1676,7 +1819,7 @@ html.dark:not(.high-contrast) .radix-themes {
 
 .option-note {
   margin: var(--space-1) 0 0;
-  padding-left: calc(var(--space-4) * 1.25 + var(--space-2));
+  padding-left: var(--option-name-indent);
 }
 
 .home-icon-picker {
@@ -1850,23 +1993,13 @@ html.dark:not(.high-contrast) .radix-themes {
   outline-offset: 1px;
 }
 
-.help-title {
-  font-family: var(--heading-font-family);
-  font-size: var(--font-size-6);
-  font-weight: var(--font-weight-bold);
-  line-height: 1.25;
-  margin: 0;
-}
-
 .help-content {
   overflow-x: auto;
   text-align: left;
 }
 
 .help-content h2,
-.help-content h3,
-.help-content h4 {
-  font-family: var(--heading-font-family);
+.help-content h3 {
   font-weight: var(--font-weight-bold);
   line-height: 1.25;
   margin: var(--space-5) 0 var(--space-2);
@@ -1880,10 +2013,6 @@ html.dark:not(.high-contrast) .radix-themes {
   font-size: var(--font-size-5);
 }
 
-.help-content h4 {
-  font-size: var(--font-size-4);
-}
-
 .help-content p,
 .help-content ul {
   margin: 0 0 var(--space-3);
@@ -1894,6 +2023,7 @@ html.dark:not(.high-contrast) .radix-themes {
 }
 
 .help-content math {
+  font-family: inherit;
   white-space: nowrap;
 }
 
@@ -1979,6 +2109,7 @@ html.dark:not(.high-contrast) .radix-themes {
   color: var(--gray-11);
   font-size: var(--font-size-2);
 }
+
 .help-content .score-table {
   --line: 1.35em;
   border-collapse: separate;
@@ -1986,40 +2117,47 @@ html.dark:not(.high-contrast) .radix-themes {
   border-spacing: 0;
   border-top: 1px solid var(--grid);
   font-size: 13px;
-  font-variant-numeric: tabular-nums;
   line-height: var(--line);
   margin-bottom: var(--space-5);
   table-layout: fixed;
   text-align: center;
   width: 100%;
 }
+
 .score-table col.mid {
   width: 12%;
 }
+
 .score-table col.side {
   width: calc(88% / 14);
 }
+
 .help-content .score-table td,
 .help-content .score-table th {
   border-bottom: 1px solid var(--grid);
   border-right: 1px solid var(--grid);
   padding: 0;
 }
+
 .help-content .score-table th {
   font-weight: var(--font-weight-bold);
   padding: 1px 0;
 }
+
 .score-table .name[class*='hh'] {
   font-size: var(--font-size-3);
 }
+
 .score-table .ron,
 .score-table .tsumo {
   font-size: 12px;
 }
+
 .score-table .pair {
   display: grid;
   grid-template-rows: 1fr 1fr;
 }
+
 .score-table .ron,
 .score-table .tsumo {
   align-items: center;
@@ -2028,13 +2166,16 @@ html.dark:not(.high-contrast) .radix-themes {
   min-height: calc(2 * var(--line) + 4px);
   padding: 2px 0;
 }
+
 .score-table .limit {
   font-size: var(--font-size-4);
   line-height: 1.3;
 }
+
 .help-content .score-table .limit {
   padding: 4px 0;
 }
+
 .score-table .in-block {
   clip-path: inset(50%);
   height: 1px;
@@ -2043,6 +2184,7 @@ html.dark:not(.high-contrast) .radix-themes {
   white-space: nowrap;
   width: 1px;
 }
+
 @media (forced-colors: active) {
   .score-table .in-block {
     clip-path: none;
@@ -2053,6 +2195,7 @@ html.dark:not(.high-contrast) .radix-themes {
     width: auto;
   }
 }
+
 .help-content .score-table,
 .help-content .tone-gray,
 .help-top .tone-gray {
@@ -2064,6 +2207,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --non-dealer: #2e3339;
   color: #1c2024;
 }
+
 .score-table .hh1,
 .score-table .h1,
 .help-content .tone-h1 {
@@ -2071,6 +2215,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #e5f3ff;
   --tsumo: #b6d7ff;
 }
+
 .score-table .hh2,
 .score-table .h2,
 .help-content .tone-h2 {
@@ -2078,6 +2223,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #dcf8fb;
   --tsumo: #9de2ea;
 }
+
 .score-table .hh3,
 .score-table .h3,
 .help-content .tone-h3 {
@@ -2085,6 +2231,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #e1f8eb;
   --tsumo: #ade3c5;
 }
+
 .score-table .hh4,
 .score-table .h4,
 .help-content .tone-h4 {
@@ -2092,31 +2239,35 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #eff5df;
   --tsumo: #cedca8;
 }
-.score-table .mangan,
-.help-content .tone-mangan {
+
+.score-table .mangan {
   --name: #6e4c00;
   --pale: #f6e6c7;
 }
-.score-table .haneman,
-.help-content .tone-haneman {
+
+.score-table .haneman {
   --name: #7d4000;
   --pale: #ffe2ca;
 }
+
 .score-table .baiman,
 .help-content .tone-baiman {
   --name: #843825;
   --pale: #ffded4;
 }
+
 .score-table .sanbaiman,
 .help-content .tone-sanbaiman {
   --name: #82344a;
   --pale: #ffdce4;
 }
+
 .score-table .yakuman,
 .help-content .tone-yakuman {
   --name: #73396f;
   --pale: #fadef6;
 }
+
 .dark .help-content .score-table,
 .dark .help-content .tone-gray,
 .dark .help-top .tone-gray {
@@ -2128,6 +2279,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --non-dealer: #43484e;
   color: #edeef0;
 }
+
 .dark .score-table .hh1,
 .dark .score-table .h1,
 .dark .help-content .tone-h1 {
@@ -2135,6 +2287,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #1e3149;
   --tsumo: #0b2039;
 }
+
 .dark .score-table .hh2,
 .dark .score-table .h2,
 .dark .help-content .tone-h2 {
@@ -2142,6 +2295,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #05373c;
   --tsumo: #00262c;
 }
+
 .dark .score-table .hh3,
 .dark .score-table .h3,
 .dark .help-content .tone-h3 {
@@ -2149,6 +2303,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #163827;
   --tsumo: #002716;
 }
+
 .dark .score-table .hh4,
 .dark .score-table .h4,
 .dark .help-content .tone-h4 {
@@ -2156,31 +2311,35 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #2d3415;
   --tsumo: #1c2301;
 }
-.dark .score-table .mangan,
-.dark .help-content .tone-mangan {
+
+.dark .score-table .mangan {
   --name: #7c5600;
   --pale: #332506;
 }
-.dark .score-table .haneman,
-.dark .help-content .tone-haneman {
+
+.dark .score-table .haneman {
   --name: #8d4a00;
   --pale: #39210c;
 }
+
 .dark .score-table .baiman,
 .dark .help-content .tone-baiman {
   --name: #95402b;
   --pale: #3d1e16;
 }
+
 .dark .score-table .sanbaiman,
 .dark .help-content .tone-sanbaiman {
   --name: #933c54;
   --pale: #3c1c24;
 }
+
 .dark .score-table .yakuman,
 .dark .help-content .tone-yakuman {
   --name: #82417d;
   --pale: #351e33;
 }
+
 .high-contrast .help-content .score-table,
 .high-contrast .help-content .tone-gray,
 .high-contrast .help-top .tone-gray {
@@ -2192,6 +2351,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --non-dealer: #1b2025;
   color: #000000;
 }
+
 .high-contrast .score-table .hh1,
 .high-contrast .score-table .h1,
 .high-contrast .help-content .tone-h1 {
@@ -2199,6 +2359,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #f0f9ff;
   --tsumo: #cce4ff;
 }
+
 .high-contrast .score-table .hh2,
 .high-contrast .score-table .h2,
 .high-contrast .help-content .tone-h2 {
@@ -2206,6 +2367,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #eafdff;
   --tsumo: #bbecf1;
 }
+
 .high-contrast .score-table .hh3,
 .high-contrast .score-table .h3,
 .high-contrast .help-content .tone-h3 {
@@ -2213,6 +2375,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #eefdf4;
   --tsumo: #c6ecd6;
 }
+
 .high-contrast .score-table .hh4,
 .high-contrast .score-table .h4,
 .high-contrast .help-content .tone-h4 {
@@ -2220,31 +2383,35 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #f6fbec;
   --tsumo: #dde7c2;
 }
-.high-contrast .score-table .mangan,
-.high-contrast .help-content .tone-mangan {
+
+.high-contrast .score-table .mangan {
   --name: #513000;
   --pale: #f9edd5;
 }
-.high-contrast .score-table .haneman,
-.high-contrast .help-content .tone-haneman {
+
+.high-contrast .score-table .haneman {
   --name: #5f2400;
   --pale: #ffead8;
 }
+
 .high-contrast .score-table .baiman,
 .high-contrast .help-content .tone-baiman {
   --name: #651a07;
   --pale: #ffe7df;
 }
+
 .high-contrast .score-table .sanbaiman,
 .high-contrast .help-content .tone-sanbaiman {
   --name: #631730;
   --pale: #ffe5eb;
 }
+
 .high-contrast .score-table .yakuman,
 .high-contrast .help-content .tone-yakuman {
   --name: #561d52;
   --pale: #fde7fa;
 }
+
 .high-contrast.dark .help-content .score-table,
 .high-contrast.dark .help-content .tone-gray,
 .high-contrast.dark .help-top .tone-gray {
@@ -2256,6 +2423,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --non-dealer: #383e43;
   color: #ffffff;
 }
+
 .high-contrast.dark .score-table .hh1,
 .high-contrast.dark .score-table .h1,
 .high-contrast.dark .help-content .tone-h1 {
@@ -2263,6 +2431,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #122237;
   --tsumo: #030f22;
 }
+
 .high-contrast.dark .score-table .hh2,
 .high-contrast.dark .score-table .h2,
 .high-contrast.dark .help-content .tone-h2 {
@@ -2270,6 +2439,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #00282c;
   --tsumo: #001419;
 }
+
 .high-contrast.dark .score-table .hh3,
 .high-contrast.dark .score-table .h3,
 .high-contrast.dark .help-content .tone-h3 {
@@ -2277,6 +2447,7 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #0a281a;
   --tsumo: #001508;
 }
+
 .high-contrast.dark .score-table .hh4,
 .high-contrast.dark .score-table .h4,
 .high-contrast.dark .help-content .tone-h4 {
@@ -2284,73 +2455,88 @@ html.dark:not(.high-contrast) .radix-themes {
   --ron: #1f250a;
   --tsumo: #0d1200;
 }
-.high-contrast.dark .score-table .mangan,
-.high-contrast.dark .help-content .tone-mangan {
+
+.high-contrast.dark .score-table .mangan {
   --name: #654000;
   --pale: #221600;
 }
-.high-contrast.dark .score-table .haneman,
-.high-contrast.dark .help-content .tone-haneman {
+
+.high-contrast.dark .score-table .haneman {
   --name: #743300;
   --pale: #271302;
 }
+
 .high-contrast.dark .score-table .baiman,
 .high-contrast.dark .help-content .tone-baiman {
   --name: #7b2813;
   --pale: #291009;
 }
+
 .high-contrast.dark .score-table .sanbaiman,
 .high-contrast.dark .help-content .tone-sanbaiman {
   --name: #79243f;
   --pale: #290e15;
 }
+
 .high-contrast.dark .score-table .yakuman,
 .high-contrast.dark .help-content .tone-yakuman {
   --name: #6a2a66;
   --pale: #241022;
 }
+
 .score-table .corner {
   background: var(--corner);
   color: #ffffff;
   font-weight: var(--font-weight-bold);
 }
+
 .score-table .dealer {
   background: var(--dealer);
   color: #ffffff;
 }
+
 .score-table .non-dealer {
   background: var(--non-dealer);
   color: #ffffff;
 }
+
 .score-table .fu.of-dealer {
   background: var(--fu-dealer);
 }
+
 .score-table .fu.of-non-dealer {
   background: var(--fu-non-dealer);
 }
+
 .score-table .name {
   background: var(--name);
   color: #ffffff;
 }
+
 .score-table .ron,
 .score-table td.none {
   background: var(--ron);
 }
+
 .score-table td[class^='h']:not(.none) {
   background: var(--tsumo) linear-gradient(var(--ron) 50%, var(--tsumo) 50%);
 }
+
 .score-table td.mangan,
 .score-table .limit {
   background: var(--pale);
 }
+
 .help-content .score-table td.mangan {
   border-bottom-color: transparent;
   border-right-color: transparent;
 }
+
 .help-content .score-table td.mangan.br,
 .help-content .score-table td.limit.mangan {
   border-right-color: var(--grid);
 }
+
 .help-content .score-table td.limit.mangan {
   border-bottom-color: var(--grid);
 }
@@ -2504,7 +2690,6 @@ html.dark:not(.high-contrast) .help-content .tone-gray {
 }
 
 .help-content .step.sums li > strong:first-child {
-  font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
@@ -2571,7 +2756,6 @@ html.dark:not(.high-contrast) .help-content .tone-gray {
   color: #ffffff;
   flex: none;
   font-size: var(--font-size-2);
-  font-variant-numeric: tabular-nums;
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
   min-width: 2.6em;
@@ -2637,8 +2821,13 @@ html.dark:not(.high-contrast) .help-content .tone-gray {
 
 .tile-arrow {
   align-self: center;
-  font-weight: var(--font-weight-bold);
+  display: flex;
   padding: 0 1px;
+}
+
+.tile-arrow svg {
+  height: 1em;
+  width: 1em;
 }
 
 @media (max-width: 359px) {
@@ -2712,6 +2901,22 @@ html.high-contrast.dark .radix-themes {
 .high-contrast .action-button:not(:disabled) {
   border-color: var(--accent-11);
   color: var(--accent-12);
+}
+
+.high-contrast .action-button.primary:not(:disabled) {
+  background: var(--accent-12);
+  border-color: var(--accent-12);
+  color: var(--gray-1);
+}
+
+@media (hover: hover) {
+  .high-contrast .action-button.primary:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--accent-11), var(--accent-12));
+  }
+}
+
+.high-contrast .action-button.primary:active:not(:disabled) {
+  background-color: var(--accent-11);
 }
 
 .high-contrast .badge.hand-number,

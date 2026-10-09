@@ -2,7 +2,7 @@ import en from '../../src/i18n/translations/en.json';
 import { FU_PAGES, YAKU_PAGES } from '../../src/scripts/WikiLinks';
 import { chooseTheme, switchToDarkMode } from '../support/options';
 import { dropScrollbarRoom, getPageWidth } from '../support/page';
-import { waitForScrollToStop } from '../support/wait';
+import { waitForAnimations, waitForScrollToStop } from '../support/wait';
 
 const RON_HAND = '2011010101gm-00a9-0000-370cfc0a2';
 
@@ -34,7 +34,14 @@ const CROWDED_INFO_HAND = '2011010102gm-00a9-0000-4c03f0d02';
 const TWO_HONBA_HAND = '2011010107gm-00a9-0000-49ee978a2';
 const EIGHT_HONBA_HAND = '2011010100gm-00a9-0000-73f3847613';
 
-const visitHand = (handId) => cy.visit(`/?hand=${handId}`);
+// sessionStorage keeps the answers and counters between visits in the same tab.
+// delete them.
+const visitHand = (handId) =>
+  cy.visit(`/?hand=${handId}`, {
+    onBeforeLoad(win) {
+      win.sessionStorage.removeItem('mahjong-session');
+    },
+  });
 
 const turnOnOptions = (...names) => {
   cy.get('button[aria-label="Options"]').click();
@@ -45,7 +52,7 @@ const turnOnOptions = (...names) => {
 };
 
 const openHelp = (tab) => {
-  cy.get('button[aria-label="Scoring Help"]').click();
+  cy.get('button[aria-label="Help"]').click();
   if (tab) {
     cy.contains('.help-tabs [role="tab"]', tab).click();
   }
@@ -882,10 +889,14 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.color-card.green').should('exist');
       cy.get('.answer-total.correct').should((totals) => {
         expect([...totals].map((total) => total.textContent)).to.deep.equal([
-          'Han: 1 ✓',
-          'Fu: 60 ✓',
-          'Points: 2000 ✓',
+          'Han: 1 ',
+          'Fu: 60 ',
+          'Points: 2000 ',
         ]);
+      });
+      cy.get('.answer-total.correct').each((total) => {
+        cy.wrap(total).find('.mark').should('have.length', 1);
+        cy.wrap(total).find('.correct-mark').should('be.visible');
       });
       cy.get('.answer-total.wrong, .answer-picked').should('not.exist');
       cy.get('.verdict.correct .verdict-label').should('have.text', 'Correct!');
@@ -895,6 +906,38 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('.badge', 'Rate: 100%');
       cy.get('[role="tab"][data-state="active"]').should('have.text', 'Answer');
       cardBorderMatchesTotals('.color-card.green', '.answer-total.correct');
+    });
+
+    it('should show no rate until a hand has been graded', () => {
+      visitHand(RON_HAND);
+      cy.get('.badge.rate .no-rate-sizer').should('not.be.visible');
+      cy.get('.badge.rate .no-rate > [aria-hidden]:not(.no-rate-sizer)')
+        .should('have.text', '–')
+        .and('be.visible');
+      cy.get('.badge.rate .visually-hidden').should('have.text', 'none yet');
+
+      cy.document().its('fonts.status').should('equal', 'loaded');
+      cy.get('.badge.rate').then((badge) => {
+        const widthWithNoRate = badge[0].getBoundingClientRect().width;
+
+        cy.contains('button', 'Just tell me').click();
+        cy.get('.verdict.revealed').should('exist');
+        cy.get('.badge.rate .no-rate').should('exist');
+
+        visitHand(RON_HAND);
+        pick('han', '2');
+        pick('fu', '60');
+        cy.get('#points').type('2000');
+        cy.contains('button', 'Check Answer').click();
+        cy.document().its('fonts.status').should('equal', 'loaded');
+        cy.get('.badge.rate')
+          .should('have.text', 'Rate: 0%')
+          .and((graded) => {
+            expect(graded[0].getBoundingClientRect().width).to.equal(
+              widthWithNoRate,
+            );
+          });
+      });
     });
 
     it('should mark a wrong answer as wrong and show the right one', () => {
@@ -908,16 +951,32 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Check Answer').should('not.exist');
       cy.contains('.badge', 'Correct: 0');
       cy.contains('.badge', 'Wrong: 1');
-      cy.get('.verdict.wrong .verdict-label').should('have.text', 'Incorrect');
-      cy.get('.answer-total.wrong').should('have.text', 'Han: 1 ✗');
-      cy.get('.answer-total.wrong [role="img"]').should(
-        'have.attr',
-        'aria-label',
-        'Wrong',
-      );
-      cy.get('.answer-picked').should('have.text', 'You picked 2');
+      cy.get('.verdict.wrong .verdict-label').should('have.text', 'Wrong');
+      cy.contains('.answer-total', 'Han: 1')
+        .should('have.text', 'Han: 1')
+        .and('not.have.class', 'wrong')
+        .and('not.have.class', 'correct')
+        .and((total) => {
+          const section = total[0].parentElement;
+          expect(getComputedStyle(total[0]).color).to.equal(
+            getComputedStyle(section).color,
+          );
+        });
+      cy.contains('.answer-total', 'Han: 1').find('.mark').should('not.exist');
+      cy.contains('.answer-total', 'Han: 1')
+        .next()
+        .should('have.class', 'answer-picked')
+        .and('have.text', 'You picked 2 ')
+        .and((picked) => {
+          expect(isRed(getComputedStyle(picked[0]).color)).to.equal(true);
+        });
+      cy.get('.answer-picked .mark').should('have.length', 1);
+      cy.get('.answer-picked .wrong-mark[role="img"]')
+        .should('be.visible')
+        .and('have.attr', 'aria-label', 'Wrong');
+      cy.get('.answer-key .wrong-mark').should('have.length', 1);
       cy.get('.answer-total.correct').should('have.length', 2);
-      cardBorderMatchesTotals('.color-card.red', '.answer-total.wrong');
+      cardBorderMatchesTotals('.color-card.red', '.answer-picked');
 
       showYourAnswer();
       cy.get('[role="radio"].wrong').should('have.length', 1);
@@ -975,9 +1034,17 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('.number-input-cell.wrong #points').should('have.value', '1000');
-      cy.get('.number-input-cell.wrong .box-mark').should('have.text', '✗');
+      cy.get('.number-input-cell.wrong .box-mark .mark').should(
+        'have.length',
+        1,
+      );
+      cy.get('.number-input-cell.wrong .box-mark .wrong-mark').should(
+        'be.visible',
+      );
       cy.get('#points-verdict').should('have.text', 'Wrong.');
-      cy.get('#points-answer').should('have.text', 'Answer: 2000 ✓');
+      cy.get('#points-answer').should('have.text', 'Answer: 2000 ');
+      cy.get('#points-answer .mark').should('have.length', 1);
+      cy.get('#points-answer .correct-mark').should('be.visible');
       cy.get('#points').should(
         'have.attr',
         'aria-describedby',
@@ -995,7 +1062,13 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('.number-input-cell.correct #points').should('exist');
-      cy.get('.number-input-cell.correct .box-mark').should('have.text', '✓');
+      cy.get('.number-input-cell.correct .box-mark .mark').should(
+        'have.length',
+        1,
+      );
+      cy.get('.number-input-cell.correct .box-mark .correct-mark').should(
+        'be.visible',
+      );
       cy.get('#points-verdict').should('have.text', 'Correct.');
       cy.get('#points-answer').should('be.empty');
       cy.get('#points').should(
@@ -1017,7 +1090,9 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('.number-input-cell.correct #points').should('exist');
       cy.get('.number-input-cell.wrong #pointsDealer').should('exist');
       cy.get('#points-answer').should('be.empty');
-      cy.get('#pointsDealer-answer').should('have.text', 'Answer: 3900 ✓');
+      cy.get('#pointsDealer-answer').should('have.text', 'Answer: 3900 ');
+      cy.get('#pointsDealer-answer .mark').should('have.length', 1);
+      cy.get('#pointsDealer-answer .correct-mark').should('be.visible');
     });
 
     it('should not move anything when the boxes are marked', () => {
@@ -1080,8 +1155,14 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       pick('han', '2');
       cy.get('[aria-labelledby="han-label"] [data-state="checked"]').should(
         'have.text',
-        '1✓',
+        '1',
       );
+      cy.get(
+        '[aria-labelledby="han-label"] [data-state="checked"] .mark',
+      ).should('have.length', 1);
+      cy.get(
+        '[aria-labelledby="han-label"] [data-state="checked"] .correct-mark',
+      ).should('be.visible');
       cy.get('[aria-labelledby="han-label"] [data-state="checked"]').focus();
       cy.focused().type('{rightArrow}');
       cy.focused().should('contain', '2');
@@ -1111,6 +1192,31 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
           }),
       );
       cy.contains('.badge', 'Wrong: 1');
+    });
+
+    it('should not deal the next hand on a key that is held down', () => {
+      visitHand(RON_HAND);
+      cy.get('button[type="submit"]').click();
+      cy.focused().should('have.text', 'New Hand');
+
+      cy.window().then((win) => {
+        const button = win.document.querySelector('.new-hand-button');
+        const keyIsLeftAlone = (key, repeat) =>
+          button.dispatchEvent(
+            new win.KeyboardEvent('keydown', {
+              bubbles: true,
+              cancelable: true,
+              key,
+              repeat,
+            }),
+          );
+
+        expect(keyIsLeftAlone('Enter', true)).to.equal(false);
+        expect(keyIsLeftAlone(' ', true)).to.equal(false);
+        expect(keyIsLeftAlone('Enter', false)).to.equal(true);
+        expect(keyIsLeftAlone(' ', false)).to.equal(true);
+        expect(keyIsLeftAlone('Tab', true)).to.equal(true);
+      });
     });
   });
 
@@ -1287,6 +1393,100 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       });
     });
 
+    [320, 360, 1280].forEach((width) => {
+      it(`should show New Hand alone, in its own place, with nothing to ask at ${width}px`, () => {
+        cy.viewport(width, 2400);
+        const getBox = (button) => {
+          const box = button.getBoundingClientRect();
+          return `${box.left} ${box.width} ${box.height}`;
+        };
+
+        cy.visit(`/?hand=${RON_HAND}`, {
+          onBeforeLoad(win) {
+            win.localStorage.setItem(
+              'mahjong-options',
+              JSON.stringify({
+                testFu: false,
+                testHan: false,
+                testPoints: false,
+              }),
+            );
+          },
+        });
+        cy.document().its('fonts.status').should('equal', 'loaded');
+        layOutAsOnAPhone(width);
+
+        cy.get('.quiz-form p').should(
+          'have.text',
+          'Nothing to ask. Turn on Han, Fu or Points in Options.',
+        );
+        cy.get('.quiz-form p svg').should('be.visible');
+        cy.get('.quiz-fields').should('not.exist');
+        cy.get('.quiz-form button').should('have.length', 1);
+        cy.document().should((doc) => {
+          expect(doc.documentElement.scrollWidth).to.equal(width);
+        });
+
+        const switchPoints = () => {
+          cy.get('button[aria-label="Options"]').click();
+          cy.get('[role="dialog"]').contains('h1', /^Options$/);
+          ['Han', 'Fu', 'Points'].forEach((name) => {
+            cy.get('[role="dialog"]').contains(
+              'label',
+              new RegExp(`^${name}$`),
+            );
+          });
+          cy.get('[role="dialog"]')
+            .contains('label', /^Points$/)
+            .click();
+          cy.contains('button', 'Close').click();
+        };
+
+        switchPoints();
+        cy.get('button[type="submit"]').should('have.text', 'Just tell me');
+        cy.get('.new-hand-button').then((newHand) => {
+          const boxBesideCheck = getBox(newHand[0]);
+          expect(
+            newHand[0].previousElementSibling.getBoundingClientRect().right,
+          ).to.be.below(newHand[0].getBoundingClientRect().left);
+
+          switchPoints();
+          cy.get('.quiz-form button').should('have.length', 1);
+          cy.get('.new-hand-button').should((button) => {
+            expect(getBox(button[0])).to.equal(boxBesideCheck);
+          });
+        });
+      });
+    });
+
+    it('should fill the button that is the next thing to press', () => {
+      const isFilled = (button) =>
+        !/^rgba\(|\/ 0/.test(getComputedStyle(button[0]).backgroundColor);
+
+      visitHand(RON_HAND);
+      cy.contains('button', 'Just tell me').should((button) => {
+        expect(isFilled(button)).to.equal(true);
+      });
+      cy.contains('button', 'New Hand').should((button) => {
+        expect(isFilled(button)).to.equal(false);
+      });
+      pick('han', '2');
+      cy.contains('button', 'Check Answer').should((button) => {
+        expect(isFilled(button)).to.equal(true);
+      });
+      cy.contains('button', 'New Hand').should((button) => {
+        expect(isFilled(button)).to.equal(false);
+      });
+
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+      cy.get('.color-card.red').should('exist');
+      cy.contains('button', 'New Hand').should((button) => {
+        expect(isFilled(button)).to.equal(true);
+      });
+    });
+
     it('should not move sideways when the page starts to scroll', () => {
       cy.viewport(1280, 2400);
       visitHand(RON_HAND);
@@ -1386,10 +1586,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('.badge', 'Correct: 0');
       cy.contains('.badge', 'Wrong: 0');
-      cy.get('.verdict.revealed .verdict-label').should(
-        'have.text',
-        'I told you',
-      );
+      cy.get('.verdict.revealed .verdict-label').should('have.text', 'Shown');
       cy.contains('.color-card.orange h2', 'Answer').should('be.visible');
       cy.get('[role="tab"]').should('not.exist');
       cy.get('.quiz-fields').should('not.exist');
@@ -1472,6 +1669,70 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       noteIsGone('points');
       cy.get('.quiz-form.checked').should('not.exist');
       cy.contains('.badge', 'Wrong: 0');
+    });
+
+    it('should go on to the next box on enter, with nothing marked', () => {
+      visitHand(TSUMO_HAND);
+      pick('han', '4');
+      pick('fu', '30');
+      cy.get('#points')
+        .should('have.attr', 'autocomplete', 'off')
+        .and('have.attr', 'enterkeyhint', 'next');
+      cy.get('#pointsDealer')
+        .should('have.attr', 'autocomplete', 'off')
+        .and('have.attr', 'enterkeyhint', 'done');
+
+      cy.get('#points').type('2000{enter}');
+      cy.focused().should('have.id', 'pointsDealer');
+      cy.get('.field-error').should('not.exist');
+      cy.get('[aria-invalid]').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
+      cy.contains('.badge', 'Wrong: 0');
+
+      cy.focused().type('3900');
+      cy.get('#points').should('have.attr', 'enterkeyhint', 'done');
+      cy.get('#points').type('{enter}');
+      cy.get('.color-card.green').should('exist');
+      cy.contains('.badge', 'Correct: 1');
+    });
+
+    it('should turn enter away when more than the next box is left', () => {
+      visitHand(TSUMO_HAND);
+      pick('han', '4');
+      cy.get('#points').type('2000{enter}');
+      cy.focused()
+        .parents('[role="radiogroup"]')
+        .should('have.attr', 'aria-labelledby', 'fu-label');
+      cy.get('.missing-note').should('have.length', 2);
+
+      visitHand(TSUMO_HAND);
+      pick('han', '4');
+      pick('fu', '30');
+      cy.get('#pointsDealer').type('3900{enter}');
+      cy.focused().should('have.id', 'points');
+      cy.get('#points-missing').should('exist');
+
+      visitHand(TSUMO_HAND);
+      pick('han', '4');
+      pick('fu', '30');
+      cy.get('#pointsDealer').type('3k');
+      cy.get('#points').should('have.attr', 'enterkeyhint', 'done');
+      cy.get('#points').type('2000{enter}');
+      cy.focused().should('have.id', 'pointsDealer');
+      cy.get('#pointsDealer-error').should('exist');
+      cy.get('.quiz-form.checked').should('not.exist');
+    });
+
+    it('should go on from a typed fu to the points on enter', () => {
+      visitHand(RON_HAND);
+      turnOnOptions('Exact fu');
+      pick('han', '1');
+      cy.get('#fu').should('have.attr', 'enterkeyhint', 'next');
+      cy.get('#fu').type('58{enter}');
+
+      cy.focused().should('have.id', 'points');
+      cy.get('.field-error').should('not.exist');
+      cy.get('.quiz-form.checked').should('not.exist');
     });
 
     it('should turn away one tsumo payment without the other, whichever it is', () => {
@@ -1633,6 +1894,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
             cy.visit(`/?hand=${hand}`, {
               onBeforeLoad(win) {
                 win.localStorage.setItem('mahjong-language', language);
+                win.sessionStorage.removeItem('mahjong-session');
               },
             });
             cy.document().its('fonts.status').should('equal', 'loaded');
@@ -1706,7 +1968,16 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     });
 
     it('should read the points however the number is written', () => {
-      for (const typed of ['2,000', '２０００', '02000', ' 2 000 ']) {
+      for (const typed of [
+        '2,000',
+        '２０００',
+        '02000',
+        ' 2 000 ',
+        '2.000',
+        "2'000",
+        '2000点',
+        '２．０００ 点',
+      ]) {
         visitHand(RON_HAND);
         pick('han', '1');
         pick('fu', '60');
@@ -1738,6 +2009,66 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.get('#points').type('{backspace}');
       cy.get('#points-error').should('not.exist');
+    });
+
+    it('should not take a decimal, a sign or a stray mark for the points', () => {
+      visitHand(RON_HAND);
+      pick('han', '1');
+      pick('fu', '60');
+
+      for (const typed of [
+        '2000.0',
+        '-2000',
+        '+2000',
+        '2.5',
+        '2.0000',
+        '20.00',
+        '.200',
+        "'200",
+        '点',
+        '2000点0',
+      ]) {
+        cy.get('#points').clear();
+        cy.get('#points-error').should('not.exist');
+        cy.get('#points').type(typed);
+        cy.get('#points-error').should('have.text', 'Error: Enter a number.');
+      }
+
+      cy.get('button[type="submit"]').click();
+      cy.get('.quiz-form.checked').should('not.exist');
+    });
+
+    it('should cut a pasted number that is far too long, and not refuse it', () => {
+      const paste = (text) => {
+        cy.get('#points').clear();
+        cy.get('#points').focus();
+        cy.document().then((doc) => {
+          doc.execCommand('insertText', false, text);
+        });
+      };
+
+      visitHand(RON_HAND);
+      pick('han', '1');
+      pick('fu', '60');
+
+      paste('1234567890123456789012345');
+      cy.get('#points').should('have.value', '12345678');
+      cy.get('#points-error').should('not.exist');
+      cy.get('#points').should('not.have.attr', 'aria-invalid');
+      cy.get('#points').then((box) => {
+        expect(box[0].scrollWidth).to.equal(box[0].clientWidth);
+      });
+
+      paste('４８，０００');
+      cy.get('#points').should('have.value', '４８，０００');
+      cy.get('#points-error').should('not.exist');
+      paste(' 48,000 ');
+      cy.get('#points').should('have.value', ' 48,000 ');
+      cy.get('#points-error').should('not.exist');
+
+      paste('2,000');
+      cy.get('button[type="submit"]').click();
+      cy.get('.color-card.green').should('exist');
     });
 
     it('should start the fu answer over when exact fu is switched', () => {
@@ -1799,14 +2130,15 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('button[aria-label="Options"]').click();
       cy.get('fieldset.option-group legend h2').then((headings) => {
         expect([...headings].map((heading) => heading.textContent)).to.eql([
-          'Ask for',
+          'Quiz options',
           'Rules',
           'Display',
         ]);
       });
-      groupOf(/^Points$/).should('have.text', 'Ask for');
-      groupOf('Skip fu on limit hands').should('have.text', 'Ask for');
-      groupOf('Honba sticks').should('have.text', 'Rules');
+      groupOf(/^Points$/).should('have.text', 'Quiz options');
+      groupOf('Skip fu on limit hands').should('have.text', 'Quiz options');
+      groupOf('Honba sticks').should('have.text', 'Quiz options');
+      groupOf('Kiriage mangan').should('have.text', 'Rules');
       groupOf('High contrast').should('have.text', 'Display');
       groupOf(/^Language$/).should('have.text', 'Display');
     });
@@ -1847,7 +2179,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('a', 'Report a problem with this hand').should((link) => {
         expect(link[0].getBoundingClientRect().bottom).to.be.at.most(500);
       });
-      cy.get('.options-title').should((title) => {
+      cy.get('.options-dialog .dialog-title').should((title) => {
         const { bottom, top } = title[0].getBoundingClientRect();
         expect(top).to.be.at.least(0);
         expect(bottom).to.be.at.most(500);
@@ -1855,6 +2187,12 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('[role="dialog"] button', 'Close').click();
       cy.get('[role="dialog"]').should('not.exist');
     });
+
+    const getReportBody = () =>
+      cy
+        .get('.report-hand a')
+        .should('have.attr', 'href')
+        .then((href) => new URL(href).searchParams.get('body'));
 
     it('should report a hand in a new tab, with the hand in the report', () => {
       visitHand(RON_HAND);
@@ -1877,6 +2215,56 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
             `https://riichi.youngren.io/?hand=${RON_HAND}`,
           );
         });
+    });
+
+    it('should say in the report which options and language it was made under', () => {
+      visitHand(RON_HAND);
+      cy.get('button[aria-label="Options"]').click();
+      getReportBody().should(
+        'contain',
+        '\n\nOptions: han on, fu on, exact fu off, skip fu on limit hands on, points on, kiriage mangan off, honba off. Language: en.\n',
+      );
+
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad: (win) => {
+          win.localStorage.setItem('mahjong-language', 'ja');
+          win.localStorage.setItem(
+            'mahjong-options',
+            JSON.stringify({
+              exactFu: true,
+              ignoreFuOnLimit: false,
+              kiriageMangan: true,
+              testFu: false,
+              testHan: false,
+              testHonba: true,
+              testPoints: false,
+            }),
+          );
+        },
+      });
+      cy.get('html').should('have.attr', 'lang', 'ja');
+      cy.get('header .icon-button').first().click();
+      getReportBody().should(
+        'contain',
+        'Options: han off, fu off, exact fu on, skip fu on limit hands off, points off, kiriage mangan on, honba on. Language: ja.',
+      );
+    });
+
+    it('should report the options a checked hand was graded under', () => {
+      visitHand(RON_HAND);
+      cy.get('button[type="submit"]').click();
+      cy.get('.answer-key').should('exist');
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('[role="dialog"] label', en.options.testHonba)
+        .click()
+        .find('[role="checkbox"]')
+        .should('have.attr', 'aria-checked', 'true');
+      getReportBody().should('contain', 'honba off.');
+
+      cy.contains('[role="dialog"] button', 'Close').click();
+      cy.contains('button', 'New Hand').click();
+      cy.get('button[aria-label="Options"]').click();
+      getReportBody().should('contain', 'honba on.');
     });
 
     it('should give the report link the same focus ring as a button', () => {
@@ -1920,6 +2308,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         const event = new win.Event('beforeinstallprompt');
         event.fromTest = true;
         event.prompt = cy.stub().as('prompt').resolves();
+        event.userChoice = Promise.resolve({ outcome: 'dismissed' });
         win.dispatchEvent(event);
       });
 
@@ -1973,6 +2362,202 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Install app').click();
       cy.get('@prompt').should('have.been.calledOnce');
     });
+
+    it('should keep the picker, with its button switched off, after the player says no', () => {
+      visitHand(RON_HAND);
+      offerToInstall();
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('button', 'Install app')
+        .should('be.enabled')
+        .and('not.have.attr', 'aria-describedby');
+      cy.contains(en.options.installAsked).should('not.exist');
+      cy.contains('button', 'Install app').click();
+      cy.get('@prompt').should('have.been.calledOnce');
+
+      cy.contains('Home screen icon').should('be.visible');
+      cy.get('.home-icon-swatch').should('have.length', 12);
+      cy.get('input[aria-label="Mat blue"]').click().should('be.checked');
+      cy.contains('a', 'Report a problem with this hand').should('be.visible');
+
+      cy.contains('button', 'Install app')
+        .should('be.disabled')
+        .invoke('attr', 'aria-describedby')
+        .then((noteId) => {
+          cy.get(`#${noteId}`)
+            .should('be.visible')
+            .and('have.text', en.options.installAsked);
+        });
+
+      cy.contains('[role="dialog"] button', 'Close').click();
+      cy.get('[role="dialog"]').should('not.exist');
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('button', 'Install app').should('be.disabled');
+      cy.get('@prompt').should('have.been.calledOnce');
+    });
+
+    it('should let the button ask again when the browser offers again', () => {
+      visitHand(RON_HAND);
+      offerToInstall();
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('button', 'Install app').click();
+      cy.contains('button', 'Install app').should('be.disabled');
+
+      offerToInstall();
+      cy.contains('button', 'Install app').should('be.enabled');
+      cy.contains(en.options.installAsked).should('not.exist');
+      cy.contains('button', 'Install app').click();
+      cy.get('@prompt').should('have.been.calledOnce');
+    });
+
+    it('should take the picker away once the app is installed', () => {
+      visitHand(RON_HAND);
+      offerToInstall();
+      cy.get('button[aria-label="Options"]').click();
+      cy.contains('button', 'Install app').click();
+      cy.contains('button', 'Install app').should('be.disabled');
+
+      cy.window().then((win) => {
+        win.dispatchEvent(new win.Event('appinstalled'));
+      });
+      cy.contains('Home screen icon').should('not.exist');
+      cy.contains('button', 'Install app').should('not.exist');
+    });
+  });
+
+  describe('Back button on a phone', () => {
+    const visitWithCloseWatchers = () => {
+      const watchers = [];
+
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad: (win) => {
+          win.CloseWatcher = class extends win.EventTarget {
+            constructor() {
+              super();
+              this.isDestroyed = false;
+              watchers.push(this);
+            }
+
+            destroy() {
+              this.isDestroyed = true;
+            }
+          };
+        },
+      });
+      return cy.wrap(watchers);
+    };
+
+    const pressBack = (watchers) => {
+      cy.window().then((win) => {
+        watchers.at(-1).dispatchEvent(new win.Event('close'));
+      });
+    };
+
+    const DIALOGS = [
+      {
+        name: 'options',
+        opener: 'button[aria-label="Options"]',
+        selector: '.options-dialog',
+      },
+      {
+        name: 'help',
+        opener: 'button[aria-label="Help"]',
+        selector: '.help-dialog',
+      },
+      {
+        name: 'bigger hand',
+        opener: '.bigger-hand-button',
+        selector: '.bigger-hand-dialog',
+      },
+    ];
+
+    DIALOGS.forEach(({ name, opener, selector }) => {
+      it(`should close the ${name} and nothing else`, () => {
+        visitWithCloseWatchers().then((watchers) => {
+          cy.get('.hand .tile').should('exist');
+          cy.wrap(watchers).should('have.length', 0);
+
+          cy.get(opener).click();
+          cy.get(selector).should('exist');
+          cy.wrap(watchers).should('have.length', 1);
+
+          pressBack(watchers);
+          cy.get('[role="dialog"]').should('not.exist');
+          cy.location('search').should('contain', RON_HAND);
+          cy.get(opener).should('be.focused');
+          cy.wrap(watchers).should((made) => {
+            expect(made).to.have.length(1);
+            expect(made[0].isDestroyed).to.equal(true);
+          });
+        });
+      });
+
+      it(`should stop watching when the ${name} is closed some other way`, () => {
+        visitWithCloseWatchers().then((watchers) => {
+          cy.get(opener).click();
+          cy.get(selector).should('exist');
+          cy.get('body').type('{esc}');
+          cy.get('[role="dialog"]').should('not.exist');
+          cy.wrap(watchers).should((made) => {
+            expect(made).to.have.length(1);
+            expect(made[0].isDestroyed).to.equal(true);
+          });
+
+          cy.get(opener).click();
+          cy.get(selector).should('exist');
+          cy.wrap(watchers).should((made) => {
+            expect(made).to.have.length(2);
+            expect(made[1].isDestroyed).to.equal(false);
+          });
+        });
+      });
+    });
+
+    it('should close the bigger hand opened from the tiles', () => {
+      visitWithCloseWatchers().then((watchers) => {
+        cy.get('.hand').click();
+        cy.get('.bigger-hand-dialog').should('be.visible');
+        cy.wrap(watchers).should('have.length', 1);
+        pressBack(watchers);
+        cy.get('[role="dialog"]').should('not.exist');
+      });
+    });
+
+    it('should close one thing for each Escape, with a list open in the options', () => {
+      visitWithCloseWatchers().then((watchers) => {
+        cy.get('button[aria-label="Options"]').click();
+        cy.get('#language-select').click();
+        cy.get('[role="listbox"]').should('be.visible');
+
+        cy.focused().type('{esc}');
+        cy.get('[role="listbox"]').should('not.exist');
+        cy.get('.options-dialog').should('be.visible');
+        cy.wrap(watchers).should((made) => {
+          expect(made).to.have.length(1);
+          expect(made[0].isDestroyed).to.equal(false);
+        });
+
+        cy.focused().type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+      });
+    });
+
+    it('should leave the dialogs working where there is no CloseWatcher', () => {
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad: (win) => {
+          delete win.CloseWatcher;
+        },
+      });
+      cy.window().should((win) => {
+        expect('CloseWatcher' in win).to.equal(false);
+      });
+
+      DIALOGS.forEach(({ opener, selector }) => {
+        cy.get(opener).click();
+        cy.get(selector).should('exist');
+        cy.get('body').type('{esc}');
+        cy.get('[role="dialog"]').should('not.exist');
+      });
+    });
   });
 
   describe('Skipping fu on limit hands', () => {
@@ -1994,17 +2579,17 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         'false',
       );
 
-      pick('han', '1');
+      pick('han', '4');
       fuChoices().should('be.enabled');
       cy.get('#fu-note').should('not.exist');
       cy.contains('[role="radio"]', /^40$/).should(
         'have.attr',
         'aria-checked',
-        'false',
+        'true',
       );
     });
 
-    it('should empty a typed exact fu when a limit hand is picked', () => {
+    it('should hide a typed exact fu while a limit hand is picked', () => {
       visitHand(RON_HAND);
       cy.get('button[aria-label="Options"]').click();
       cy.get('[role="dialog"]').contains('label', 'Exact fu').click();
@@ -2012,6 +2597,26 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('#fu').type('40');
       pick('han', '5');
       cy.get('#fu').should('be.disabled').and('have.value', '');
+
+      pick('han', '4');
+      cy.get('#fu').should('be.enabled').and('have.value', '40');
+    });
+
+    it('should leave a fu that was hidden by a limit han out of the check', () => {
+      visitHand(RON_HAND);
+      pick('fu', '40');
+      pick('han', '5');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+
+      cy.get('[role="status"]').should(
+        'have.text',
+        'Wrong. Han: 1, You picked 5. Fu: 60, You picked a limit hand. Points: 2000, Correct',
+      );
+      cy.contains('[role="tab"]', 'Your Answer').click();
+      cy.contains('[role="radio"]', /^40$/)
+        .should('have.attr', 'aria-checked', 'false')
+        .and('not.have.class', 'wrong');
     });
 
     it('should empty fu when the option switches it off for the han picked', () => {
@@ -2138,7 +2743,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('.badge', 'Wrong: 1');
       cy.get('[role="status"]').should('contain', 'Fu: No fu on limit hands');
       cy.get('.answer-key').should('not.contain', 'Fu:');
-      cy.get('.answer-picked').should('have.text', 'You picked 4 han 70 fu');
+      cy.get('.answer-picked').should('have.text', 'You picked 4 han 70 fu ');
       showYourAnswer();
       cy.get('[aria-labelledby="fu-label"] [role="radio"].wrong').should(
         'contain',
@@ -2170,7 +2775,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       cy.contains('.badge', 'Wrong: 1');
       cy.get('.answer-key').should('not.contain', 'Exact fu');
-      cy.get('.answer-picked').should('have.text', 'You picked 4 han 40 fu');
+      cy.get('.answer-picked').should('have.text', 'You picked 4 han 40 fu ');
       showYourAnswer();
       cy.get('.number-input-cell.wrong').should('have.length', 1);
       cy.get('.number-input-cell.wrong #fu').should('exist');
@@ -2236,9 +2841,12 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('button', 'Check Answer').click();
 
       cy.contains('.badge', 'Wrong: 1');
-      cy.contains('.answer-total.wrong', 'Fu: 60')
+      cy.contains('.answer-total', 'Fu: 60')
+        .should('not.have.class', 'correct')
         .next('.answer-picked')
-        .should('have.text', 'You picked a limit hand');
+        .should('have.text', 'You picked a limit hand ')
+        .find('.wrong-mark')
+        .should('be.visible');
       cy.get('[role="status"]').should(
         'contain',
         'Fu: 60, You picked a limit hand',
@@ -2266,7 +2874,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
   describe('Bigger hand', () => {
     it('should show the same tiles, split into their parts', () => {
       visitHand(RON_HAND);
-      cy.contains('button', 'Tap the tiles to see them bigger').click();
+      cy.contains('button', 'See the tiles bigger').click();
 
       cy.get('[role="dialog"]').within(() => {
         cy.get('h1').should('have.text', 'Hand #1');
@@ -2605,12 +3213,13 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       openHelp();
 
+      cy.get('.help-dialog .dialog-title').should('have.text', 'Help');
       cy.get('.help-tabs [role="tab"]').then((tabs) => {
         expect([...tabs].map((tab) => tab.innerText)).to.deep.equal([
           'Steps',
           'Yaku',
           'Points Table',
-          'Site',
+          'About',
         ]);
       });
       cy.contains('[role="tab"]', 'Steps').should(
@@ -2637,14 +3246,14 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.viewport(320, 660);
       visitHand(RON_HAND);
       openHelp();
-      getNames().should('deep.equal', ['Steps', 'Yaku', 'Table', 'Site']);
+      getNames().should('deep.equal', ['Steps', 'Yaku', 'Table', 'About']);
 
       cy.viewport(412, 660);
       getNames().should('deep.equal', [
         'Steps',
         'Yaku',
         'Points Table',
-        'Site',
+        'About',
       ]);
 
       cy.get('.help-tabs').then(([tabs]) => {
@@ -2894,6 +3503,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
       const checkOrder = (container) => {
         cy.get(`${container} .tile-arrow`).should('have.length', 8);
+        cy.get(`${container} .tile-arrow svg`).should('have.length', 8);
         cy.get(`${container} .tile-arrow`)
           .first()
           .parent()
@@ -2954,7 +3564,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.contains('[role="tab"]', 'Table').click();
       cy.get('.help-table').should('exist');
       cy.get('.help-notes').should('not.exist');
-      cy.contains('[role="tab"]', 'Site').click();
+      cy.contains('[role="tab"]', 'About').click();
       cy.get('.help-top + .help-site').should('exist');
     });
 
@@ -2987,7 +3597,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         ]);
       });
       cy.get('.help-yaku > p').should('not.exist');
-      cy.contains('[role="tab"]', 'Site').click();
+      cy.contains('[role="tab"]', 'About').click();
       cy.get('.help-notes p').should('have.length', 1);
     });
 
@@ -2995,9 +3605,14 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       visitHand(RON_HAND);
       openHelp();
 
-      ['Steps', 'Yaku', 'Table', 'Site'].forEach((tab) => {
+      [
+        ['Steps', 'steps'],
+        ['Yaku', 'yaku'],
+        ['Table', 'table'],
+        ['About', 'site'],
+      ].forEach(([tab, id]) => {
         cy.contains('[role="tab"]', tab).click();
-        cy.get(`.help-${tab.toLowerCase()}`).should('exist');
+        cy.get(`.help-${id}`).should('exist');
         cy.get('.help-dialog').should((dialog) => {
           expect(dialog.text()).not.to.match(JAPANESE_SCRIPT);
           [...dialog[0].querySelectorAll('img')].forEach((image) => {
@@ -3009,7 +3624,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
     it('should link to everything it credits', () => {
       visitHand(RON_HAND);
-      openHelp('Site');
+      openHelp('About');
 
       [
         'https://github.com/Varantha/Mahjong-ScoringTrainer',
@@ -3026,7 +3641,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
 
     it('should describe every option that changes the quiz', () => {
       visitHand(RON_HAND);
-      openHelp('Site');
+      openHelp('About');
 
       [
         en.options.testHan,
@@ -3308,7 +3923,7 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         cy.focused().should(hasRing);
         cy.get('.bigger-hand-button').focus();
         cy.focused().should(hasRing);
-        openHelp('Site');
+        openHelp('About');
         cy.get('.help-content a').first().focus();
         cy.focused().should(hasRing);
       });
@@ -3425,6 +4040,86 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
     });
   });
 
+  describe('Welcome', () => {
+    const SEEN_KEY = 'mahjong-welcome-seen';
+    const getWelcome = () => cy.get('.welcome-dialog');
+    const getSeen = () =>
+      cy.window().then((win) => win.localStorage.getItem(SEEN_KEY));
+
+    it('should say what to do on a first visit, and only then', () => {
+      cy.visitAsNewPlayer('/');
+      getWelcome().should('have.attr', 'role', 'dialog');
+      getWelcome().find('.dialog-title').should('have.text', 'Score this hand');
+      getWelcome().should('contain', en.buttons.checkAnswer);
+      getWelcome().should('have.focus');
+      getWelcome().should('have.attr', 'aria-describedby');
+      getSeen().should('equal', null);
+
+      cy.contains('.welcome-dialog button', 'Start').click();
+      getWelcome().should('not.exist');
+      getSeen().should('equal', 'true');
+      cy.focused().should('not.exist');
+
+      cy.reload();
+      cy.get('.hand .tile').should('exist');
+      getWelcome().should('not.exist');
+    });
+
+    it('should not come back after Escape closed it', () => {
+      cy.visitAsNewPlayer('/');
+      getWelcome().should('have.focus');
+      cy.get('body').type('{esc}');
+      getWelcome().should('not.exist');
+      getSeen().should('equal', 'true');
+
+      cy.reload();
+      cy.get('.hand .tile').should('exist');
+      getWelcome().should('not.exist');
+    });
+
+    it('should open on a first visit that comes by a link to a hand', () => {
+      cy.visitAsNewPlayer(`/?hand=${RON_HAND}`);
+      getWelcome().should('exist');
+      cy.contains('.welcome-dialog button', 'Start').click();
+      cy.location('search').should('equal', `?hand=${RON_HAND}`);
+    });
+
+    it('should fit the narrowest phone in every language', () => {
+      ['en', 'ja', 'ko', 'zh_cn'].forEach((language) => {
+        cy.viewport(320, 568);
+        cy.visitAsNewPlayer('/', {
+          onBeforeLoad(win) {
+            win.localStorage.setItem('mahjong-language', language);
+          },
+        });
+        cy.get('html').should('have.attr', 'lang', language.replace('_', '-'));
+        waitForAnimations();
+        getWelcome().should(([dialog]) => {
+          const box = dialog.getBoundingClientRect();
+          expect(box.left).to.be.at.least(0);
+          expect(box.right).to.be.at.most(320);
+          expect(box.top).to.be.at.least(0);
+          expect(box.bottom).to.be.at.most(568);
+          expect(dialog.scrollWidth).to.equal(dialog.clientWidth);
+        });
+      });
+    });
+
+    it('should open again on every load when storage is blocked', () => {
+      cy.visitAsNewPlayer('/');
+      cy.window().then((win) => {
+        cy.stub(win.Storage.prototype, 'setItem').throws();
+      });
+      cy.contains('.welcome-dialog button', 'Start').click();
+      getWelcome().should('not.exist');
+      cy.contains('button', 'New Hand').click();
+      getWelcome().should('not.exist');
+
+      cy.reload();
+      getWelcome().should('exist');
+    });
+  });
+
   describe('Hand links', () => {
     it('should copy a link to the hand on screen', () => {
       visitHand(RON_HAND);
@@ -3440,12 +4135,15 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('[role="status"]').should('have.text', 'Link copied');
 
       cy.contains('button', 'New Hand').click();
-      cy.location('search').should('eq', '');
+      cy.location('search').should('not.contain', RON_HAND);
       cy.get('button[aria-label="Copy a link to this hand"]').click();
       cy.get('@copy').should((copy) => {
         const url = new URL(copy.secondCall.args[0]);
         expect(url.searchParams.get('hand')).to.match(/^\d{10}gm-/);
         expect(url.searchParams.get('hand')).not.to.equal(RON_HAND);
+      });
+      cy.get('@copy').then((copy) => {
+        cy.location('href').should('eq', copy.secondCall.args[0]);
       });
     });
 
@@ -3502,6 +4200,159 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
       cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
     });
 
+    describe('A link that could not be copied', () => {
+      const getCopyButton = () =>
+        cy.get('button[aria-label="Copy a link to this hand"]');
+      const getLinkBox = () => cy.get('[role="dialog"].hand-link-box');
+
+      const failToCopy = () => {
+        cy.window().then((win) => {
+          cy.stub(win.navigator.clipboard, 'writeText').rejects(new Error());
+          cy.stub(win.document, 'execCommand').returns(false);
+        });
+        getCopyButton().click();
+      };
+
+      it('should show the link, selected, for the player to copy by hand', () => {
+        visitHand(RON_HAND);
+        getLinkBox().should('not.exist');
+        failToCopy();
+
+        getLinkBox()
+          .should('be.visible')
+          .invoke('attr', 'aria-labelledby')
+          .then((headingId) => {
+            cy.get(`#${headingId}`)
+              .should('be.visible')
+              .and('have.text', "Couldn't copy the link");
+          });
+        cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
+
+        cy.contains('.hand-link-box label', 'Link to this hand')
+          .should('be.visible')
+          .invoke('attr', 'for')
+          .then((boxId) => {
+            cy.get(`textarea#${boxId}`)
+              .should('be.visible')
+              .and('be.focused')
+              .and('have.attr', 'readonly');
+            cy.get(`textarea#${boxId}`).should((boxes) => {
+              const [box] = boxes;
+              const url = new URL(box.value);
+
+              expect(url.searchParams.get('hand')).to.equal(RON_HAND);
+              expect(box.selectionStart).to.equal(0);
+              expect(box.selectionEnd).to.equal(box.value.length);
+              expect(box.scrollHeight).to.be.at.most(box.clientHeight);
+              expect(box.scrollWidth).to.be.at.most(box.clientWidth);
+            });
+          });
+
+        cy.get('.hand-link polyline').should('not.exist');
+      });
+
+      it('should keep the box after the status message has gone', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
+        cy.get('[role="status"]').should('have.text', '');
+        getLinkBox().should('be.visible');
+      });
+
+      it('should close from its own button and give focus back', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        cy.contains('.hand-link-box button', 'Close').click();
+        getLinkBox().should('not.exist');
+        getCopyButton().should('be.focused');
+      });
+
+      it('should close on Escape and give focus back', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        cy.get('.hand-link-box textarea').should('be.focused');
+        cy.get('body').type('{esc}');
+        getLinkBox().should('not.exist');
+        getCopyButton().should('be.focused');
+      });
+
+      it('should close on a press anywhere else on the page', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        getLinkBox().should('be.visible');
+        cy.get('.app-title').click();
+        getLinkBox().should('not.exist');
+      });
+
+      it('should go away on the next hand', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        getLinkBox().should('be.visible');
+        cy.contains('button', 'New Hand').click();
+        cy.get('.badge.hand-count').should('contain', '#2');
+        getLinkBox().should('not.exist');
+        cy.focused().should('have.class', 'hand-card');
+      });
+
+      it('should close when focus moves out of it', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        getLinkBox().should('be.visible');
+        cy.contains('button', 'New Hand').focus();
+        getLinkBox().should('not.exist');
+        cy.contains('button', 'New Hand').should('be.focused');
+      });
+
+      it('should go away when a later copy works', () => {
+        visitHand(RON_HAND);
+        failToCopy();
+        getLinkBox().should('be.visible');
+        cy.document().then((doc) => {
+          doc.execCommand.returns(true);
+        });
+        getCopyButton().click();
+        getLinkBox().should('not.exist');
+        cy.get('.hand-link polyline').should('exist');
+      });
+
+      [320, 360, 1280].forEach((width) => {
+        it(`should fit on a page ${width}px wide without moving the counters`, () => {
+          // Rounded because Firefox's numbers are little off
+          const getBoxes = (doc) =>
+            [...doc.querySelectorAll('.badge, .hand-card')].map((element) => {
+              const box = element.getBoundingClientRect();
+              return [
+                box.left + doc.defaultView.scrollX,
+                box.top + doc.defaultView.scrollY,
+                box.width,
+                box.height,
+              ]
+                .map((length) => length.toFixed(1))
+                .join(' ');
+            });
+
+          cy.viewport(width, 800);
+          visitHand(RON_HAND);
+          cy.get('.hand .tile').should('exist');
+          cy.document().then((doc) => doc.fonts.ready);
+          cy.document().then((doc) => {
+            const boxesBefore = getBoxes(doc);
+
+            failToCopy();
+            getLinkBox().should((boxes) => {
+              const { left, right } = boxes[0].getBoundingClientRect();
+              const page = doc.documentElement;
+
+              expect(left).to.be.at.least(0);
+              expect(right).to.be.at.most(page.clientWidth);
+              expect(page.scrollWidth).to.be.at.most(page.clientWidth);
+              expect(getBoxes(doc)).to.deep.equal(boxesBefore);
+            });
+          });
+        });
+      });
+    });
+
     it('should open a hand from a link with .json on the end', () => {
       visitHand(`${RON_HAND}.json`);
       cy.get('button[aria-label="Options"]').click();
@@ -3510,16 +4361,308 @@ describe('Riichi Scoring Trainer E2E Tests', () => {
         .and('match', new RegExp(`title=Hand\\+${RON_HAND}&`));
     });
 
-    it('should drop the hand from the URL on a new hand', () => {
-      visitHand(RON_HAND);
-      cy.location('search').should('contain', RON_HAND);
-      cy.contains('button', 'New Hand').click();
-      cy.location('search').should('eq', '');
+    it('should keep the hand on screen in the URL', () => {
+      const getHandParam = () =>
+        cy
+          .location('search')
+          .then((search) => new URLSearchParams(search).get('hand'));
+
+      cy.visit('/');
+      cy.location('search').should('match', /^\?hand=\d{10}gm-[\w-]+$/);
+      getHandParam().then((firstHand) => {
+        cy.contains('button', 'New Hand').click();
+        cy.get('.hand-count > span').first().should('contain.text', '#2');
+        getHandParam().should('match', /^\d{10}gm-[\w-]+$/);
+
+        getHandParam().then((secondHand) => {
+          cy.get('button[aria-label="Options"]').click();
+          cy.contains('a', 'Report a problem with this hand')
+            .should('have.attr', 'href')
+            .and('match', new RegExp(`title=Hand\\+${secondHand}&`));
+          expect(firstHand).to.match(/^\d{10}gm-[\w-]+$/);
+        });
+      });
     });
 
-    it('should deal a random hand for an ID it does not know', () => {
+    it('should go back to the earlier hand on Back, and on to the later one', () => {
+      visitHand(RON_HAND);
+      pick('han', '1');
+      cy.contains('button', 'New Hand').click();
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+      cy.location('search').should('not.contain', RON_HAND);
+
+      cy.location('search').then((laterSearch) => {
+        cy.go('back');
+        cy.location('search').should('eq', `?hand=${RON_HAND}`);
+        cy.get('.hand-count > span').first().should('contain.text', '#1');
+        cy.get('.hand .tile').should('have.length', 15);
+        cy.get('.win-type').should('contain', 'Ron!');
+        cy.get('[role="radio"][aria-checked="true"]').should('not.exist');
+        cy.focused().should('have.class', 'hand-card');
+
+        cy.go('forward');
+        cy.location('search').should('eq', laterSearch);
+        cy.get('.hand-count > span').first().should('contain.text', '#2');
+      });
+    });
+
+    it('should go back to a checked hand with nothing checked', () => {
+      visitHand(RON_HAND);
+      cy.get('button[type="submit"]').click();
+      cy.contains('.verdict', 'Shown');
+      cy.contains('button', 'New Hand').click();
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+
+      cy.go('back');
+      cy.get('.verdict').should('not.exist');
+      cy.get('button[type="submit"]').should('have.text', 'Just tell me');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should keep the answers when the skip link is used, and on Back from it', () => {
+      visitHand(RON_HAND);
+      pick('han', '1');
+      cy.get('.skip-link').focus();
+      cy.get('.skip-link').click();
+      cy.location('hash').should('eq', '#main');
+      cy.contains('[role="radio"]', /^1$/).should(
+        'have.attr',
+        'aria-checked',
+        'true',
+      );
+
+      cy.go('back');
+      cy.location('hash').should('eq', '');
+      cy.contains('[role="radio"]', /^1$/).should(
+        'have.attr',
+        'aria-checked',
+        'true',
+      );
+      cy.get('.hand-count > span').first().should('contain.text', '#1');
+    });
+
+    it('should say so when the link is to a hand it does not have', () => {
+      const NOT_FOUND = "That link's hand isn't here. This is a random one.";
+
       visitHand('not-a-hand');
       cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.get('.link-note').should('have.text', NOT_FOUND);
+      cy.get('[role="status"]').should('have.text', NOT_FOUND);
+      cy.get('.link-note').should((note) => {
+        const hand = note[0].ownerDocument.querySelector('.hand-card');
+        expect(note[0].getBoundingClientRect().bottom).to.be.at.most(
+          hand.getBoundingClientRect().top,
+        );
+      });
+
+      cy.location('search').should('match', /^\?hand=\d{10}gm-[\w-]+$/);
+      cy.reload();
+      cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.get('.link-note').should('not.exist');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should say that the link was wrong until the next hand', () => {
+      visitHand('not-a-hand');
+      cy.get('.link-note').should('exist');
+      cy.contains('button', 'New Hand').click();
+      cy.get('.link-note').should('not.exist');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should say nothing about a link with no hand in it', () => {
+      cy.visit('/?hand=');
+      cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.location('search').should('match', /^\?hand=\d{10}gm-[\w-]+$/);
+      cy.get('.link-note').should('not.exist');
+      cy.get('[role="status"]').should('have.text', '');
+    });
+
+    it('should fit the line about a wrong link on the narrowest phones', () => {
+      cy.viewport(320, 1400);
+      ['en', 'ja', 'ko', 'zh_cn'].forEach((language) => {
+        cy.visit('/?hand=not-a-hand', {
+          onBeforeLoad: (win) => {
+            win.localStorage.setItem('mahjong-language', language);
+          },
+        });
+        cy.document().its('fonts.status').should('equal', 'loaded');
+        layOutAsOnAPhone(320);
+        cy.get('.link-note').should((note) => {
+          const box = note[0].getBoundingClientRect();
+          const card = note[0].ownerDocument
+            .querySelector('.hand-card')
+            .getBoundingClientRect();
+          expect(box.left).to.be.at.least(card.left);
+          expect(box.right).to.be.at.most(card.right);
+        });
+      });
+    });
+
+    it('should open the right hand from a link in capitals or with spaces', () => {
+      const showsRonHand = () => {
+        cy.get('.hand .tile').should('have.length', 15);
+        cy.get('button[aria-label="Options"]').click();
+        cy.contains('a', 'Report a problem with this hand')
+          .should('have.attr', 'href')
+          .and('match', new RegExp(`title=Hand\\+${RON_HAND}&`));
+        cy.get('.link-note').should('not.exist');
+        cy.location('search').should('eq', `?hand=${RON_HAND}`);
+      };
+
+      visitHand(RON_HAND.toUpperCase());
+      showsRonHand();
+      visitHand(`%20${RON_HAND}%20`);
+      showsRonHand();
+      visitHand(`${RON_HAND.toUpperCase()}.JSON`);
+      showsRonHand();
+    });
+  });
+
+  describe('Session', () => {
+    it('should keep the hand, the answers and the counts after a reload', () => {
+      visitHand(RON_HAND);
+      pick('han', '2');
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+      cy.get('.badge.wrong').should('contain.text', '1');
+      cy.contains('button', 'New Hand').click();
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+      pick('han', '3');
+      pick('fu', '40');
+
+      cy.location('search').then((search) => {
+        cy.reload();
+        cy.location('search').should('eq', search);
+      });
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+      cy.get('.badge.correct').should('contain.text', '0');
+      cy.get('.badge.wrong').should('contain.text', '1');
+      cy.contains('[aria-labelledby="han-label"] [role="radio"]', /^3$/).should(
+        'have.attr',
+        'aria-checked',
+        'true',
+      );
+      cy.contains('[aria-labelledby="fu-label"] [role="radio"]', /^40$/).should(
+        'have.attr',
+        'aria-checked',
+        'true',
+      );
+      cy.focused().should('not.exist');
+    });
+
+    it('should keep what was typed after a reload', () => {
+      visitHand(TSUMO_HAND);
+      cy.get('#points').type('2000');
+      cy.get('#pointsDealer').type('39');
+      cy.reload();
+      cy.get('#points').should('have.value', '2000');
+      cy.get('#pointsDealer').should('have.value', '39');
+    });
+
+    it('should start a checked hand over after a reload, with its count kept', () => {
+      visitHand(RON_HAND);
+      pick('han', '1');
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+      cy.get('.badge.correct').should('contain.text', '1');
+
+      cy.reload();
+      cy.get('.badge.correct').should('contain.text', '1');
+      cy.get('.verdict').should('not.exist');
+      cy.get('[role="radio"][aria-checked="true"]').should('not.exist');
+      cy.get('#points').should('have.value', '');
+    });
+
+    it('should keep the counts and drop the answers for a link to another hand', () => {
+      visitHand(RON_HAND);
+      pick('han', '2');
+      pick('fu', '60');
+      cy.get('#points').type('2000');
+      cy.contains('button', 'Check Answer').click();
+      cy.contains('button', 'New Hand').click();
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
+      cy.get('#points, #pointsDealer').first().type('12');
+
+      cy.visit(`/?hand=${TSUMO_HAND}`);
+      cy.get('.badge.wrong').should('contain.text', '1');
+      cy.get('.hand-count > span').first().should('contain.text', '#1');
+      cy.get('#points').should('have.value', '');
+    });
+
+    it('should get past a session that is mangled', () => {
+      const storeSession = (value) => {
+        cy.window().then((win) => {
+          win.sessionStorage.setItem('mahjong-session', value);
+        });
+      };
+      const startsEmpty = () => {
+        cy.get('.hand .tile').should('have.length', 15);
+        cy.get('.hand-count > span').first().should('contain.text', '#1');
+        cy.get('.badge.correct').should('contain.text', '0');
+        cy.get('.badge.wrong').should('contain.text', '0');
+        cy.get('[role="radio"][aria-checked="true"]').should('not.exist');
+        cy.get('#points').should('have.value', '');
+      };
+
+      visitHand(RON_HAND);
+
+      storeSession('{"handFile": "20110');
+      visitHand(RON_HAND);
+      startsEmpty();
+
+      storeSession(
+        JSON.stringify({
+          answers: { han: 3, points: ['2000'] },
+          correctAnswers: -4,
+          handFile: `${RON_HAND}.json`,
+          handNumber: 1.5,
+          wrongAnswers: '7',
+        }),
+      );
+      visitHand(RON_HAND);
+      startsEmpty();
+
+      storeSession('"a string"');
+      visitHand(RON_HAND);
+      startsEmpty();
+      storeSession('null');
+      visitHand(RON_HAND);
+      startsEmpty();
+
+      storeSession(
+        JSON.stringify({
+          answers: { han: '3' },
+          correctAnswers: 2,
+          handFile: 'not-a-hand.json',
+          handNumber: 6,
+          wrongAnswers: 1,
+        }),
+      );
+      cy.visit('/');
+      cy.get('.hand .tile').should('have.length.at.least', 14);
+      cy.get('.hand-count > span').first().should('contain.text', '#1');
+      cy.get('.badge.correct').should('contain.text', '2');
+      cy.get('.badge.wrong').should('contain.text', '1');
+      cy.get('[role="radio"][aria-checked="true"]').should('not.exist');
+    });
+
+    it('should work with session storage blocked', () => {
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad: (win) => {
+          Object.defineProperty(win, 'sessionStorage', {
+            get: () => {
+              throw new Error('blocked');
+            },
+          });
+        },
+      });
+      cy.get('.hand .tile').should('have.length', 15);
+      pick('han', '1');
+      cy.contains('button', 'New Hand').click();
+      cy.get('.hand-count > span').first().should('contain.text', '#2');
     });
   });
 });

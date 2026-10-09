@@ -1,10 +1,12 @@
 import { Dialog, Flex, Select, Text } from '@radix-ui/themes';
 import { Dialog as DialogPrimitive } from 'radix-ui';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { useAppearance } from '../AppearanceContext';
 import { useTranslation } from '../i18n/I18nContext';
+import { useCloseWatcher } from '../scripts/CloseWatcher';
 import { EXACT_FU, TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
+import { GearIcon } from './GearIcon';
 import { HomeScreenIconPicker } from './HomeScreenIconPicker';
 import { OptionCheckbox } from './OptionCheckbox';
 import { OptionGroup } from './OptionGroup';
@@ -20,32 +22,23 @@ const QUESTION_OPTIONS = [
   { id: EXACT_FU, indented: true, needs: [TEST_FU] },
   { id: 'ignoreFuOnLimit', indented: true, needs: [TEST_HAN, TEST_FU] },
   { id: TEST_POINTS },
+  { id: 'testHonba' },
 ];
-const RULE_OPTIONS = [{ id: 'kiriageMangan' }, { id: 'testHonba' }];
+const RULE_OPTIONS = [{ id: 'kiriageMangan' }];
 const TILE_OPTIONS = [{ id: 'showTileNames' }, { id: 'fancyTiles' }];
 
-// Feather's settings icon (https://feathericons.com, MIT)
-const GearIcon = () => (
-  <svg
-    aria-hidden='true'
-    fill='none'
-    height='18'
-    stroke='currentColor'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    strokeWidth='2'
-    viewBox='0 0 24 24'
-    width='18'
-  >
-    <circle cx='12' cy='12' r='3' />
-    <path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' />
-  </svg>
-);
-
-function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
+function OptionsMenu({
+  handFile,
+  handIsChecked,
+  handOptions,
+  onChangeOption,
+  options,
+}) {
   const { changeLanguage, currentLanguage, languages, t } = useTranslation();
   const { isHighContrast, toggleHighContrast } = useAppearance();
   const contentRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  useCloseWatcher(open, setOpen);
 
   const renderOption = ({ id, indented, needs = [] }) => {
     const [firstMissing, secondMissing] = needs
@@ -77,7 +70,7 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
   };
 
   return (
-    <Dialog.Root>
+    <Dialog.Root onOpenChange={setOpen} open={open}>
       <Dialog.Trigger>
         <button
           aria-label={t('options.title')}
@@ -105,7 +98,7 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
           justify='between'
         >
           <DialogPrimitive.Title asChild>
-            <h1 className='options-title'>{t('options.title')}</h1>
+            <h1 className='dialog-title'>{t('options.title')}</h1>
           </DialogPrimitive.Title>
           <Dialog.Close>
             <button className='action-button' type='button'>
@@ -152,6 +145,7 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
               </Text>
               <Select.Root
                 onValueChange={changeLanguage}
+                size='3'
                 value={currentLanguage}
               >
                 <Select.Trigger
@@ -174,7 +168,7 @@ function OptionsMenu({ handIsChecked, handFile, onChangeOption, options }) {
           </OptionGroup>
 
           <HomeScreenIconPicker />
-          <ReportHandLink handFile={handFile} />
+          <ReportHandLink handFile={handFile} options={handOptions} />
         </Flex>
       </Dialog.Content>
     </Dialog.Root>

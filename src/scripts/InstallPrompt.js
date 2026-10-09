@@ -1,4 +1,6 @@
 let installPrompt = null;
+
+let installWasAsked = false;
 const listeners = new Set();
 
 function notify() {
@@ -10,11 +12,13 @@ function notify() {
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
   installPrompt = event;
+  installWasAsked = false;
   notify();
 });
 
 window.addEventListener('appinstalled', () => {
   installPrompt = null;
+  installWasAsked = false;
   notify();
 });
 
@@ -29,9 +33,14 @@ function getInstallPrompt() {
   return installPrompt;
 }
 
+function getInstallWasAsked() {
+  return installWasAsked;
+}
+
 async function promptToInstall() {
   const prompt = installPrompt;
   installPrompt = null;
+  installWasAsked = true;
   notify();
   await prompt?.prompt();
 }
@@ -58,6 +67,7 @@ function isInstalled() {
 
 export {
   getInstallPrompt,
+  getInstallWasAsked,
   isAppleMobile,
   isFirefoxAndroid,
   isInstalled,
