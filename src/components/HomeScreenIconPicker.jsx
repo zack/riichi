@@ -10,6 +10,7 @@ import {
 } from '../scripts/HomeScreenIcon';
 import {
   getInstallPrompt,
+  getInstallWasAsked,
   isAppleMobile,
   isFirefoxAndroid,
   isInstalled,
@@ -17,11 +18,17 @@ import {
   subscribeToInstallPrompt,
 } from '../scripts/InstallPrompt';
 
+const INSTALL_ASKED_NOTE = 'install-asked-note';
+
 function HomeScreenIconPicker() {
   const { t } = useTranslation();
   const installPrompt = useSyncExternalStore(
     subscribeToInstallPrompt,
     getInstallPrompt,
+  );
+  const installWasAsked = useSyncExternalStore(
+    subscribeToInstallPrompt,
+    getInstallWasAsked,
   );
   const [iconColor, setIconColor] = useState(getStoredIconColor);
   const appleMobile = isAppleMobile();
@@ -35,7 +42,8 @@ function HomeScreenIconPicker() {
     installHint = null;
   }
 
-  if (isInstalled() || (!installPrompt && !installHint)) {
+  const hasInstallButton = installPrompt !== null || installWasAsked;
+  if (isInstalled() || (!hasInstallButton && !installHint)) {
     return null;
   }
 
@@ -85,14 +93,23 @@ function HomeScreenIconPicker() {
         ))}
       </div>
 
-      {installPrompt ? (
-        <button
-          className='action-button home-icon-install'
-          onClick={promptToInstall}
-          type='button'
-        >
-          {t('options.installApp')}
-        </button>
+      {hasInstallButton ? (
+        <>
+          <button
+            aria-describedby={installWasAsked ? INSTALL_ASKED_NOTE : undefined}
+            className='action-button home-icon-install'
+            disabled={installWasAsked}
+            onClick={promptToInstall}
+            type='button'
+          >
+            {t('options.installApp')}
+          </button>
+          {installWasAsked && (
+            <Text as='p' color='gray' id={INSTALL_ASKED_NOTE} size='2'>
+              {t('options.installAsked')}
+            </Text>
+          )}
+        </>
       ) : (
         <Text as='p' color='gray' size='2'>
           {t(installHint)}

@@ -1,7 +1,9 @@
-import { Dialog, Text } from '@radix-ui/themes';
+import { Dialog, Flex, Text } from '@radix-ui/themes';
+import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
+import { useCloseWatcher } from '../scripts/CloseWatcher';
 import {
   getConcealedTiles,
   getMelds,
@@ -219,6 +221,7 @@ function BiggerHand({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const contentRef = useRef(null);
+  useCloseWatcher(open, setOpen);
 
   return (
     <Dialog.Root onOpenChange={setOpen} open={open}>
@@ -234,6 +237,7 @@ function BiggerHand({
 
       <Dialog.Content
         aria-describedby={undefined}
+        className='bigger-hand-dialog'
         maxWidth='480px'
         onOpenAutoFocus={(event) => {
           event.preventDefault();
@@ -241,7 +245,21 @@ function BiggerHand({
         }}
         ref={contentRef}
       >
-        <Dialog.Title>{handLabel}</Dialog.Title>
+        <Flex
+          align='center'
+          className='bigger-hand-header'
+          gap='3'
+          justify='between'
+        >
+          <DialogPrimitive.Title asChild>
+            <h1 className='dialog-title'>{handLabel}</h1>
+          </DialogPrimitive.Title>
+          <Dialog.Close>
+            <button className='action-button' type='button'>
+              {t('common.close')}
+            </button>
+          </Dialog.Close>
+        </Flex>
 
         <BiggerHandTiles
           agari={agari}
@@ -250,14 +268,6 @@ function BiggerHand({
           showHonba={showHonba}
           showNames={showNames}
         />
-
-        <div className='bigger-hand-close'>
-          <Dialog.Close>
-            <button className='action-button' type='button'>
-              {t('common.close')}
-            </button>
-          </Dialog.Close>
-        </div>
       </Dialog.Content>
     </Dialog.Root>
   );

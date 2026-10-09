@@ -10,7 +10,9 @@ function escapeAttribute(value) {
 }
 
 const ORDER_MARK = '>';
+
 const ORDER_ARROW = '\u2192';
+const ORDER_ARROW_HTML = `<span class="tile-arrow"><span class="visually-hidden">${ORDER_ARROW}</span><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 24 24"><path d="M3 12h18M14 5l7 7l-7 7" /></svg></span>`;
 
 function getTileHtml(tile, t, fancy, showNames) {
   const alt = escapeAttribute(TileConversion.tileToName(tile, t));
@@ -37,7 +39,7 @@ export function getTilesHtml(tileString, t, fancy, showNames) {
             .map((tile) => getTileHtml(tile, t, fancy, showNames))
             .join(''),
         )
-        .join(`<span class="tile-arrow">${ORDER_ARROW}</span>`);
+        .join(ORDER_ARROW_HTML);
 
       return `<span class="help-tiles">${tiles}</span>`;
     })

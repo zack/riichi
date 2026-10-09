@@ -1,11 +1,8 @@
 import { CORRECT, WRONG } from './QuizFields';
 
-const CHECK_MARK = String.fromCodePoint(0x2713);
-const CROSS_MARK = String.fromCodePoint(0x2717);
-
-const MARKS = {
-  [CORRECT]: CHECK_MARK,
-  [WRONG]: CROSS_MARK,
+const MARK_PATHS = {
+  [CORRECT]: 'M3.5 12l5.5 5.5L20.5 6',
+  [WRONG]: 'M4.5 4.5l15 15M19.5 4.5l-15 15',
 };
 
 const MARK_NAMES = {
@@ -13,4 +10,4 @@ const MARK_NAMES = {
   [WRONG]: 'quiz.marks.wrong',
 };
 
-export { CHECK_MARK, MARKS, MARK_NAMES };
+export { MARK_NAMES, MARK_PATHS };

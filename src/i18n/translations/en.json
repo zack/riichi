@@ -1,8 +1,13 @@
 {
   "common": {
     "close": "Close",
-    "help": "Scoring Help",
+    "help": "Help",
     "skipToMain": "Skip to main content"
+  },
+  "welcome": {
+    "title": "Score this hand",
+    "body": "Each hand is a win from a real game. Pick its han and fu, type its points, then press Check Answer. The gear at the top lets you choose which of han, fu and points you're scored on. The ? at the top explains how scoring works.",
+    "start": "Start"
   },
   "buttons": {
     "checkAnswer": "Check Answer",
@@ -11,8 +16,8 @@
   },
   "quiz": {
     "correct": "Correct!",
-    "incorrect": "Incorrect",
-    "toldYou": "I told you",
+    "incorrect": "Wrong",
+    "toldYou": "Shown",
     "disabledOnLimit": "Disabled on limit hands",
     "noFuOnLimit": "No fu on limit hands",
     "linksOpenNewTab": "Links open in a new tab",
@@ -39,7 +44,7 @@
     "youPicked": "You picked",
     "youPickedLimit": "You picked a limit hand",
     "realAnswer": "Answer",
-    "noOptionsSelected": "No test options selected. Select at least one in the Options menu.",
+    "noOptionsSelected": "Nothing to ask. Turn on Han, Fu or Points in {}Options.",
     "errorPrefix": "Error:",
     "notANumber": "Enter a number.",
     "missing": {
@@ -50,7 +55,7 @@
     }
   },
   "biggerHand": {
-    "open": "Tap the tiles to see them bigger"
+    "open": "See the tiles bigger"
   },
   "handParts": {
     "concealed": "Concealed",
@@ -91,6 +96,7 @@
     "highContrast": "High contrast",
     "homeScreenIcon": "Home screen icon",
     "installApp": "Install app",
+    "installAsked": "The browser has already asked. To install later, use the browser's menu.",
     "installFromShareSheet": "To install app, tap \"Share\", then \"Add to Home Screen\".",
     "installFromMenu": "To install app, tap the menu, then \"Install\".",
     "iconColors": {
@@ -108,7 +114,7 @@
       "red": "Red"
     },
     "groups": {
-      "questions": "Ask for",
+      "questions": "Quiz options",
       "rules": "Rules",
       "display": "Display"
     },
@@ -127,12 +133,15 @@
     "hand": "Hand",
     "handShort": "H",
     "wrong": "Wrong",
-    "rate": "Rate"
+    "rate": "Rate",
+    "noRate": "none yet"
   },
   "handLink": {
     "copy": "Copy a link to this hand",
     "copied": "Link copied",
-    "failed": "Couldn't copy the link"
+    "failed": "Couldn't copy the link",
+    "link": "Link to this hand",
+    "notFound": "That link's hand isn't here. This is a random one."
   },
   "fuDetails": {
     "base": "Base",

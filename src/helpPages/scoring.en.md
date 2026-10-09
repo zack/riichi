@@ -115,7 +115,7 @@ The trainer asks for this only with **Honba sticks** on.
 
 For each honba stick, add **300** to a ron, and **100** to what each player pays on a tsumo.
 
-# Site
+# About
 
 ## Rules
 

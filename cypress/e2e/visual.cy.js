@@ -159,7 +159,7 @@ const checkStates = (appearance) => {
 
     it('should match the bigger hand, with its sticks', () => {
       cy.viewport(PHONE_WIDTH, DIALOG_HEIGHT);
-      cy.contains('button', 'Tap the tiles to see them bigger').click();
+      cy.contains('button', 'See the tiles bigger').click();
       dialogShouldMatch(`${appearance}-riichi-bigger-hand`);
     });
   });
@@ -191,12 +191,12 @@ const checkStates = (appearance) => {
     });
 
     it('should match the bigger hand', () => {
-      cy.contains('button', 'Tap the tiles to see them bigger').click();
+      cy.contains('button', 'See the tiles bigger').click();
       dialogShouldMatch(`${appearance}-bigger-hand`);
     });
 
     it('should match the points table in the help', () => {
-      cy.get('button[aria-label="Scoring Help"]').click();
+      cy.get('button[aria-label="Help"]').click();
       cy.contains('.help-tabs [role="tab"]', 'Table').click().blur();
       dialogShouldMatch(`${appearance}-points-table`);
     });
