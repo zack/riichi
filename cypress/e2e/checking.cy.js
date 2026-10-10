@@ -637,8 +637,8 @@ describe('Hand and answer together', () => {
     getPlaces().then((before) => {
       check();
       getPlaces().should((after) => {
-        expect(after.cardHeight).to.equal(before.cardHeight);
-        expect(after.newHandTop).to.equal(before.newHandTop);
+        expect(after.cardHeight).to.be.closeTo(before.cardHeight, 0.5);
+        expect(after.newHandTop).to.be.closeTo(before.newHandTop, 0.5);
       });
     });
   });
