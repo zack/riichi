@@ -114,7 +114,23 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
   it('should pass an unfinished answer that was turned away', () => {
     cy.contains('[role="radio"]', /^2$/).click();
     cy.get('button[type="submit"]').click();
-    cy.get('.missing-note').should('have.length', 2);
+    cy.get('#points-missing').should('exist');
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
+  it('should pass a box that does not hold a number', () => {
+    cy.get('#points').type('2k');
+    cy.get('button[type="submit"]').click();
+    cy.get('.not-a-number-note').should('exist');
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
+  it('should pass an answer that was asked for', () => {
+    cy.get('button[type="submit"]').click();
+    cy.get('.verdict.revealed').should('exist');
+    cy.get('.answer-key').should('exist');
     cy.injectAxe();
     cy.checkA11y();
   });
@@ -134,6 +150,34 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
   it('should pass the options dialog', () => {
     cy.get(`button[aria-label="${strings.options.title}"]`).click();
     cy.get('[role="dialog"]').should('be.visible');
+    waitForAnimations();
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
+  it('should pass the options dialog with an option that is unavailable', () => {
+    cy.get(`button[aria-label="${strings.options.title}"]`).click();
+    cy.get('[role="dialog"]').should('be.visible');
+    cy.contains(
+      '[role="dialog"] label',
+      new RegExp(`^${strings.options.testFu}$`),
+    ).click();
+    cy.get('.option-note').should('be.visible');
+    waitForAnimations();
+    cy.injectAxe();
+    cy.checkA11y();
+  });
+
+  it('should pass the options dialog with the home screen icon picker', () => {
+    cy.window().then((win) => {
+      const event = new win.Event('beforeinstallprompt');
+      event.fromTest = true;
+      event.prompt = () => Promise.resolve();
+      event.userChoice = Promise.resolve({ outcome: 'dismissed' });
+      win.dispatchEvent(event);
+    });
+    cy.get(`button[aria-label="${strings.options.title}"]`).click();
+    cy.get('.home-icon-swatches').scrollIntoView();
     waitForAnimations();
     cy.injectAxe();
     cy.checkA11y();

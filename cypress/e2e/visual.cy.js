@@ -7,6 +7,8 @@ import {
 
 const RON_HAND = '2011010101gm-00a9-0000-370cfc0a2';
 
+const RON_HAND_TILE_COUNT = 19;
+
 const RIICHI_HAND = '2011010107gm-00a9-0000-49ee978a2';
 
 const PHONE_WIDTH = 412;
@@ -106,13 +108,20 @@ const checkStates = (appearance) => {
     it('should match an unfinished answer that was turned away', () => {
       pick(60);
       cy.get('button[type="submit"]').click();
-      cy.get('.missing-note').should('have.length', 2);
+      cy.get('#points-missing').should('exist');
       pageShouldMatch(`${appearance}-refused`);
     });
 
     it('should match a checked answer', () => {
       answerRonHand();
       pageShouldMatch(`${appearance}-checked`);
+    });
+
+    it('should match an answer that was asked for', () => {
+      cy.contains('button', 'Just tell me').click();
+      cy.get('.answer-key').should('exist');
+      waitForScrollToStop();
+      pageShouldMatch(`${appearance}-told`);
     });
 
     it('should match the questions of a checked answer', () => {
@@ -178,6 +187,33 @@ const checkStates = (appearance) => {
       answerRonHand();
       pageShouldMatch(`${appearance}-contrast-checked`);
     });
+
+    it('should match a correct answer in high contrast', () => {
+      visit(appearance, { contrast: 'high' });
+      pick(1);
+      pick(60);
+      cy.get('#points').type('2000');
+      checkAnswer();
+      pageShouldMatch(`${appearance}-contrast-correct`);
+    });
+  });
+
+  describe('Tiles whose drawings fail to load', () => {
+    it('should match the names printed where the drawings would be', () => {
+      cy.intercept('**/assets/tiles/**', { statusCode: 404 });
+      cy.viewport(PHONE_WIDTH, PAGE_HEIGHT);
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad(win) {
+          if (appearance === 'dark') {
+            win.localStorage.setItem('mahjong-appearance', 'dark');
+          }
+        },
+      });
+      dropScrollbarRoom();
+      cy.document().its('fonts.status').should('equal', 'loaded');
+      cy.get('.tile.failed').should('have.length', RON_HAND_TILE_COUNT);
+      cy.compareSnapshot(`${appearance}-failed-tiles`, FULL_PAGE);
+    });
   });
 
   describe('Dialogs', () => {
@@ -193,6 +229,18 @@ const checkStates = (appearance) => {
     it('should match the bigger hand', () => {
       cy.contains('button', 'See the tiles bigger').click();
       dialogShouldMatch(`${appearance}-bigger-hand`);
+    });
+
+    it('should match the yaku in the help', () => {
+      cy.get('button[aria-label="Help"]').click();
+      cy.contains('.help-tabs [role="tab"]', 'Yaku').click().blur();
+      cy.get('.help-yaku').should('exist');
+      waitForAnimations();
+      waitForImages();
+      cy.compareSnapshot(`${appearance}-yaku`, {
+        ...COMPARISON,
+        capture: 'viewport',
+      });
     });
 
     it('should match the points table in the help', () => {
