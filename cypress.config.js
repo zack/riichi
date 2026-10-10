@@ -5,6 +5,7 @@ const WINDOW_SIZE = '1280,1600';
 
 export default defineConfig({
   allowCypressEnv: false,
+  retries: { openMode: 0, runMode: 1 },
   e2e: {
     baseUrl: 'http://localhost:5173',
     expose: {
