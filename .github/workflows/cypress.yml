@@ -43,3 +43,34 @@ jobs:
             cypress/snapshots/actual
             cypress/snapshots/diff
           if-no-files-found: ignore
+
+  firefox:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6.8.0
+        timeout-minutes: 15
+        with:
+          browser: firefox
+          build: npm run build
+          start: npm run preview -- --port 5173 --strictPort
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 90
+          spec: |
+            cypress/e2e/appearance.cy.js
+            cypress/e2e/axe.cy.js
+            cypress/e2e/checking.cy.js
+            cypress/e2e/failed-tiles.cy.js
+            cypress/e2e/hand.cy.js
+            cypress/e2e/help.cy.js
+            cypress/e2e/links.cy.js
+            cypress/e2e/options.cy.js
+            cypress/e2e/unfinished.cy.js

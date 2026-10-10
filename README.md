@@ -70,7 +70,7 @@ To open one particular hand, copy its link in the app, or put its name on the en
 
 # Testing
 
-There are Cypress tests for the quiz and the scoring, for accessibility, and for how it looks. They run in Chrome against the production build on port 5173.
+There are Cypress tests for the quiz and the scoring, for accessibility, and for how it looks. They run in Chrome against the production build on port 5173. On GitHub, everything but the accessibility tests and the tests for how it looks runs in Firefox as well.
 
 1. Build and serve the app
    ```sh
