@@ -52,7 +52,7 @@ Cypress.Commands.add('visitAsNewPlayer', (url, options = {}) => {
 });
 
 before(() => {
-  cy.visit('/');
+  cy.visit('/?hand=2011010101gm-00a9-0000-370cfc0a2');
   cy.window().then(async (win) => {
     const registrations = await win.navigator.serviceWorker.getRegistrations();
     await Promise.all(

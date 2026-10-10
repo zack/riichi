@@ -267,8 +267,7 @@ function App() {
     setOptions(nextOptions);
     storeOptions(nextOptions);
 
-    const switchesFuOff = fuIsIgnored(nextOptions, answers);
-    if ((optionId === EXACT_FU || switchesFuOff) && !checked) {
+    if (optionId === EXACT_FU && !checked) {
       setAnswers((current) => ({ ...current, fu: '' }));
     }
   };
