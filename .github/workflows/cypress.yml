@@ -24,13 +24,14 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v6.8.0
-        timeout-minutes: 15
+        timeout-minutes: 10
         with:
           browser: chrome
           build: npm run build
           start: npm run preview -- --port 5173 --strictPort
           wait-on: 'http://localhost:5173'
           wait-on-timeout: 90
+          config: excludeSpecPattern=cypress/e2e/axe.cy.js
           spec: |
             cypress/e2e/**/*.cy.js
 
@@ -44,7 +45,7 @@ jobs:
             cypress/snapshots/diff
           if-no-files-found: ignore
 
-  firefox:
+  axe:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -57,20 +58,51 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v6.8.0
-        timeout-minutes: 15
+        timeout-minutes: 10
+        with:
+          browser: chrome
+          build: npm run build
+          start: npm run preview -- --port 5173 --strictPort
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 90
+          spec: |
+            cypress/e2e/axe.cy.js
+
+  firefox:
+    name: firefox (${{ matrix.group }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: 1
+            spec: |
+              cypress/e2e/appearance.cy.js
+              cypress/e2e/checking.cy.js
+              cypress/e2e/failed-tiles.cy.js
+              cypress/e2e/unfinished.cy.js
+          - group: 2
+            spec: |
+              cypress/e2e/hand.cy.js
+              cypress/e2e/help.cy.js
+              cypress/e2e/links.cy.js
+              cypress/e2e/options.cy.js
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6.8.0
+        timeout-minutes: 10
         with:
           browser: firefox
           build: npm run build
           start: npm run preview -- --port 5173 --strictPort
           wait-on: 'http://localhost:5173'
           wait-on-timeout: 90
-          spec: |
-            cypress/e2e/appearance.cy.js
-            cypress/e2e/axe.cy.js
-            cypress/e2e/checking.cy.js
-            cypress/e2e/failed-tiles.cy.js
-            cypress/e2e/hand.cy.js
-            cypress/e2e/help.cy.js
-            cypress/e2e/links.cy.js
-            cypress/e2e/options.cy.js
-            cypress/e2e/unfinished.cy.js
+          spec: ${{ matrix.spec }}
