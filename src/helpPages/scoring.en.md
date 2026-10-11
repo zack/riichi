@@ -152,4 +152,4 @@ The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangji
 
 The steps, the list of yaku and the scoring table are laid out after a reference sheet by Aranlyde, updated by hyperistic, which is under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The explanations of the yaku are the sheet's words. The colors and the numbers are this site's own.
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)

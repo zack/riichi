@@ -4,7 +4,8 @@ import { useTranslation } from '../i18n/I18nContext';
 import { HAND_PARAM, getHandId } from '../scripts/Hands';
 import { EXACT_FU, TEST_FU, TEST_HAN, TEST_POINTS } from '../scripts/Options';
 
-const NEW_ISSUE_URL = 'https://github.com/zack/riichi/issues/new';
+const NEW_ISSUE_URL =
+  'https://github.com/zack/riichi-scoring-trainer/issues/new';
 
 // Link to the hand on the real site instead of wherever the page happens to be
 // open (locally or w/e)

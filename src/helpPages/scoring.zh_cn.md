@@ -120,7 +120,7 @@
 
 # 关于
 
-> **关于翻译**：为方便更多人阅读，本页面由AI翻译，其中一部分尚未经人工校对。如发现翻译问题，请在[GitHub](https://github.com/zack/riichi)上反馈。
+> **关于翻译**：为方便更多人阅读，本页面由AI翻译，其中一部分尚未经人工校对。如发现翻译问题，请在[GitHub](https://github.com/zack/riichi-scoring-trainer)上反馈。
 
 ## 规则
 
@@ -154,4 +154,4 @@
 
 步骤、役种列表和点数表的版式参考了 Aranlyde 制作、hyperistic 更新的速查表，该速查表以 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 发布。役种的说明译自该速查表的文字。配色和数值为本站自有。
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)
