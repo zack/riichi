@@ -120,7 +120,7 @@
 
 # 概要
 
-> **翻訳について**: このページはより多くの人にアクセスしやすくするため、AIによって翻訳されています。翻訳に問題がある場合は、[GitHub](https://github.com/zack/riichi)で報告してください。
+> **翻訳について**: このページはより多くの人にアクセスしやすくするため、AIによって翻訳されています。翻訳に問題がある場合は、[GitHub](https://github.com/zack/riichi-scoring-trainer)で報告してください。
 
 ## ルール
 
@@ -154,4 +154,4 @@
 
 手順、役の一覧、点数表のレイアウトは、Aranlyde 氏が作成し hyperistic 氏が更新した早見表を参考にしています。この早見表は [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) で公開されています。役の説明は早見表の文章を翻訳したものです。配色と数値はこのサイト独自のものです。
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)

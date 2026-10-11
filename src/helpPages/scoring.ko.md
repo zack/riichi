@@ -120,7 +120,7 @@
 
 # 소개
 
-> **번역에 대하여**: 이 페이지는 더 많은 분들이 이용할 수 있도록 AI로 번역했습니다. 번역에 문제가 있다면 [GitHub](https://github.com/zack/riichi)에 알려 주세요.
+> **번역에 대하여**: 이 페이지는 더 많은 분들이 이용할 수 있도록 AI로 번역했습니다. 번역에 문제가 있다면 [GitHub](https://github.com/zack/riichi-scoring-trainer)에 알려 주세요.
 
 ## 룰
 
@@ -154,4 +154,4 @@
 
 계산 순서, 역 목록, 점수표의 배치는 Aranlyde 님이 만들고 hyperistic 님이 갱신한 참고표를 따랐습니다. 이 참고표는 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)으로 공개되어 있습니다. 역의 설명은 참고표의 문구를 번역한 것입니다. 색과 숫자는 이 사이트에서 만든 것입니다.
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)
