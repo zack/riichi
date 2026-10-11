@@ -120,7 +120,7 @@
 
 # 关于
 
-> **关于翻译**：为方便更多人阅读，本页面由AI翻译，其中一部分尚未经人工校对。如发现翻译问题，请在[GitHub](https://github.com/zack/riichi)上反馈。
+> **关于翻译**：为方便更多人阅读，本页面由AI翻译，其中一部分尚未经人工校对。如发现翻译问题，请在[GitHub](https://github.com/zack/riichi-scoring-trainer)上反馈。
 
 ## 规则
 
@@ -154,4 +154,4 @@
 
 本帮助的大部分内容来自 [Aranlyde 制作的速查表](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/)，该速查表以 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 发布。
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)

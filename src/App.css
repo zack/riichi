@@ -846,8 +846,10 @@ html.dark:not(.high-contrast) .radix-themes {
   --pile-clearance: 2px;
   --tile-width: min(
     var(--line-tile-width),
-    (var(--row-height) + var(--headroom) - var(--pile-clearance) -
-        var(--tile-gap)) /
+    (
+        var(--row-height) + var(--headroom) - var(--pile-clearance) -
+          var(--tile-gap)
+      ) /
       2
   );
 }

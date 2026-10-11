@@ -152,4 +152,4 @@ The fancy tiles are by [Cangjie6](https://commons.wikimedia.org/wiki/User:Cangji
 
 Much of the content in these help pages comes from [a reference sheet by Aranlyde](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/), which is under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)

@@ -292,7 +292,7 @@ describe('Options', () => {
       .then((href) => {
         const issueUrl = new URL(href);
         expect(issueUrl.origin + issueUrl.pathname).to.equal(
-          'https://github.com/zack/riichi/issues/new',
+          'https://github.com/zack/riichi-scoring-trainer/issues/new',
         );
         expect(issueUrl.searchParams.get('title')).to.equal(`Hand ${RON_HAND}`);
         expect(issueUrl.searchParams.get('body')).to.contain(
