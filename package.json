@@ -28,7 +28,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.1",
+    "@babel/core": "^8.0.7",
     "@rolldown/plugin-babel": "^0.2.3",
     "@vitejs/plugin-react": "^6.1.1",
     "axe-core": "^4.13.0",
