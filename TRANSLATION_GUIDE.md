@@ -75,7 +75,7 @@ Help pages are markdown files in `src/helpPages/`.
 **Example translation note (in target language):**
 
 ```markdown
-> **About this translation**: This page has been translated by AI to make it more accessible. If you notice any issues with the translations, please report them on [GitHub](https://github.com/zack/riichi).
+> **About this translation**: This page has been translated by AI to make it more accessible. If you notice any issues with the translations, please report them on [GitHub](https://github.com/zack/riichi-scoring-trainer).
 ```
 
 ### 3. Using Special Formatting

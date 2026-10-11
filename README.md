@@ -47,8 +47,8 @@ You'll need the version of Node in `.nvmrc`.
 
 1. Clone the repo
    ```sh
-   git clone git@github.com:zack/riichi.git
-   cd riichi
+   git clone git@github.com:zack/riichi-scoring-trainer.git
+   cd riichi-scoring-trainer
    ```
 1. Install the dependencies
    ```sh

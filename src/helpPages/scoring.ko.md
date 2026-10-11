@@ -120,7 +120,7 @@
 
 # 소개
 
-> **번역에 대하여**: 이 페이지는 더 많은 분들이 이용할 수 있도록 AI로 번역했습니다. 번역에 문제가 있다면 [GitHub](https://github.com/zack/riichi)에 알려 주세요.
+> **번역에 대하여**: 이 페이지는 더 많은 분들이 이용할 수 있도록 AI로 번역했습니다. 번역에 문제가 있다면 [GitHub](https://github.com/zack/riichi-scoring-trainer)에 알려 주세요.
 
 ## 룰
 
@@ -154,4 +154,4 @@
 
 이 도움말 내용의 상당 부분은 [Aranlyde 님의 참고표](https://www.reddit.com/r/Mahjong/comments/l5b221/riichi_mahjong_cheat_sheet_1_page_pdf_or_images/)를 바탕으로 한 것입니다. 이 참고표는 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/)으로 공개되어 있습니다.
 
-© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi](https://github.com/zack/riichi)
+© %%year%% Zack Youngren · [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html) · [github.com/zack/riichi-scoring-trainer](https://github.com/zack/riichi-scoring-trainer)
