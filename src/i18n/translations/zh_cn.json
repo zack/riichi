@@ -84,6 +84,7 @@
     "testFu": "符数",
     "testPoints": "点数",
     "kiriageMangan": "切上满贯",
+    "kiriageManganNote": "4番30符和3番60符视为满贯。",
     "testHonba": "本场棒",
     "ignoreFuOnLimit": "满贯免算符",
     "nextHandNote": "题目的更改从下一手牌开始生效。",

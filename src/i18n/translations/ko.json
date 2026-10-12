@@ -84,6 +84,7 @@
     "testFu": "부수",
     "testPoints": "점수",
     "kiriageMangan": "절상만관",
+    "kiriageManganNote": "4판 30부와 3판 60부는 만관으로 취급됩니다.",
     "testHonba": "장봉",
     "ignoreFuOnLimit": "5판 이상 부수 무시",
     "nextHandNote": "문제 설정 변경은 다음 패부터 적용됩니다.",
