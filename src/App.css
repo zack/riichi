@@ -1451,6 +1451,12 @@ html.dark:not(.high-contrast) .radix-themes {
   cursor: var(--cursor-disabled);
 }
 
+/* A locked choice can still be read, so its number has to keep 4.5:1 (WCAG
+   1.4.3). 76% is the least that does on the dark baiman tint. */
+:where(.choices[aria-readonly='true']) .choice:not(.correct, .wrong) {
+  color: color-mix(in srgb, var(--gray-12) 76%, transparent);
+}
+
 .choice-group .choice:not(:first-of-type) {
   border-bottom-left-radius: 0;
   border-left-width: 0;

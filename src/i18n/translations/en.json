@@ -43,6 +43,7 @@
     "yourAnswer": "Your Answer",
     "youPicked": "You picked",
     "youPickedLimit": "You picked a limit hand",
+    "youEntered": "You entered",
     "answersLocked": "This hand is checked. Answers can't be changed.",
     "realAnswer": "Answer",
     "noOptionsSelected": "Nothing to ask. Turn on Han, Fu or Points in {}Options.",

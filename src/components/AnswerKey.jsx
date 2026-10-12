@@ -10,6 +10,7 @@ import {
   fuHasNoAnswer,
   getExactFu,
   getGradedFields,
+  getPickedOrEnteredLabel,
   limitWasWronglyPicked,
 } from '../scripts/QuizFields';
 import { getFuWikiUrl, getYakuWikiUrl } from '../scripts/WikiLinks';
@@ -80,7 +81,7 @@ const Total = ({ answers, field, graded, picked, title }) => {
         <Text as='p' className='answer-picked' size='1'>
           {limitWasWronglyPicked(field)
             ? t('quiz.youPickedLimit')
-            : `${t('quiz.youPicked')} ${picked ?? answers[field.id].trim()}`}{' '}
+            : `${getPickedOrEnteredLabel(field, t)} ${picked ?? answers[field.id].trim()}`}{' '}
           <Mark name={t(MARK_NAMES[WRONG])} result={WRONG} />
         </Text>
       )}
