@@ -94,18 +94,20 @@ describe('Theme', () => {
   it('should take a tap anywhere in the height of the control', () => {
     visitHand(RON_HAND);
     cy.get('button[aria-label="Options"]').click();
-    cy.get('.theme-segments').then((track) => {
-      const trackBox = track[0].getBoundingClientRect();
-      const dark = Cypress.$('.theme-segment:contains("Dark")')[0];
-      const darkBox = dark.getBoundingClientRect();
-      const middle = darkBox.left + darkBox.width / 2;
+    cy.get('.theme-segments')
+      .scrollIntoView()
+      .then((track) => {
+        const trackBox = track[0].getBoundingClientRect();
+        const dark = Cypress.$('.theme-segment:contains("Dark")')[0];
+        const darkBox = dark.getBoundingClientRect();
+        const middle = darkBox.left + darkBox.width / 2;
 
-      [trackBox.top + 0.5, trackBox.bottom - 0.5].forEach((edge) => {
-        expect(track[0].ownerDocument.elementFromPoint(middle, edge)).to.eq(
-          dark,
-        );
+        [trackBox.top + 0.5, trackBox.bottom - 0.5].forEach((edge) => {
+          expect(track[0].ownerDocument.elementFromPoint(middle, edge)).to.eq(
+            dark,
+          );
+        });
       });
-    });
   });
 
   it('should go back to following the device', () => {
