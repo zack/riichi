@@ -2,6 +2,7 @@ import './App.css';
 import './celebration.css';
 import { Container, Flex, Text } from '@radix-ui/themes';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { AnswerKey } from './components/AnswerKey';
@@ -313,6 +314,7 @@ function App() {
       </a>
 
       <Analytics />
+      <SpeedInsights />
       <Container size='2'>
         <header>
           <Flex align='center' gap='2' justify='between'>
