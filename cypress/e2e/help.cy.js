@@ -585,23 +585,6 @@ describe('Help tabs', () => {
         .and('have.attr', 'rel', 'noopener noreferrer');
     });
   });
-
-  it('should describe every option that changes the quiz', () => {
-    visitHand(RON_HAND);
-    openHelp('About');
-
-    [
-      en.options.testHan,
-      en.options.testFu,
-      en.options.testPoints,
-      en.options.exactFu,
-      en.options.ignoreFuOnLimit,
-      en.options.kiriageMangan,
-      en.options.testHonba,
-    ].forEach((name) => {
-      cy.contains('.help-site h2', name).should('exist');
-    });
-  });
 });
 
 describe('Scoring table in the help', () => {

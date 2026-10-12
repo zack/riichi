@@ -25,7 +25,7 @@ const QUESTION_OPTIONS = [
   { id: TEST_POINTS },
   { id: 'testHonba' },
 ];
-const RULE_OPTIONS = [{ id: 'kiriageMangan' }];
+const RULE_OPTIONS = [{ id: 'kiriageMangan', hasNote: true }];
 const TILE_OPTIONS = [{ id: 'showTileNames' }, { id: 'fancyTiles' }];
 
 function OptionsMenu({
@@ -43,7 +43,7 @@ function OptionsMenu({
 
   // needs has no default in the parameter list because the React Compiler skips
   // any component with a default inside of a destructured parameter
-  const renderOption = ({ id, indented, needs }) => {
+  const renderOption = ({ hasNote, id, indented, needs }) => {
     const [firstMissing, secondMissing] = (needs ?? [])
       .filter((neededId) => !options[neededId])
       .map((neededId) => t(`options.${neededId}`));
@@ -66,6 +66,7 @@ function OptionsMenu({
         indented={indented}
         key={id}
         label={t(`options.${id}`)}
+        note={hasNote ? t(`options.${id}Note`) : undefined}
         onChange={(checked) => onChangeOption(id, checked)}
         unavailableNote={unavailableNote}
       />

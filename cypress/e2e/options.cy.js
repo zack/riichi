@@ -216,6 +216,18 @@ describe('Options', () => {
     groupOf(/^Language$/).should('have.text', 'Display');
   });
 
+  it('should say what Kiriage mangan does, under the option', () => {
+    visitHand(RON_HAND);
+    cy.get('button[aria-label="Options"]').click();
+    cy.get('#kiriageMangan-description').should(
+      'have.text',
+      '4 han 30 fu and 3 han 60 fu count as mangan.',
+    );
+    cy.contains('label', 'Kiriage mangan')
+      .find('[role="checkbox"]')
+      .should('have.attr', 'aria-describedby', 'kiriageMangan-description');
+  });
+
   it('should switch the fu options off, and say why, while fu is not asked', () => {
     const exactFu = () =>
       cy
