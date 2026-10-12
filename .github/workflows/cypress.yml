@@ -23,7 +23,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6.8.0
+        uses: cypress-io/github-action@v7.4.6
         timeout-minutes: 10
         with:
           browser: chrome
@@ -57,7 +57,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6.8.0
+        uses: cypress-io/github-action@v7.4.6
         timeout-minutes: 10
         with:
           browser: chrome
@@ -97,7 +97,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cypress run
-        uses: cypress-io/github-action@v6.8.0
+        uses: cypress-io/github-action@v7.4.6
         timeout-minutes: 10
         with:
           browser: firefox
