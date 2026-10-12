@@ -319,6 +319,7 @@ describe('Hand links', () => {
     cy.get('.hand-count > span').first().should('contain.text', '#2');
 
     cy.go('back');
+    cy.get('.hand-count > span').first().should('contain.text', '#1');
     cy.get('.verdict').should('not.exist');
     cy.get('button[type="submit"]').should('have.text', 'Just tell me');
     cy.get('[role="status"]').should('have.text', '');
