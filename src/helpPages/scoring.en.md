@@ -124,26 +124,6 @@ For each honba stick, add **300** to a ron, and **100** to what each player pays
 
 Every hand is from a Tenhou game log, and is scored by Tenhou's rules.
 
-## Han, Fu, Points
-
-Select which skills you'd like to test.
-
-## Exact fu
-
-Asks for the exact answer instead of the rounded answer.
-
-## Skip fu on limit hands
-
-Limit hands won't ask for fu.
-
-## Kiriage mangan
-
-4 han 30 fu and 3 han 60 fu count as mangan.
-
-## Honba sticks
-
-Include honba sticks in the quiz.
-
 ## Credits
 
 This site is a fork of [Riichi Mahjong Score Trainer](https://github.com/Varantha/Mahjong-ScoringTrainer) by Varantha. The hands and the scoring logic come from the original.
