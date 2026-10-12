@@ -13,6 +13,7 @@ import {
   layOutAsOnAPhone,
   pick,
   showYourAnswer,
+  turnOnOptions,
   typeInBox,
   visitHand,
 } from '../support/app';
@@ -384,6 +385,73 @@ describe('Checking answers', () => {
       'aria-describedby',
       'points-verdict points-answer',
     );
+  });
+
+  it('should say a typed answer was entered and a choice was picked', () => {
+    visitHand(RON_HAND);
+    pick('han', '2');
+    pick('fu', '60');
+    typeInBox('points', '1000');
+    cy.contains('button', 'Check Answer').click();
+
+    cy.contains('.answer-total', 'Points: 2000')
+      .next('.answer-picked')
+      .should('have.text', 'You entered 1000 ');
+    cy.get('[role="status"]').should(
+      'have.text',
+      'Wrong. Han: 1, You picked 2. Fu: 60, Correct. Points: 2000, You entered 1000',
+    );
+  });
+
+  it('should say a typed exact fu was entered', () => {
+    visitHand(RON_HAND);
+    turnOnOptions('Exact fu');
+    pick('han', '1');
+    typeInBox('fu', '1');
+    typeInBox('points', '2000');
+    cy.contains('button', 'Check Answer').click();
+
+    cy.contains('.answer-total', 'Exact fu')
+      .next('.answer-picked')
+      .should('have.text', 'You entered 1 ');
+    cy.get('[role="status"]').should('contain', ', You entered 1. Points');
+  });
+
+  it("should say each of a tsumo's wrong payments was entered", () => {
+    visitHand(TSUMO_HAND);
+    pick('han', '4');
+    pick('fu', '30');
+    typeInBox('points', '1000');
+    typeInBox('pointsDealer', '2000');
+    cy.contains('button', 'Check Answer').click();
+
+    cy.get('.answer-picked').should((lines) => {
+      expect([...lines].map((line) => line.textContent)).to.eql([
+        'You entered 1000 ',
+        'You entered 2000 ',
+      ]);
+    });
+  });
+
+  Object.entries({
+    ja: 'あなたの入力',
+    ko: '입력한 답',
+    zh_cn: '你的输入',
+  }).forEach(([language, label]) => {
+    it(`should say a typed answer was entered in ${language}`, () => {
+      cy.visit(`/?hand=${RON_HAND}`, {
+        onBeforeLoad(win) {
+          win.sessionStorage.removeItem('mahjong-session');
+          win.localStorage.setItem('mahjong-language', language);
+        },
+      });
+      pick('han', '1');
+      pick('fu', '60');
+      typeInBox('points', '1000');
+      cy.get('button[type="submit"]').click();
+
+      cy.get('.answer-picked').should('have.text', `${label} 1000 `);
+    });
   });
 
   it('should mark right points in their box, with nothing beside it', () => {

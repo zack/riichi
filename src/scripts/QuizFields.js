@@ -149,6 +149,10 @@ function answerIsCorrect(field, answers) {
   return field.answer === readAnswer(field, answers);
 }
 
+function getPickedOrEnteredLabel(field, t) {
+  return field.choiceRows ? t('quiz.youPicked') : t('quiz.youEntered');
+}
+
 function getGradedFields(fields, answers) {
   return fields.filter(
     (field) => !field.ignored && !answerIsBlank(field, answers),
@@ -173,7 +177,7 @@ function getStatusMessage(fields, answers, result, t) {
     } else if (answerIsCorrect(field, answers)) {
       return `${getRealAnswer(field)}, ${t('quiz.marks.correct')}`;
     } else {
-      return `${getRealAnswer(field)}, ${t('quiz.youPicked')} ${answers[field.id].trim()}`;
+      return `${getRealAnswer(field)}, ${getPickedOrEnteredLabel(field, t)} ${answers[field.id].trim()}`;
     }
   };
   const realAnswers = fields.map(getRealAnswer).join(', ');
@@ -200,6 +204,7 @@ export {
   getExactFu,
   getGradedFields,
   getMissingFields,
+  getPickedOrEnteredLabel,
   getQuizFields,
   getStatusMessage,
   limitWasWronglyPicked,

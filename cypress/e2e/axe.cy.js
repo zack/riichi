@@ -69,6 +69,27 @@ function getColorOver(color, behind) {
   return `rgb(${channels.join(', ')})`;
 }
 
+// Chrome hands back a color-mix() as color(srgb ...) with channels from 0 to 1
+function asRgb(color) {
+  if (!color.startsWith('color(')) {
+    return color;
+  }
+  const [red, green, blue, alpha = 1] = color.match(/[\d.]+/g).map(Number);
+  return `rgba(${red * 255}, ${green * 255}, ${blue * 255}, ${alpha})`;
+}
+
+function getBackdrop(element) {
+  const color = asRgb(getComputedStyle(element).backgroundColor);
+  const alpha = color.match(/[\d.]+/g).map(Number)[3] ?? 1;
+  if (alpha === 1) {
+    return color;
+  } else if (!element.parentElement) {
+    return getColorOver(color, 'rgb(255, 255, 255)');
+  } else {
+    return getColorOver(color, getBackdrop(element.parentElement));
+  }
+}
+
 function getShadowColor(shadow) {
   return shadow.match(/^rgba?\([^)]*\)/)[0];
 }
@@ -109,6 +130,31 @@ const checkPages = ({ exactFu = false, strings = en } = {}) => {
     cy.get('.quiz-fields').should('exist');
     cy.injectAxe();
     cy.checkA11y();
+  });
+
+  // axe gives no verdict on a locked choice. It skips a number of one digit
+  // for being too short, and the others because their fill is a gradient.
+  it('should give the numbers on the locked choices enough contrast', () => {
+    cy.contains('[role="radio"]', /^2$/).click();
+    if (exactFu) {
+      cy.get('#fu').type('70');
+    } else {
+      cy.contains('[role="radio"]', /^70$/).click();
+    }
+    cy.get('#points').type('1');
+    cy.get('button[type="submit"]').click();
+    cy.contains('[role="tab"]', strings.quiz.yourAnswer).click();
+    cy.get('.choices[aria-readonly="true"] .choice:not(.correct, .wrong)')
+      .should('have.length.at.least', 8)
+      .each((choice) => {
+        const style = getComputedStyle(choice[0]);
+        const wash = asRgb(
+          style.backgroundImage.match(/(rgba?|color)\([^)]*\)/)[0],
+        );
+        const fill = getColorOver(wash, getBackdrop(choice[0]));
+        const number = getColorOver(asRgb(style.color), fill);
+        expect(getContrast(number, fill)).to.be.at.least(4.5);
+      });
   });
 
   it('should pass an unfinished answer that was turned away', () => {
