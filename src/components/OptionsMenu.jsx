@@ -153,10 +153,17 @@ function OptionsMenu({
                 size='3'
                 value={currentLanguage}
               >
+                {/* Orca says a button with this role by its label alone, so
+                    the chosen language has to be its description as well. */}
                 <Select.Trigger
+                  aria-describedby='language-value'
                   className='language-select'
                   id='language-select'
-                />
+                >
+                  <span id='language-value'>
+                    {languages[currentLanguage].name}
+                  </span>
+                </Select.Trigger>
                 <Select.Content>
                   {Object.entries(languages).map(([code, language]) => (
                     <Select.Item

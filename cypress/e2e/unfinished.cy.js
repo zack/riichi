@@ -44,14 +44,12 @@ describe('Unfinished answers', () => {
     cy.get('[aria-labelledby="han-label"] [role="radio"]').each((choice) => {
       expect(choice.attr('aria-describedby')).to.match(/\bhan-missing$/);
     });
-    cy.contains('[role="radio"]', /^5$/).should(
-      'have.attr',
-      'aria-describedby',
-      'han-mangan han-missing',
-    );
+    cy.contains('[role="radio"]', /^5$/)
+      .should('have.attr', 'aria-describedby', 'han-missing')
+      .and('have.attr', 'aria-labelledby', 'han-5 han-mangan');
     cy.get('#points').should('not.have.attr', 'aria-invalid');
     cy.get('[aria-required="true"]').should('not.exist');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should take the player to a box when a box is first', () => {
@@ -68,7 +66,7 @@ describe('Unfinished answers', () => {
     noteIsGone('points');
     cy.get('.quiz-form.checked').should('not.exist');
     cy.contains('.badge', 'Wrong: 0');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should say the note when the focus is already on an empty box', () => {
@@ -80,11 +78,14 @@ describe('Unfinished answers', () => {
 
     cy.focused().should('have.id', 'points');
     cy.get('#points-missing').should('have.text', 'Error: Enter the points.');
-    cy.get('[role="status"]').should('have.text', 'Error: Enter the points.');
+    cy.get('[aria-live="polite"]').should(
+      'have.text',
+      'Error: Enter the points.',
+    );
 
     typeInBox('points', '2');
     noteIsGone('points');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should say the note when the box in focus is not a number', () => {
@@ -92,17 +93,20 @@ describe('Unfinished answers', () => {
     pick('han', '1');
     pick('fu', '60');
     typeInBox('points', '2k');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
     typeInBox('points', '{enter}');
 
     cy.focused().should('have.id', 'points');
-    cy.get('[role="status"]').should('have.text', 'Error: Enter a number.');
+    cy.get('[aria-live="polite"]').should(
+      'have.text',
+      'Error: Enter a number.',
+    );
     typeInBox('points', '{backspace}');
     cy.get('#points-error').should('not.exist');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
 
     typeInBox('points', '000{enter}');
-    cy.get('[role="status"]').should(
+    cy.get('[aria-live="polite"]').should(
       'have.text',
       'Correct. Han: 1, Fu: 60, Points: 2000',
     );
@@ -115,16 +119,19 @@ describe('Unfinished answers', () => {
     cy.get('#points').focus();
     typeInBox('points', '{enter}');
     cy.focused().should('have.attr', 'role', 'radio');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
 
     pick('fu', '30');
     cy.get('#points').focus();
     typeInBox('points', '{enter}');
-    cy.get('[role="status"]').should('have.text', 'Error: Enter the points.');
+    cy.get('[aria-live="polite"]').should(
+      'have.text',
+      'Error: Enter the points.',
+    );
 
     check();
     cy.focused().should('have.id', 'points');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should go on to the next box on enter, with nothing marked', () => {

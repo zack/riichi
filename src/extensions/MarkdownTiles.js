@@ -17,7 +17,7 @@ function getTileHtml(tile, t, fancy, showNames) {
   const tileText = TileConversion.tileToText(tile, t);
   const text = `<span aria-hidden="true" class="${getTileTextClass(tileText)}">${escapeAttribute(tileText)}</span>`;
 
-  return `<span class="tile-cell"><span class="tile"><img alt="${alt}" src="${src}" />${text}</span>${label}</span>`;
+  return `<span class="tile-cell"><span class="visually-hidden">${alt}</span><span class="tile"><img alt="${alt}" aria-hidden="true" src="${src}" />${text}</span>${label}</span>`;
 }
 
 export function getTilesHtml(tileString, t, fancy, showNames) {

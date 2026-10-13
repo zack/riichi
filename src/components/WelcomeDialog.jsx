@@ -3,6 +3,7 @@ import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
+import { focusStaticElement } from '../scripts/StaticFocus';
 
 const SEEN_STORAGE_KEY = 'mahjong-welcome-seen';
 const SEEN = 'true';
@@ -24,7 +25,7 @@ function storeWelcomeSeen() {
   }
 }
 
-function WelcomeDialog() {
+function WelcomeDialog({ handRef }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(() => !welcomeIsSeen());
   const contentRef = useRef(null);
@@ -41,6 +42,15 @@ function WelcomeDialog() {
       <Dialog.Content
         className='welcome-dialog'
         maxWidth='400px'
+        // This dialog opens with the page, so no button opened it and there's
+        // nothing to give focus back to. Left alone, focus lands on the body,
+        // and a screen reader says the page's name or nothing at all.
+        onCloseAutoFocus={(event) => {
+          if (handRef.current) {
+            event.preventDefault();
+            focusStaticElement(handRef.current);
+          }
+        }}
         onOpenAutoFocus={(event) => {
           event.preventDefault();
           contentRef.current?.focus({ preventScroll: true });

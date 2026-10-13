@@ -856,11 +856,29 @@ describe('Welcome', () => {
     cy.contains('.welcome-dialog button', 'Start').click();
     getWelcome().should('not.exist');
     getSeen().should('equal', 'true');
-    cy.focused().should('not.exist');
 
     cy.reload();
     cy.get('.hand .tile').should('exist');
     getWelcome().should('not.exist');
+  });
+
+  it('should move focus to the hand when Start closes it', () => {
+    cy.visitAsNewPlayer(`/?hand=${RON_HAND}`);
+    getWelcome().should('have.focus');
+    cy.contains('.welcome-dialog button', 'Start').click();
+    getWelcome().should('not.exist');
+    cy.focused().should('have.class', 'hand-card');
+    cy.focused().should('have.attr', 'tabindex', '-1');
+    cy.focused().blur();
+    cy.get('.hand-card').should('not.have.attr', 'tabindex');
+  });
+
+  it('should move focus to the hand when Escape closes it', () => {
+    cy.visitAsNewPlayer(`/?hand=${RON_HAND}`);
+    getWelcome().should('have.focus');
+    cy.get('body').type('{esc}');
+    getWelcome().should('not.exist');
+    cy.focused().should('have.class', 'hand-card');
   });
 
   it('should not come back after Escape closed it', () => {

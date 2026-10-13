@@ -1,6 +1,6 @@
 import { Heading, Text } from '@radix-ui/themes';
 import { RadioGroup, Tabs } from 'radix-ui';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from '../i18n/I18nContext';
 import { MARK_NAMES } from '../scripts/Marks';
@@ -13,6 +13,7 @@ import {
   getGradedFields,
   getMissingFields,
 } from '../scripts/QuizFields';
+import { focusStaticElement } from '../scripts/StaticFocus';
 import { GearIcon } from './GearIcon';
 import { Mark } from './Mark';
 
@@ -35,6 +36,7 @@ const ENTER_GOES_ON = 'next';
 const ENTER_CHECKS = 'done';
 
 const ENTER_KEY = 'Enter';
+const TAB_KEY = 'Tab';
 const PRESSING_KEYS = [ENTER_KEY, ' '];
 
 const ANSWER_TAB = 'answer';
@@ -69,10 +71,7 @@ const RealAnswer = ({ field }) => {
 
   return (
     <span className='answer-stack'>
-      <span className='answer-caption'>
-        {t('quiz.realAnswer')}
-        <span className='visually-hidden'>: </span>
-      </span>
+      <span className='answer-caption'>{t('quiz.realAnswer')}</span>
       <Text className='answer-number' weight='bold'>
         {field.answer} <Mark result={CORRECT} />
       </Text>
@@ -167,13 +166,23 @@ const NumberField = ({
 
   return (
     <>
-      <Text as='label' htmlFor={field.id} size='3'>
+      {/* Hidden from screen readers, which get the name from the box. Orca
+          reads a label beside an empty box as a line of its own, and then it
+          can't read down past that box at all. */}
+      <Text
+        aria-hidden='true'
+        as='label'
+        htmlFor={field.id}
+        id={`${field.id}-label`}
+        size='3'
+      >
         {field.label}
       </Text>
       <span className={`number-input-cell ${result ?? ''}`}>
         <input
           aria-describedby={describedBy || undefined}
           aria-invalid={notANumber || missing || undefined}
+          aria-labelledby={`${field.id}-label`}
           autoComplete='off'
           className='number-input'
           disabled={field.ignored}
@@ -212,13 +221,43 @@ const NumberField = ({
 const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
   const { t } = useTranslation();
   const noAnswer = checked && !field.ignored && field.answer === '';
-  const describedBy = [
-    field.ignored && `${field.id}-note`,
-    noAnswer && `${field.id}-no-answer`,
-    checked && LOCKED_NOTE_ID,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const describedBy = field.ignored ? `${field.id}-note` : '';
+
+  const tabIsDown = useRef(false);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      tabIsDown.current = event.key === TAB_KEY;
+    };
+    const handleKeyUp = () => {
+      tabIsDown.current = false;
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // The group remembers the last choice that had focus and sends Tab back to
+  // it. A screen reader moves focus along as it reads down the page, so
+  // without this Tab can come in at a choice in the middle that nobody chose.
+  // With nothing picked, Tab should come in at the first choice.
+  const handleFocus = (event) => {
+    const firstChoice = event.currentTarget.querySelector(
+      "[role='radio']:not(:disabled)",
+    );
+
+    if (
+      tabIsDown.current
+      && !answers[field.id]
+      && event.target.matches("[role='radio']")
+      && event.target !== firstChoice
+    ) {
+      firstChoice.focus();
+    }
+  };
 
   return (
     <div className={`choice-field ${missing ? 'missing' : ''}`}>
@@ -232,6 +271,7 @@ const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
         aria-readonly={checked || undefined}
         className={`choices ${field.id}-choices`}
         disabled={field.ignored}
+        onFocus={handleFocus}
         onValueChange={(value) => {
           if (!checked) {
             onChangeAnswer(field.id, value);
@@ -249,6 +289,7 @@ const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
               >
                 {group.limit && (
                   <span
+                    aria-hidden='true'
                     className='choice-group-label'
                     id={`${field.id}-${group.limit}`}
                   >
@@ -263,17 +304,31 @@ const ChoiceField = ({ answers, checked, field, missing, onChangeAnswer }) => {
                     field,
                   );
 
+                  // These notes go on each choice and not on the group,
+                  // because a screen reader speaks the description of the
+                  // choice that has focus and passes over the group's
                   const choiceDescribedBy = [
-                    group.limit && `${field.id}-${group.limit}`,
                     missing && `${field.id}-missing`,
+                    noAnswer && `${field.id}-no-answer`,
+                    checked && LOCKED_NOTE_ID,
                   ]
                     .filter(Boolean)
                     .join(' ');
 
+                  const choiceId = `${field.id}-${choice}`;
+
                   return (
                     <RadioGroup.Item
                       aria-describedby={choiceDescribedBy || undefined}
+                      // A limit is part of the choice's name. As a description
+                      // Orca would only speak it for the first choice on a line.
+                      aria-labelledby={
+                        group.limit
+                          ? `${choiceId} ${field.id}-${group.limit}`
+                          : undefined
+                      }
                       className={`choice ${result ?? ''}`}
+                      id={choiceId}
                       key={choice}
                       value={choice}
                     >
@@ -433,8 +488,23 @@ function QuizPanel({
       return;
     }
 
-    onCheck();
-    newHandRef.current?.focus({ preventScroll: true });
+    // Firefox keeps a caret of its own in the page, and by this point it is
+    // usually somewhere in the questions. When they go away, Firefox puts it
+    // at the top of the form, and Orca follows it there. Reading up from New
+    // Hand then starts above the answer and misses all of it.
+    const selection = window.getSelection();
+    if (event.currentTarget.contains(selection.anchorNode)) {
+      selection.removeAllRanges();
+    }
+
+    // After a right answer the next thing to do is deal a hand. After a wrong
+    // one, or none, it's to read the answer, and a screen reader reads on from
+    // wherever focus is. From New Hand that's the end of the page.
+    if (onCheck() === CORRECT) {
+      newHandRef.current?.focus({ preventScroll: true });
+    } else {
+      focusStaticElement(cardRef.current, { preventScroll: true });
+    }
   };
 
   const [beforeGear, afterGear] = t('quiz.noOptionsSelected').split('{}');
@@ -481,7 +551,11 @@ function QuizPanel({
     contents = <div className='answer-panel'>{answerKey}</div>;
   } else {
     contents = (
-      <Tabs.Root className='answer-tabs' defaultValue={ANSWER_TAB}>
+      <Tabs.Root
+        activationMode='manual'
+        className='answer-tabs'
+        defaultValue={ANSWER_TAB}
+      >
         <Tabs.List className='segments'>
           <Tabs.Trigger className='segment' value={ANSWER_TAB}>
             {t('quiz.realAnswer')}
@@ -490,10 +564,14 @@ function QuizPanel({
             {t('quiz.yourAnswer')}
           </Tabs.Trigger>
         </Tabs.List>
-        <Tabs.Content className='answer-panel' value={ANSWER_TAB}>
+        <Tabs.Content className='answer-panel' tabIndex={-1} value={ANSWER_TAB}>
           {answerKey}
         </Tabs.Content>
-        <Tabs.Content className='answer-panel' value={YOUR_ANSWER_TAB}>
+        <Tabs.Content
+          className='answer-panel'
+          tabIndex={-1}
+          value={YOUR_ANSWER_TAB}
+        >
           {questions}
         </Tabs.Content>
       </Tabs.Root>

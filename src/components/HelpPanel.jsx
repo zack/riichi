@@ -156,7 +156,11 @@ function HelpPanel({ fancyTiles, kiriageMangan, showNames }) {
         }}
         ref={contentRef}
       >
-        <Tabs.Root onValueChange={handleTabChange} value={tab}>
+        <Tabs.Root
+          activationMode='manual'
+          onValueChange={handleTabChange}
+          value={tab}
+        >
           <div className='help-header'>
             <Flex align='center' gap='3' justify='between'>
               <DialogPrimitive.Title asChild>

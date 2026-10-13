@@ -40,7 +40,7 @@ describe('Hand links', () => {
       const url = new URL(copy.firstCall.args[0]);
       expect(url.searchParams.get('hand')).to.equal(RON_HAND);
     });
-    cy.get('[role="status"]').should('have.text', 'Link copied');
+    cy.get('[aria-live="polite"]').should('have.text', 'Link copied');
 
     dealTheFirstHandNext();
     cy.contains('button', 'New Hand').click();
@@ -61,11 +61,11 @@ describe('Hand links', () => {
       cy.stub(win.navigator.clipboard, 'writeText').resolves();
     });
     cy.get('button[aria-label="Copy a link to this hand"]').click();
-    cy.get('[role="status"]').should('have.text', 'Link copied');
+    cy.get('[aria-live="polite"]').should('have.text', 'Link copied');
 
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
     cy.get('button[aria-label="Copy a link to this hand"]').click();
-    cy.get('[role="status"]').should('have.text', 'Link copied');
+    cy.get('[aria-live="polite"]').should('have.text', 'Link copied');
   });
 
   it('should leave the result of a check alone when the tick goes', () => {
@@ -74,11 +74,11 @@ describe('Hand links', () => {
       cy.stub(win.navigator.clipboard, 'writeText').resolves();
     });
     cy.get('button[aria-label="Copy a link to this hand"]').click();
-    cy.get('[role="status"]').should('have.text', 'Link copied');
+    cy.get('[aria-live="polite"]').should('have.text', 'Link copied');
     cy.get('button[type="submit"]').click();
-    cy.get('[role="status"]').should('contain', 'Han: 1');
+    cy.get('[aria-live="polite"]').should('contain', 'Han: 1');
     cy.get('.hand-link polyline').should('not.exist');
-    cy.get('[role="status"]').should('contain', 'Han: 1');
+    cy.get('[aria-live="polite"]').should('contain', 'Han: 1');
   });
 
   it('should copy without the clipboard API, on a page that is not secure', () => {
@@ -90,7 +90,7 @@ describe('Hand links', () => {
     cy.get('button[aria-label="Copy a link to this hand"]').click();
 
     cy.get('@execCommand').should('have.been.calledWith', 'copy');
-    cy.get('[role="status"]').should('have.text', 'Link copied');
+    cy.get('[aria-live="polite"]').should('have.text', 'Link copied');
     cy.focused().should('have.attr', 'aria-label', 'Copy a link to this hand');
   });
 
@@ -101,7 +101,10 @@ describe('Hand links', () => {
       cy.stub(win.document, 'execCommand').returns(false);
     });
     cy.get('button[aria-label="Copy a link to this hand"]').click();
-    cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
+    cy.get('[aria-live="polite"]').should(
+      'have.text',
+      "Couldn't copy the link",
+    );
   });
 
   describe('A link that could not be copied', () => {
@@ -130,7 +133,10 @@ describe('Hand links', () => {
             .should('be.visible')
             .and('have.text', "Couldn't copy the link");
         });
-      cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
+      cy.get('[aria-live="polite"]').should(
+        'have.text',
+        "Couldn't copy the link",
+      );
 
       cy.contains('.hand-link-box label', 'Link to this hand')
         .should('be.visible')
@@ -158,8 +164,11 @@ describe('Hand links', () => {
     it('should keep the box after the status message has gone', () => {
       visitHand(RON_HAND);
       failToCopy();
-      cy.get('[role="status"]').should('have.text', "Couldn't copy the link");
-      cy.get('[role="status"]').should('have.text', '');
+      cy.get('[aria-live="polite"]').should(
+        'have.text',
+        "Couldn't copy the link",
+      );
+      cy.get('[aria-live="polite"]').should('have.text', '');
       getLinkBox().should('be.visible');
     });
 
@@ -322,7 +331,7 @@ describe('Hand links', () => {
     cy.get('.hand-count > span').first().should('contain.text', '#1');
     cy.get('.verdict').should('not.exist');
     cy.get('button[type="submit"]').should('have.text', 'Just tell me');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should keep the answers when the skip link is used, and on Back from it', () => {
@@ -353,7 +362,7 @@ describe('Hand links', () => {
     visitHand('not-a-hand');
     cy.get('.hand .tile').should('have.length.at.least', 14);
     cy.get('.link-note').should('have.text', NOT_FOUND);
-    cy.get('[role="status"]').should('have.text', NOT_FOUND);
+    cy.get('[aria-live="polite"]').should('have.text', NOT_FOUND);
     cy.get('.link-note').should((note) => {
       const hand = note[0].ownerDocument.querySelector('.hand-card');
       expect(note[0].getBoundingClientRect().bottom).to.be.at.most(
@@ -365,7 +374,7 @@ describe('Hand links', () => {
     cy.reload();
     cy.get('.hand .tile').should('have.length.at.least', 14);
     cy.get('.link-note').should('not.exist');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should say that the link was wrong until the next hand', () => {
@@ -373,7 +382,7 @@ describe('Hand links', () => {
     cy.get('.link-note').should('exist');
     cy.contains('button', 'New Hand').click();
     cy.get('.link-note').should('not.exist');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should say nothing about a link with no hand in it', () => {
@@ -381,7 +390,7 @@ describe('Hand links', () => {
     cy.get('.hand .tile').should('have.length.at.least', 14);
     cy.location('search').should('match', /^\?hand=\d{10}gm-[\w-]+$/);
     cy.get('.link-note').should('not.exist');
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should fit the line about a wrong link on the narrowest phones', () => {
@@ -439,17 +448,25 @@ describe('A hand that cannot be shown', () => {
       return normalize.apply(this, args);
     };
   };
-  const breakHandCard = (win) => {
+  const breakReplace = (win, isTarget) => {
     const replace = win.String.prototype.replace;
 
     win.failHand = true;
     win.String.prototype.replace = function (...args) {
-      if (win.failHand && args[0] === '{}' && typeof args[1] === 'number') {
+      if (win.failHand && isTarget(String(this), args)) {
         throw new Error('planted in the hand card');
       }
       return replace.apply(this, args);
     };
   };
+  const breakHandCard = (win) =>
+    breakReplace(
+      win,
+      (_text, args) => args[0] === '{}' && typeof args[1] === 'number',
+    );
+  // The hand card names its called tiles again whenever the tiles change
+  const breakCalledTiles = (win) =>
+    breakReplace(win, (text) => text.includes('(called)'));
   const mendHand = () => {
     cy.window().then((win) => {
       win.failHand = false;
@@ -480,7 +497,7 @@ describe('A hand that cannot be shown', () => {
     cy.focused().should('have.class', 'hand-card');
     cy.contains('button', 'Just tell me').click();
     cy.get('.answer-key').should('exist');
-    cy.focused().should('have.text', 'New Hand');
+    cy.focused().should('have.class', 'color-card');
   };
 
   it('should say so when the quiz throws, and not empty the page', () => {
@@ -519,10 +536,23 @@ describe('A hand that cannot be shown', () => {
     showsWorkingHand();
   });
 
+  it('should close the welcome dialog over a hand card that threw', () => {
+    cy.visitAsNewPlayer(`/?hand=${ADDED_KAN_HAND}`, {
+      onBeforeLoad(win) {
+        win.sessionStorage.removeItem('mahjong-session');
+        breakHandCard(win);
+      },
+    });
+    showsFallback(ADDED_KAN_HAND);
+    cy.contains('.welcome-dialog button', 'Start').click();
+    cy.get('.welcome-dialog').should('not.exist');
+    cy.focused().should('not.exist');
+  });
+
   it('should leave focus in the options when an option makes it throw', () => {
     visitHand(ADDED_KAN_HAND);
     cy.get('.hand .tile').should('have.length.at.least', 14);
-    cy.window().then(breakHandCard);
+    cy.window().then(breakCalledTiles);
     cy.get('button[aria-label="Options"]').click();
     cy.get('[role="dialog"]').contains('label', 'Fancy tiles').click();
     cy.get('.hand-error').should('exist');
