@@ -1,4 +1,11 @@
-import { RON_HAND, openHelp, pick, typeInBox, visitHand } from '../support/app';
+import {
+  RON_HAND,
+  TSUMO_HAND,
+  openHelp,
+  pick,
+  typeInBox,
+  visitHand,
+} from '../support/app';
 import { switchToDarkMode } from '../support/options';
 
 describe('A page that says it is taller than the screen', () => {
@@ -208,20 +215,45 @@ describe('Focus and announcements', () => {
     cy.get('.hand-card').should('not.have.attr', 'tabindex');
   });
 
-  it('should say the result out loud, and clear it for the next hand', () => {
+  const shouldFocusTheAnswer = () => {
+    cy.focused().should('have.class', 'color-card');
+    cy.focused().find('.answer-key').should('exist');
+    cy.focused().should('have.attr', 'tabindex', '-1');
+    cy.focused().blur();
+    cy.get('.color-card').should('not.have.attr', 'tabindex');
+  };
+
+  it('should move focus to the top of the answer on a wrong check', () => {
     visitHand(RON_HAND);
-    cy.get('[role="status"]').should('have.text', '');
     pick('han', '2');
     pick('fu', '60');
     typeInBox('points', '2000');
     cy.contains('button', 'Check Answer').click();
-    cy.get('[role="status"]').should(
+    cy.contains('.verdict', 'Wrong');
+    shouldFocusTheAnswer();
+  });
+
+  it('should move focus to the top of the answer when it is only shown', () => {
+    visitHand(RON_HAND);
+    cy.contains('button', 'Just tell me').click();
+    cy.contains('.verdict', 'Shown');
+    shouldFocusTheAnswer();
+  });
+
+  it('should say the result out loud, and clear it for the next hand', () => {
+    visitHand(RON_HAND);
+    cy.get('[aria-live="polite"]').should('have.text', '');
+    pick('han', '2');
+    pick('fu', '60');
+    typeInBox('points', '2000');
+    cy.contains('button', 'Check Answer').click();
+    cy.get('[aria-live="polite"]').should(
       'have.text',
       'Wrong. Han: 1, You picked 2. Fu: 60, Correct. Points: 2000, Correct',
     );
 
     cy.contains('button', 'New Hand').click();
-    cy.get('[role="status"]').should('have.text', '');
+    cy.get('[aria-live="polite"]').should('have.text', '');
   });
 
   it('should skip from the top of the page to the main content', () => {
@@ -239,8 +271,81 @@ describe('Focus and announcements', () => {
       expect(link[0].getBoundingClientRect().top).to.be.at.least(0);
     });
 
+    cy.get('#main').should('not.have.attr', 'tabindex');
     cy.get('.skip-link').click();
     cy.focused().should('have.id', 'main');
+    cy.focused().should('have.attr', 'tabindex', '-1');
+    cy.focused().blur();
+    cy.get('#main').should('not.have.attr', 'tabindex');
+  });
+
+  it('should come into the choices at the first one on tab, with nothing picked', () => {
+    // Cypress has no real Tab key. This holds one down by hand and then
+    // moves focus the way the group does when Tab comes into it.
+    const pressTab = (type) =>
+      cy.document().then((doc) => {
+        doc.dispatchEvent(
+          new KeyboardEvent(type, { bubbles: true, key: 'Tab' }),
+        );
+      });
+
+    visitHand(RON_HAND);
+    cy.contains('.han-choices [role="radio"]', /^6$/).focus();
+    cy.focused().should('have.text', '6');
+    cy.get('#points').focus();
+
+    pressTab('keydown');
+    cy.contains('.han-choices [role="radio"]', /^6$/).focus();
+    cy.focused().should('have.text', '1');
+    pressTab('keyup');
+    cy.get('.han-choices [role="radio"][tabindex="0"]').should(
+      'have.text',
+      '1',
+    );
+
+    pick('han', '3');
+    cy.get('#points').focus();
+    pressTab('keydown');
+    cy.contains('.han-choices [role="radio"]', /^3$/).focus();
+    cy.focused().should('have.text', '3');
+    pressTab('keyup');
+  });
+
+  it('should leave no text caret behind in the questions on a check', () => {
+    const putCaretIn = (selector) =>
+      cy.get(selector).then((element) => {
+        element[0].ownerDocument.getSelection().collapse(element[0], 0);
+      });
+    const getCaretCount = () =>
+      cy.document().then((doc) => doc.getSelection().rangeCount);
+
+    visitHand(RON_HAND);
+    putCaretIn('.number-input-cell');
+    cy.get('button[type="submit"]').focus();
+    cy.focused().type('{enter}');
+    cy.get('.answer-key').should('exist');
+    getCaretCount().should('equal', 0);
+
+    cy.contains('button', 'New Hand').click();
+    putCaretIn('.app-title');
+    cy.get('button[type="submit"]').focus();
+    cy.focused().type('{enter}');
+    cy.get('.answer-key').should('exist');
+    getCaretCount().should('equal', 1);
+  });
+
+  it('should name each box by its label, and keep the label itself unread', () => {
+    visitHand(TSUMO_HAND);
+    cy.get('.number-input').should('have.length', 2);
+    cy.get('.number-input').each((box) => {
+      const label = box[0].ownerDocument.getElementById(
+        box.attr('aria-labelledby'),
+      );
+
+      expect(label.getAttribute('for')).to.equal(box.attr('id'));
+      expect(label.getAttribute('aria-hidden')).to.equal('true');
+      expect(label.textContent).to.have.length.above(0);
+    });
   });
 });
 
@@ -260,5 +365,17 @@ describe('Language', () => {
     cy.reload();
     cy.get('html').should('have.attr', 'lang', 'ja');
     cy.get('button[type="submit"]').should('have.text', '答えを見る');
+  });
+
+  it('should describe the select by the language it is set to', () => {
+    visitHand(RON_HAND);
+    cy.get('button[aria-label="Options"]').click();
+    cy.get('#language-select')
+      .should('have.attr', 'aria-describedby', 'language-value')
+      .find('#language-value')
+      .should('have.text', 'English');
+    cy.get('#language-select').click();
+    cy.contains('[role="option"]', '日本語').click();
+    cy.get('#language-select #language-value').should('have.text', '日本語');
   });
 });

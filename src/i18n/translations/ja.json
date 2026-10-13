@@ -43,7 +43,7 @@
     "youPicked": "あなたの選択",
     "youPickedLimit": "満貫以上を選びました",
     "youEntered": "あなたの入力",
-    "answersLocked": "この手牌は確認済みです。回答は変更できません。",
+    "answersLocked": "回答は変更できません。",
     "realAnswer": "正解",
     "noOptionsSelected": "出題する項目がありません。{}オプションで翻・符・点数のいずれかをオンにしてください。",
     "errorPrefix": "エラー：",

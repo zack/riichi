@@ -203,6 +203,32 @@ describe('Indicators', () => {
       .should('have.length', 2);
   });
 
+  it('should give a screen reader the rows above the hand as one sentence', () => {
+    visitHand(RON_HAND);
+    // Each label sits above its tiles, so read from the rows Orca wants two
+    // key presses for every label
+    cy.get('.hand-card > .spoken-info')
+      .should('have.class', 'visually-hidden')
+      .and(
+        'have.text',
+        'Round wind: East. Seat wind: West. Dora indicators: South, 8 pin.',
+      );
+    cy.get('.info').should('have.attr', 'aria-hidden', 'true');
+
+    visitHand(TWO_HONBA_HAND);
+    cy.get('.spoken-info').should(
+      'have.text',
+      'Round wind: East. Seat wind: North. Riichi! '
+        + 'Dora indicators: 8 man, 5 man. Uradora indicators: 9 pin, 3 sou.',
+    );
+    turnOnOptions('Honba sticks');
+    cy.get('.spoken-info').should(
+      'have.text',
+      'Round wind: East. Seat wind: North. Honba sticks: 2. Riichi! '
+        + 'Dora indicators: 8 man, 5 man. Uradora indicators: 9 pin, 3 sou.',
+    );
+  });
+
   [
     ['ja', ['ドラ 表示牌', '裏ドラ 表示牌']],
     ['zh_cn', ['宝牌 指示牌', '里宝牌 指示牌']],
@@ -217,6 +243,10 @@ describe('Indicators', () => {
 
       labels.forEach((label) => {
         getInfoLabels().should('include', label);
+      });
+      // The spoken sentence has each label with no break in it
+      labels.forEach((label) => {
+        cy.get('.spoken-info').should('contain', `${label.replace(' ', '')}: `);
       });
       cy.get('.info-group-end .info-label-line').should((lines) => {
         expect(lines).to.have.length(4);
@@ -271,9 +301,26 @@ describe('Tiles', () => {
     tilesShouldBeVisible();
   });
 
+  it("should give a screen reader each tile's name as words, not as a picture", () => {
+    visitHand(RON_HAND);
+    cy.contains('button', 'See the tiles bigger').click();
+    cy.get('.bigger-hand .tile-cell').should('have.length', 19);
+    cy.get('.bigger-hand .tile-cell').each((cell) => {
+      const name = cell.children('.visually-hidden');
+      const image = cell.find('img');
+
+      expect(name).to.have.length(1);
+      expect(name.text()).to.have.length.above(0);
+      expect(name.text()).to.equal(image.attr('alt'));
+      expect(image).to.have.attr('aria-hidden', 'true');
+    });
+  });
+
   it('should pile the fourth tile of an added kan on the called one', () => {
     visitHand(ADDED_KAN_HAND);
-    const kan = '.hand [role="group"][aria-label="Meld 3"]';
+    const kan = '.hand .tile-group:last-child';
+
+    cy.get('.spoken-hand').should('contain', 'Meld 3: ');
 
     cy.get(`${kan} .tile-slot`).should((slots) => {
       const sizes = [...slots].map(
@@ -400,14 +447,21 @@ describe('Hand number', () => {
 });
 
 describe('Hand parts', () => {
-  it('should name each part of the hand for a screen reader', () => {
+  it('should give a screen reader the whole hand as one sentence', () => {
     visitHand(RON_HAND);
-    cy.get('.hand [role="group"]').then((groups) => {
-      expect(
-        [...groups].map((group) => group.getAttribute('aria-label')),
-      ).to.eql(['Concealed', 'Won on a ron', 'Meld 1', 'Meld 2']);
-    });
-    cy.get('.hand [role="group"]').then((groups) => {
+    // Read from the tiles, Orca wants a key press for each part and breaks a
+    // meld in two at a called tile
+    cy.get('.hand-container > .spoken-hand')
+      .should('have.class', 'visually-hidden')
+      .and(
+        'have.text',
+        'Concealed: 1 sou, 1 sou, 7 pin, 7 pin, 5 man, 6 man, 7 man. '
+          + 'Won on a ron: 1 sou. '
+          + 'Meld 1: Face-down tile, East, East, Face-down tile. '
+          + 'Meld 2: 8 pin, 8 pin, 8 pin (called).',
+      );
+    cy.get('.hand').should('have.attr', 'aria-hidden', 'true');
+    cy.get('.hand .tile-group').then((groups) => {
       expect(
         [...groups].map((group) => group.querySelectorAll('img').length),
       ).to.eql([7, 1, 4, 3]);
@@ -432,6 +486,21 @@ describe('Bigger hand', () => {
       });
       cy.get('.tile').should('have.length', RON_HAND_TILE_COUNT);
       cy.get('.tile.winning').should('have.length', 1);
+    });
+  });
+
+  it('should give a screen reader the same two sentences as the page', () => {
+    visitHand(TWO_HONBA_HAND);
+    turnOnOptions('Honba sticks');
+    cy.get('.hand-card .spoken-info').invoke('text').as('info');
+    cy.get('.hand-card .spoken-hand').invoke('text').as('hand');
+    cy.contains('button', 'See the tiles bigger').click();
+
+    cy.get('[role="dialog"]').within(function () {
+      cy.get('.spoken-info').should('have.text', this.info);
+      cy.get('.spoken-info').should('contain', 'Honba sticks: 2.');
+      cy.get('.spoken-hand').should('have.text', this.hand);
+      cy.get('.bigger-hand').should('have.attr', 'aria-hidden', 'true');
     });
   });
 

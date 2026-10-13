@@ -254,6 +254,8 @@ describe('Help tabs', () => {
     cy.contains('[role="tab"]', 'Steps').focus();
     cy.focused().type('{rightarrow}');
     cy.focused().should('have.text', 'Yaku');
+    cy.get('.help-steps').should('exist');
+    cy.focused().type('{enter}');
     cy.get('.help-yaku').should('exist');
   });
 

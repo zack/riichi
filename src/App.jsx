@@ -37,6 +37,7 @@ import {
   getStatusMessage,
 } from './scripts/QuizFields';
 import { getStoredSession, isCount, storeSession } from './scripts/Session';
+import { focusStaticElement } from './scripts/StaticFocus';
 import { fetchEveryTileDrawing } from './scripts/TileDrawings';
 import { useNamesOnTiles } from './scripts/TileNames';
 
@@ -58,6 +59,8 @@ const UNANSWERED_CARD_COLOR = 'orange';
 const WIDEST_HAND_NUMBER = 80;
 
 const CELEBRATION_INTERVAL = 10;
+
+const STATUS_TIME = 10000;
 
 function getRandomHandFile() {
   return HAND_FILES[Math.floor(Math.random() * HAND_FILES.length)];
@@ -138,6 +141,7 @@ function App() {
   );
   const [countIsCrowded, setCountIsCrowded] = useState(false);
   const handRef = useRef(null);
+  const mainRef = useRef(null);
   const quizRef = useRef(null);
   const quizHeightBeforeCheck = useRef(0);
 
@@ -147,13 +151,7 @@ function App() {
     const hand = handRef.current;
 
     if (handChanges > 0 && hand) {
-      // Only focusable while it has focus. If the tabindex is left on, some
-      // screen readers announce the whole section as a control.
-      hand.tabIndex = -1;
-      hand.addEventListener('blur', () => hand.removeAttribute('tabindex'), {
-        once: true,
-      });
-      hand.focus();
+      focusStaticElement(hand);
     }
   }, [handChanges]);
 
@@ -245,6 +243,21 @@ function App() {
     setStatusMessage('');
   };
 
+  // A status message is for hearing once. Left on the page, a screen reader
+  // reads it again as text below the buttons, long after it was news.
+  useEffect(() => {
+    if (!statusMessage) {
+      return undefined;
+    }
+
+    const timeout = setTimeout(() => {
+      setStatusMessage('');
+    }, STATUS_TIME);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [statusMessage]);
+
   useEffect(() => {
     const handlePopState = () => {
       const linkedFile = getLinkedHandFile();
@@ -293,6 +306,7 @@ function App() {
 
     setResult(nextResult);
     setStatusMessage(getStatusMessage(fields, answers, nextResult, t));
+    return nextResult;
   };
 
   const handleNewHand = () => {
@@ -309,7 +323,11 @@ function App() {
 
   return (
     <div className='app'>
-      <a className='skip-link' href='#main'>
+      <a
+        className='skip-link'
+        href='#main'
+        onClick={() => focusStaticElement(mainRef.current)}
+      >
         {t('common.skipToMain')}
       </a>
 
@@ -336,7 +354,7 @@ function App() {
           </Flex>
         </header>
 
-        <main id='main' tabIndex={-1}>
+        <main id='main' ref={mainRef}>
           <Flex align='center' gap='2' justify='between' mt='3' wrap='wrap'>
             <WinRate
               celebrate={
@@ -430,12 +448,18 @@ function App() {
             />
           </ErrorBoundary>
 
-          <div aria-atomic='true' className='visually-hidden' role='status'>
+          {/* Not role='status'. Orca drops every change inside one, with or
+              without aria-live, and speaks a plain polite region. */}
+          <div
+            aria-atomic='true'
+            aria-live='polite'
+            className='visually-hidden'
+          >
             {statusMessage}
           </div>
         </main>
       </Container>
-      <WelcomeDialog />
+      <WelcomeDialog handRef={handRef} />
     </div>
   );
 }

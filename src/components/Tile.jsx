@@ -48,9 +48,14 @@ function Tile({ alt, called, label, path, text, winning }) {
 
   return (
     <span className='tile-cell'>
+      {/* A screen reader gets the name as words and never meets the picture.
+          It says "image" after every picture it reads, which is thirteen
+          times in a hand. */}
+      <span className='visually-hidden'>{alt}</span>
       <span className={classNames.join(' ')}>
         <img
           alt={alt}
+          aria-hidden='true'
           key={path}
           onError={() => setFailedPath(path)}
           onLoad={() => setSlowPath(null)}

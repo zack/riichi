@@ -377,7 +377,7 @@ describe('Checking answers', () => {
       'be.visible',
     );
     cy.get('#points-verdict').should('have.text', 'Wrong.');
-    cy.get('#points-answer').should('have.text', 'Answer: 2000 ');
+    cy.get('#points-answer').should('have.text', 'Answer2000 ');
     cy.get('#points-answer .mark').should('have.length', 1);
     cy.get('#points-answer .correct-mark').should('be.visible');
     cy.get('#points').should(
@@ -397,7 +397,7 @@ describe('Checking answers', () => {
     cy.contains('.answer-total', 'Points: 2000')
       .next('.answer-picked')
       .should('have.text', 'You entered 1000 ');
-    cy.get('[role="status"]').should(
+    cy.get('[aria-live="polite"]').should(
       'have.text',
       'Wrong. Han: 1, You picked 2. Fu: 60, Correct. Points: 2000, You entered 1000',
     );
@@ -414,7 +414,7 @@ describe('Checking answers', () => {
     cy.contains('.answer-total', 'Exact fu')
       .next('.answer-picked')
       .should('have.text', 'You entered 1 ');
-    cy.get('[role="status"]').should('contain', ', You entered 1. Points');
+    cy.get('[aria-live="polite"]').should('contain', ', You entered 1. Points');
   });
 
   it("should say each of a tsumo's wrong payments was entered", () => {
@@ -488,7 +488,7 @@ describe('Checking answers', () => {
     cy.get('.number-input-cell.correct #points').should('exist');
     cy.get('.number-input-cell.wrong #pointsDealer').should('exist');
     cy.get('#points-answer').should('be.empty');
-    cy.get('#pointsDealer-answer').should('have.text', 'Answer: 3900 ');
+    cy.get('#pointsDealer-answer').should('have.text', 'Answer3900 ');
     cy.get('#pointsDealer-answer .mark').should('have.length', 1);
     cy.get('#pointsDealer-answer .correct-mark').should('be.visible');
   });
@@ -536,6 +536,30 @@ describe('Checking answers', () => {
     cy.contains('.badge', 'Correct: 1');
   });
 
+  it('should name a limit choice by its number and its limit', () => {
+    visitHand(TSUMO_HAND);
+    cy.get('#han-mangan')
+      .should('have.text', 'Mangan')
+      .and('have.attr', 'aria-hidden', 'true');
+    cy.contains('[role="radio"]', /^4$/).should(
+      'not.have.attr',
+      'aria-labelledby',
+    );
+    cy.contains('[role="radio"]', /^5$/)
+      .should('have.attr', 'aria-labelledby', 'han-5 han-mangan')
+      .and('not.have.attr', 'aria-describedby');
+    cy.contains('[role="radio"]', /^7$/).should(
+      'have.attr',
+      'aria-labelledby',
+      'han-7 han-haneman',
+    );
+    cy.contains('[role="radio"]', /^10$/).should(
+      'have.attr',
+      'aria-labelledby',
+      'han-10 han-baiman',
+    );
+  });
+
   it('should lock the answers once they are checked', () => {
     visitHand(RON_HAND);
     pick('han', '1');
@@ -550,13 +574,20 @@ describe('Checking answers', () => {
 
     cy.get('[role="radio"]').should('not.be.disabled');
     cy.get('[role="radiogroup"]').should('have.attr', 'aria-readonly', 'true');
+    // Orca speaks the description of the choice with focus, and never the
+    // group's, so the note is on every choice
     cy.get('[role="radiogroup"]')
       .should('have.length', 2)
-      .and('have.attr', 'aria-describedby', 'answers-locked');
+      .and('not.have.attr', 'aria-describedby');
+    cy.get('[role="radio"]')
+      .should('have.length', 17)
+      .each((choice) => {
+        expect(choice.attr('aria-describedby')).to.match(/\banswers-locked$/);
+      });
     cy.get('#answers-locked')
       .should('have.length', 1)
       .and('have.class', 'visually-hidden')
-      .and('have.text', "This hand is checked. Answers can't be changed.");
+      .and('have.text', 'Answers are locked.');
     pick('han', '2');
     cy.get('[aria-labelledby="han-label"] [data-state="checked"]').should(
       'have.text',
@@ -603,7 +634,7 @@ describe('Checking answers', () => {
   it('should not deal the next hand on a key that is held down', () => {
     visitHand(RON_HAND);
     cy.get('button[type="submit"]').click();
-    cy.focused().should('have.text', 'New Hand');
+    cy.get('.answer-key').should('exist');
 
     cy.window().then((win) => {
       const button = win.document.querySelector('.new-hand-button');
@@ -727,6 +758,67 @@ describe('Hand and answer together', () => {
     });
   });
 
+  it('should only switch tabs when one is pressed, not when it is focused', () => {
+    visitHand(RON_HAND);
+    pick('han', '2');
+    pick('fu', '70');
+    typeInBox('points', '1');
+    cy.contains('button', 'Check Answer').click();
+    showYourAnswer();
+    cy.get('.quiz-fields').should('exist');
+
+    // A screen reader moves focus as it reads down the page, so a tab that
+    // opened on focus would close the one being read
+    cy.contains('[role="tab"]', /^Answer$/).focus();
+    cy.get('.quiz-fields').should('exist');
+    cy.focused().type('{rightarrow}');
+    cy.focused().should('have.text', 'Your Answer');
+    cy.focused().type('{leftarrow}');
+    cy.get('.quiz-fields').should('exist');
+    cy.focused().type('{enter}');
+    cy.get('.quiz-fields').should('not.exist');
+    cy.get('.answer-key').should('be.visible');
+  });
+
+  it("should leave the answer's panels out of the tab order", () => {
+    visitHand(RON_HAND);
+    pick('han', '2');
+    pick('fu', '70');
+    typeInBox('points', '1');
+    cy.contains('button', 'Check Answer').click();
+
+    cy.get('.answer-tabs [role="tabpanel"]').should(
+      'have.attr',
+      'tabindex',
+      '-1',
+    );
+    showYourAnswer();
+    cy.get('.answer-tabs [role="tabpanel"]').should(
+      'have.attr',
+      'tabindex',
+      '-1',
+    );
+  });
+
+  it('should say the verdict through a polite live region, then clear it', () => {
+    cy.clock();
+    visitHand(RON_HAND);
+    pick('han', '2');
+    pick('fu', '70');
+    typeInBox('points', '1');
+    cy.contains('button', 'Check Answer').click();
+
+    // Orca speaks nothing that changes inside a role of status
+    cy.get('[aria-live="polite"]')
+      .should('have.attr', 'aria-atomic', 'true')
+      .and('not.have.attr', 'role');
+    cy.get('[aria-live="polite"]').should('contain', 'Wrong. Han: 1');
+    cy.tick(9000);
+    cy.get('[aria-live="polite"]').should('contain', 'Wrong. Han: 1');
+    cy.tick(1000);
+    cy.get('[aria-live="polite"]').should('have.text', '');
+  });
+
   it('should open on the answer, with the questions a tab away', () => {
     visitHand(RON_HAND);
     pick('han', '2');
@@ -743,13 +835,14 @@ describe('Hand and answer together', () => {
     cy.get('[role="tab"][data-state="active"]').should('have.text', 'Answer');
     cy.get('.answer-key').should('be.visible');
     cy.get('.quiz-fields').should('not.exist');
-    cy.focused().should('have.text', 'New Hand');
+    cy.focused().should('have.class', 'color-card');
 
     showYourAnswer();
     cy.get('.quiz-fields').should('be.visible');
     cy.get('.answer-key').should('not.exist');
     cy.focused().type('{leftArrow}');
     cy.focused().should('have.text', 'Answer');
+    cy.focused().type('{enter}');
     cy.get('.answer-key').should('be.visible');
   });
 });
@@ -1112,7 +1205,7 @@ describe('Skipping fu on limit hands', () => {
     typeInBox('points', '2000');
     cy.contains('button', 'Check Answer').click();
 
-    cy.get('[role="status"]').should(
+    cy.get('[aria-live="polite"]').should(
       'have.text',
       'Wrong. Han: 1, You picked 5. Fu: 60, You picked a limit hand. Points: 2000, Correct',
     );
@@ -1172,7 +1265,7 @@ describe('Skipping fu on limit hands', () => {
     cy.contains('button', 'Check Answer').click();
 
     cy.contains('.badge', 'Correct: 1');
-    cy.get('[role="status"]').should(
+    cy.get('[aria-live="polite"]').should(
       'have.text',
       'Correct. Han: 1, Points: 2000',
     );
@@ -1265,7 +1358,10 @@ describe('Skipping fu on limit hands', () => {
     cy.contains('button', 'Check Answer').click();
 
     cy.contains('.badge', 'Wrong: 1');
-    cy.get('[role="status"]').should('contain', 'Fu: No fu on limit hands');
+    cy.get('[aria-live="polite"]').should(
+      'contain',
+      'Fu: No fu on limit hands',
+    );
     cy.get('.answer-key').should('not.contain', 'Fu:');
     cy.get('.answer-picked').should('have.text', 'You picked 4 han 70 fu ');
     showYourAnswer();
@@ -1280,11 +1376,14 @@ describe('Skipping fu on limit hands', () => {
       'have.class',
       'field-error',
     );
-    cy.get('[aria-labelledby="fu-label"]').should(
-      'have.attr',
-      'aria-describedby',
-      'fu-no-answer answers-locked',
-    );
+    cy.get('[aria-labelledby="fu-label"] [role="radio"]')
+      .should('have.length', 7)
+      .each((choice) => {
+        expect(choice).to.have.attr(
+          'aria-describedby',
+          'fu-no-answer answers-locked',
+        );
+      });
   });
 
   it('should put no mark on an exact fu box that a limit han switched off', () => {
@@ -1388,7 +1487,7 @@ describe('Skipping fu on limit hands', () => {
       .should('have.text', 'You picked a limit hand ')
       .find('.wrong-mark')
       .should('be.visible');
-    cy.get('[role="status"]').should(
+    cy.get('[aria-live="polite"]').should(
       'contain',
       'Fu: 60, You picked a limit hand',
     );

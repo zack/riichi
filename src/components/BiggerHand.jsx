@@ -9,6 +9,7 @@ import {
   getMelds,
   getRowsBySuit,
 } from '../scripts/HandTiles';
+import { getSpokenHand, getSpokenInfo } from '../scripts/SpokenHand';
 import * as TileConversion from '../scripts/TileConversion';
 import { useNamesOnTiles } from '../scripts/TileNames';
 import { Meld } from './Meld';
@@ -66,6 +67,7 @@ function BiggerHandTiles({ agari, fancy, handLabel, showHonba, showNames }) {
 
   return (
     <div
+      aria-hidden='true'
       className={`bigger-hand ${fancy ? 'fancy-tiles' : ''} ${namesOnTiles ? 'names-on-tiles' : ''}`}
       ref={handRef}
     >
@@ -198,7 +200,6 @@ function BiggerHandTiles({ agari, fancy, handLabel, showHonba, showNames }) {
               <Meld
                 fancy={fancy}
                 key={meldIndex}
-                name={t('handParts.meldNumber').replace('{}', meldIndex + 1)}
                 showNames={showNames}
                 slots={slots}
               />
@@ -261,6 +262,10 @@ function BiggerHand({
           </Dialog.Close>
         </Flex>
 
+        <p className='visually-hidden spoken-info'>
+          {getSpokenInfo(agari, showHonba, t)}
+        </p>
+        <p className='visually-hidden spoken-hand'>{getSpokenHand(agari, t)}</p>
         <BiggerHandTiles
           agari={agari}
           fancy={fancy}

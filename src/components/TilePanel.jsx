@@ -2,6 +2,7 @@ import { Text } from '@radix-ui/themes';
 
 import { useTranslation } from '../i18n/I18nContext';
 import { getConcealedTiles, getMelds } from '../scripts/HandTiles';
+import { getSpokenHand } from '../scripts/SpokenHand';
 import * as TileConversion from '../scripts/TileConversion';
 import { Meld } from './Meld';
 import { Tile } from './Tile';
@@ -68,12 +69,11 @@ function TilePanel({ agari, fancy, showNames }) {
 
   return (
     <div className='hand-container'>
-      <div className={classNames.join(' ')} style={style}>
-        <span
-          aria-label={t('handParts.concealed')}
-          className='tile-group'
-          role='group'
-        >
+      <span className='visually-hidden spoken-hand'>
+        {getSpokenHand(agari, t)}
+      </span>
+      <div aria-hidden='true' className={classNames.join(' ')} style={style}>
+        <span className='tile-group'>
           {concealedTiles.map((tile, index) => (
             <Tile
               alt={TileConversion.tileToName(tile, t)}
@@ -84,13 +84,7 @@ function TilePanel({ agari, fancy, showNames }) {
             />
           ))}
         </span>
-        <span
-          aria-label={
-            agari.isTsumo ? t('handParts.wonOnTsumo') : t('handParts.wonOnRon')
-          }
-          className={`tile-group winning-group ${lastGroupClass}`}
-          role='group'
-        >
+        <span className={`tile-group winning-group ${lastGroupClass}`}>
           <Text aria-hidden='true' className='win-type' size='1'>
             {agari.isTsumo ? t('info.tsumo') : t('info.ron')}
           </Text>
@@ -106,7 +100,6 @@ function TilePanel({ agari, fancy, showNames }) {
           <Meld
             fancy={fancy}
             key={meldIndex}
-            name={t('handParts.meldNumber').replace('{}', meldIndex + 1)}
             showNames={showNames}
             slots={slots}
           />
