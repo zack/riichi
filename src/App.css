@@ -1495,9 +1495,36 @@ html.dark:not(.high-contrast) .radix-themes {
   border-color: var(--gray-8);
 }
 
+/* A ring alone is easy to miss among the other choices' borders, so a picked
+   choice is tinted too. The tint is an image, not a background color, so it
+   lies over the choice's own color and a picked limit choice keeps a trace of
+   its group's. */
+.choices:not([aria-readonly='true'])
+  .choice[data-state='checked']:not(:disabled) {
+  background-image: linear-gradient(var(--accent-a5), var(--accent-a5));
+  font-weight: 700;
+}
+
+.dark
+  .choices:not([aria-readonly='true'])
+  .choice[data-state='checked']:not(:disabled) {
+  background-image: linear-gradient(var(--accent-a7), var(--accent-a7));
+}
+
 @media (hover: hover) {
   .choices:not([aria-readonly='true']) .choice:hover:not(:disabled) {
     background-image: linear-gradient(var(--gray-a3), var(--gray-a3));
+  }
+
+  .choices:not([aria-readonly='true'])
+    .choice[data-state='checked']:hover:not(:disabled) {
+    background-image: linear-gradient(var(--accent-a6), var(--accent-a6));
+  }
+
+  .dark
+    .choices:not([aria-readonly='true'])
+    .choice[data-state='checked']:hover:not(:disabled) {
+    background-image: linear-gradient(var(--accent-a8), var(--accent-a8));
   }
 
   .choices:not([aria-readonly='true'])
