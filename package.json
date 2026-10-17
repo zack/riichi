@@ -39,7 +39,7 @@
     "cypress-visual-regression": "^6.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.4.1",
-    "oxfmt": "^0.72.0",
+    "oxfmt": "^0.73.0",
     "oxlint": "^1.87.0",
     "vite": "^8.1.5",
     "vite-plugin-pwa": "^2.0.0"
