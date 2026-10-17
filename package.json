@@ -24,7 +24,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "marked": "^18.1.1",
-    "radix-ui": "^1.7.0",
+    "radix-ui": "^1.8.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.8"
   },
